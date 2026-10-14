@@ -28,3 +28,11 @@ Thumbs.db
 *.tmp
 *.temp
 *.swp
+
+.vercel
+.env*
+
+# Skills installed by Marketplace tooling
+.agents/
+skills-lock.json
+!.env.example

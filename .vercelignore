@@ -1,0 +1,5 @@
+.git
+.agents
+.env*
+tests
+skills-lock.json

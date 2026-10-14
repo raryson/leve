@@ -1,1 +1,26 @@
-{"name":"peso-pwa","private":true,"version":"0.1.0","type":"module","scripts":{"dev":"vite","build":"vite build","preview":"vite preview"},"dependencies":{"@vitejs/plugin-react":"latest","vite":"latest","react":"latest","react-dom":"latest"}}
+{
+  "name": "peso-pwa",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/build-sw.mjs",
+    "preview": "vite preview",
+    "test": "node --test",
+    "db:migrate": "node --env-file=.env.local scripts/migrate.mjs"
+  },
+  "dependencies": {
+    "@clerk/backend": "^3.23.2",
+    "@clerk/localizations": "^4.23.0",
+    "@clerk/react": "^6.17.8",
+    "@vercel/functions": "^3.10.1",
+    "@vitejs/plugin-react": "latest",
+    "ai": "^7.0.140",
+    "pg": "^8.23.1",
+    "react": "latest",
+    "react-dom": "latest",
+    "vite": "latest",
+    "zod": "^4.6.7"
+  }
+}
