@@ -34,7 +34,17 @@ vercel dev --listen 127.0.0.1:3000 --scope rarysonrosts-projects
 
 `npm run dev`/`npm run preview` servem somente a interface; a API exige `vercel dev` ou uma implantação Vercel. `scripts/verify-db.mjs` testa isolamento, conflitos e idempotência numa transação desfeita ao final, sem ler conteúdo pessoal. Execute com `node --env-file=.env.local scripts/verify-db.mjs`.
 
-**Ambiente atual:** prévia HTTPS, com Clerk de desenvolvimento; a produção não foi alterada. Antes de promover, configurar a instância/domínio de produção do Clerk, confirmar `APP_ORIGINS` para domínios próprios e separar os bancos de Preview/Development/Production. O provisionamento inicial conectou o mesmo recurso Neon aos três ambientes. Não publicar dados de teste como produção.
+**Endereço principal:** `https://leve-fawn.vercel.app`. Por escolha do usuário, o app mantém o domínio gratuito da Vercel e a instância atual de desenvolvimento do Clerk; não há domínio próprio nem migração de usuários. O modo de produção do Clerk exige domínio próprio, então continuam valendo os limites de desenvolvimento desse serviço. O banco Neon existente é preservado e ainda é compartilhado por Production, Preview e Development; separar os ambientes permanece pendente, e testes de banco devem continuar em transações desfeitas ou tabelas temporárias, sem alterar diários reais. Nenhum plano pago foi contratado para esta publicação.
+
+## Minhas refeições e busca de alimentos
+
+No registro do dia, **Alimento** abre um buscador visual com texto, categorias, favoritos e recentes. As ilustrações SVG representam categorias; não são fotos do alimento ou garantia de preparo. A busca ignora acentos e combina palavras, como “sobrecoxa sem pele”. Estrelas salvam favoritos imediatamente; recentes são atualizados somente ao salvar o dia.
+
+Monte a refeição no rascunho e use **Salvar combinação para repetir**. Dê um nome, como “Almoço de casa”. Em **Minhas refeições**, use **Revisar e usar** para escolher a refeição de destino e ajustar cada quantidade em gramas antes de adicionar. O total é recalculado localmente; usar a combinação não modifica o modelo nem os dias anteriores. Salvar outro modelo com o mesmo nome pede confirmação para atualizar. Exclusão da combinação também preserva os registros anteriores.
+
+Até 100 combinações, com 50 alimentos por combinação. Alimentos precisam ter gramas e kcal/100 g; registros antigos com apenas um total não são convertidos em porções inventadas. A biblioteca e as preferências fazem parte do backup e do diário da conta, usando a sincronização existente por versão completa. O schema passa para versão 5, preservando dados anteriores; versões antigas do app podem pedir atualização depois que este diário for salvo.
+
+Não há serviço de IA ou armazenamento de fotos nesta funcionalidade. Nenhum recurso pago adicional foi contratado.
 
 ## Refeição por voz ou relato
 
@@ -51,3 +61,13 @@ Referência técnica: [SpeechRecognition (MDN)](https://developer.mozilla.org/en
 `vercel.json` configura o build estático e evita cache persistente do service worker. A API roda em Vercel Functions, com pool de conexões PostgreSQL no servidor. A migração SQL versionada fica em `db/migrations/`, e não roda automaticamente no build.
 
 Veja o [roadmap](ROADMAP.md) para arquitetura de sincronização, prioridades e critérios de aceite. A referência calórica é opcional e definida pela pessoa; o app não prescreve dieta nem projeta perda de peso.
+
+## Identidade, instalação e compartilhamento
+
+Ícone vetorial de prato + folha, PNGs de 192/512 px para PWA, ícone maskable com desenho dentro da área segura e Apple Touch Icon PNG de 180 px. Favicons SVG, PNG e ICO, nome de atalho “Leve” e tema verde consistentes. Os ícones fazem parte do cache offline.
+
+A capa social `public/share-cover.png` tem 1200×630 px, com Open Graph e Twitter Card no HTML inicial, sem precisar executar JavaScript. Não contém informações do diário. O Vite usa a URL da implantação em Preview; fora de Preview, o padrão é o domínio verificado `https://leve-fawn.vercel.app`. `SITE_URL` permite substituir a origem para um domínio próprio. As URLs de imagem e canonical são absolutas.
+
+Para alterar o desenho e regenerar os arquivos, edite `scripts/build-brand.mjs` e execute `npm run assets:brand`. O renderizador roda localmente; não há API de imagens ou serviço pago. Os PNGs gerados ficam versionados, e o build normal não depende das fontes do servidor para regenerá-los.
+
+Prévias com Deployment Protection não são acessíveis aos robôs de compartilhamento do WhatsApp/redes sociais. Compartilhe o endereço principal público `https://leve-fawn.vercel.app`, e não as URLs protegidas de prévia. Metatags não removem essa proteção. Atalhos já instalados podem manter o ícone anterior no cache do sistema; reinstalar o atalho pode ser necessário.

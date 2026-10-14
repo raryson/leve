@@ -2,10 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import InstallBanner from './InstallBanner.jsx';
 import VoiceMeal from './VoiceMeal.jsx';
+import FoodPicker from './FoodPicker.jsx';
+import SavedMeals, { SaveMealButton } from './SavedMeals.jsx';
+import { trackRecentFoods } from './foodLibrary.js';
 import { AccountRoot, SyncPanel } from './Account.jsx';
 import useJournal from './useJournal.js';
 import { accountKey } from './cloud.js';
-import { KEY, localDate, normalizeProfile, normalizeState, normalizeDay, newDay, upsertDay, portionCalories, parseDay, trainingDays, numeric, appendFood, appendActivity } from './domain.js';
+import { KEY, localDate, normalizeProfile, normalizeState, normalizeDay, newDay, upsertDay, portionCalories, parseDay, trainingDays, numeric, appendFood, appendActivity, normalizeSavedMeal, useSavedMeal } from './domain.js';
 import { foods, FOOD_SOURCE } from './foods.js';
 import './styles.css';
 
@@ -44,12 +47,12 @@ function App({ account, accountControls }) {
   const syncPanel = <SyncPanel account={account} journal={journal} onExport={backup}/>;
   if (!journal.ready && !loadError) return <><div className="onboard-account">{accountControls}</div>{syncPanel}<div className="onboarding"><section className="onboard-card"><h1>Buscando seu diário</h1><p>Estamos verificando se esta conta já tem registros. Sua cópia local permanece neste dispositivo.</p>{journal.sync.phase === 'error' && <p role="alert">{journal.sync.message}</p>}<button className="outline" onClick={journal.synchronize}>Tentar novamente</button></section></div></>;
   if (loadError) return <><div className="onboard-account">{accountControls}</div>{syncPanel}<div className="onboarding"><section className="onboard-card"><h1>Vamos proteger seus registros.</h1><p role="alert">{loadError}</p><p>A cópia original continua no navegador. Exporte-a antes de tentar recuperar os dados.</p><button className="primary" onClick={() => download(loaded.raw || '', 'leve-recuperacao.json')}>Exportar cópia original</button><BackupInput onImport={restore}/><button className="outline" onClick={() => { try { const previous = localStorage.getItem(`${account ? accountKey(account.userId) : KEY}-previous`); if (!previous) throw new Error('Não há cópia anterior.'); const parsed = JSON.parse(previous); restore(account ? parsed.state : parsed); } catch (e) { setRecoveryError(e.message); } }}>Recuperar cópia anterior</button>{(storageError || recoveryError) && <p role="alert">{storageError || recoveryError}</p>}</section></div></>;
-  if (!s.profile) return <><div className="onboard-account">{accountControls}</div>{syncPanel}<div className="onboarding"><section className="onboard-card"><div className="onboard-brand">✳ leve</div><small>SEU PRIMEIRO PASSO</small><h1>Bora cuidar<br/>da sua rotina?</h1><p>Alimentação, água e movimento. Um registro de cada vez, no seu ritmo.</p><ProfileForm onSave={p => commit({ ...s, profile: p, weights: [{ id: id(), date: today, value: p.weight }] })}/><BackupInput onImport={restore}/><p className="local-note">Seus registros são salvos aqui. Entre na conta para sincronizar entre dispositivos.</p>{(storageError || recoveryError) && <p role="alert">{storageError || recoveryError}</p>}</section></div></>;
+  if (!s.profile) return <><div className="onboard-account">{accountControls}</div>{syncPanel}<div className="onboarding"><section className="onboard-card"><div className="onboard-brand"><img src="/icon.svg" alt=""/> leve</div><small>SEU PRIMEIRO PASSO</small><h1>Bora cuidar<br/>da sua rotina?</h1><p>Alimentação, água e movimento. Um registro de cada vez, no seu ritmo.</p><ProfileForm onSave={p => commit({ ...s, profile: p, weights: [{ id: id(), date: today, value: p.weight }] })}/><BackupInput onImport={restore}/><p className="local-note">Seus registros são salvos aqui. Entre na conta para sincronizar entre dispositivos.</p>{(storageError || recoveryError) && <p role="alert">{storageError || recoveryError}</p>}</section></div></>;
   const day = s.days.find(d => d.date === today) || newDay(today);
   const nav = [['home', 'home', 'Hoje'], ['days', 'history', 'Histórico'], ['evo', 'trend', 'Meu peso'], ['profile', 'user', 'Perfil']];
   const syncLabel = !account ? 'Salvo neste dispositivo' : journal.sync.phase === 'synced' ? 'Salvo na sua conta' : journal.sync.phase === 'syncing' ? 'Sincronizando…' : journal.sync.phase === 'error' ? 'Revisar sincronização' : journal.sync.phase === 'conflict' ? 'Revisar conflito' : 'Sincronização pendente';
   return <div className="shell">
-    <aside><a className="brand" href="#" onClick={e => { e.preventDefault(); setTab('home'); }}><span>✳</span> leve<span className="brand-dot">.</span></a><p className="sidebar-caption">Um pouco melhor, todo dia.</p><nav aria-label="Navegação principal">{nav.map(([key, icon, label]) => <button key={key} className={tab === key ? 'active' : ''} aria-current={tab === key ? 'page' : undefined} onClick={() => setTab(key)}><Icon name={icon}/><span>{label}</span></button>)}</nav><div className="sidebar-note"><span>✳</span><b>Feito é melhor que perfeito.</b><p>Um copo d’água, uma caminhada, uma refeição registrada. Tudo conta.</p></div><footer><span className="avatar">{s.profile.name.slice(0, 1).toUpperCase()}</span><div><b>{s.profile.name}</b><small>Sua rotina no Leve</small></div></footer></aside>
+    <aside><a className="brand" href="#" onClick={e => { e.preventDefault(); setTab('home'); }}><img className="brand-mark" src="/icon.svg" alt=""/> leve<span className="brand-dot">.</span></a><p className="sidebar-caption">Um pouco melhor, todo dia.</p><nav aria-label="Navegação principal">{nav.map(([key, icon, label]) => <button key={key} className={tab === key ? 'active' : ''} aria-current={tab === key ? 'page' : undefined} onClick={() => setTab(key)}><Icon name={icon}/><span>{label}</span></button>)}</nav><div className="sidebar-note"><span>✳</span><b>Feito é melhor que perfeito.</b><p>Um copo d’água, uma caminhada, uma refeição registrada. Tudo conta.</p></div><footer><span className="avatar">{s.profile.name.slice(0, 1).toUpperCase()}</span><div><b>{s.profile.name}</b><small>Sua rotina no Leve</small></div></footer></aside>
     <main><header><div><p className="eyebrow">{dateLabel(today)}</p><h2>{tab === 'home' ? `Oi, ${s.profile.name}!` : nav.find(n => n[0] === tab)[2]}</h2></div><div className="header-account"><button className={`sync-status ${account && ['error', 'conflict'].includes(journal.sync.phase) ? 'needs-attention' : ''}`} onClick={() => setTab('profile')}><span/>{syncLabel}</button>{accountControls}</div></header>
       {account && ['error', 'conflict'].includes(journal.sync.phase) && tab !== 'profile' && syncPanel}
       {storageError && <div className="error-box" role="alert">{storageError}<button className="outline" onClick={backup}>Exportar backup</button></div>}
@@ -58,7 +61,14 @@ function App({ account, accountControls }) {
       {tab === 'evo' && <Evolution s={s} today={today} onSave={(value, date) => { let saved = false; saved = commit(x => { const records = [...x.weights, { id: id(), date, value }].sort((a, b) => (a.date || '').localeCompare(b.date || '')); return { ...x, weights: records, profile: { ...x.profile, weight: records.at(-1).value } }; }); if (saved) setToast('Pesagem salva.'); return saved; }}/>}
       {tab === 'profile' && <>{syncPanel}<div className="intro"><div><small>SEU PERFIL</small><h3>Do seu jeito.</h3><p>Ajuste suas referências e proteja seus registros.</p></div></div><section className="formbox"><ProfileForm key={JSON.stringify(s.profile)} initial={s.profile} onSave={p => { if (commit(x => ({ ...x, profile: p }))) setToast('Perfil salvo.'); }}/></section><section className="data-transfer"><h3>Seus dados com você</h3><p>Use o backup para guardar uma cópia. Com login, o diário sincroniza por conta; conflitos pedem sua revisão.</p><button className="primary" onClick={backup}>Exportar backup</button><BackupInput onImport={restore}/></section></>}
     </main>
-    {editor && <DayEditor key={editor} day={s.days.find(d => d.date === editor) || newDay(editor)} close={() => setEditor(null)} onSave={d => { const saved = commit(x => upsertDay(x, d)); if (saved) { setEditor(null); setToast('Dia salvo.'); } return saved; }}/>}
+    {editor && <DayEditor key={editor} library={s} onFavorite={foodId => commit(x => ({...x, favoriteFoods: x.favoriteFoods.includes(foodId) ? x.favoriteFoods.filter(id=>id!==foodId) : [...x.favoriteFoods,foodId]}))} onSaveMeal={(name,items) => {
+      if(items.some(i=>i.grams==null || i.grams==='' || i.kcalPer100==null || i.kcalPer100==='')) throw new Error('Para salvar uma combinação, todos os alimentos precisam de gramas e kcal por 100 g. Registros antigos sem esses dados precisam ser cadastrados novamente pelo formulário.');
+      const existing=s.savedMeals.find(m=>m.name.toLocaleLowerCase('pt-BR')===name.trim().toLocaleLowerCase('pt-BR'));
+      const template=normalizeSavedMeal({id:existing?.id || id(),name,items});
+      if(existing && !window.confirm(`Atualizar a combinação “${existing.name}”? Os dias já registrados não serão alterados.`)) return false;
+      if(!commit(x=>({...x,savedMeals:[...x.savedMeals.filter(m=>m.id!==template.id),template]}))) throw new Error('Não foi possível salvar a combinação. Confira o aviso de armazenamento.');
+      setToast('Combinação salva em Minhas refeições.');return true;
+    }} onDeleteMeal={meal=>{if(window.confirm(`Excluir a combinação “${meal.name}”? Os dias já registrados serão preservados.`)) commit(x=>({...x,savedMeals:x.savedMeals.filter(m=>m.id!==meal.id)}));}} day={s.days.find(d => d.date === editor) || newDay(editor)} close={() => setEditor(null)} onSave={d => { const saved = commit(x => ({...upsertDay(x, d),recentFoods:trackRecentFoods(x,d)})); if (saved) { setEditor(null); setToast('Dia salvo.'); } return saved; }}/>}
     {importing && <ImportDay close={() => setImporting(false)} onImport={d => { const existing = s.days.find(x => x.date === d.date); if (existing && !window.confirm('Este dia já existe. Substituir refeições e exercícios? Água registrada será preservada.')) return; if (commit(x => upsertDay(x, { ...d, waterMl: existing?.waterMl ?? d.waterMl }))) { setImporting(false); setToast('Dia importado e totais recalculados.'); } }}/>}
     <InstallBanner/>{toast && <div className="toast" role="status">{toast}</div>}
   </div>;
@@ -127,18 +137,20 @@ function Modal({ title, close, children }) {
   return <dialog className="modal native-dialog" ref={ref} aria-label={title} onCancel={e => { e.preventDefault(); close(); }}><div className="dialog-header"><h3>{title}</h3><button className="outline" aria-label="Fechar janela" onClick={close}>×</button></div>{children}<button className="close" onClick={close}>Fechar</button></dialog>;
 }
 
-function DayEditor({ day, close, onSave }) {
+function DayEditor({ day, close, onSave, library, onFavorite, onSaveMeal, onDeleteMeal }) {
   const [draft, setDraft] = useState(() => structuredClone(day));
   const [error, setError] = useState('');
   const [voiceDirty, setVoiceDirty] = useState(false);
-  function save() { try { if (voiceDirty) { setError('Revise e adicione o relato ao dia, ou limpe o campo de relato antes de salvar.'); return; } if (!onSave(normalizeDay(draft))) setError('Não foi possível salvar no navegador. Seus dados continuam nesta janela.'); } catch (e) { setError(e.message); } }
-  return <Modal title={`Registro · ${dateLabel(day.date)}`} close={() => { if ((!voiceDirty && JSON.stringify(draft) === JSON.stringify(day)) || window.confirm('Descartar alterações e relatos não salvos?')) close(); }}>
+  const [mealDirty, setMealDirty] = useState(false);
+  function save() { try { if (voiceDirty || mealDirty) { setError('Adicione ou cancele a revisão pendente da refeição ou do relato antes de salvar o dia.'); return; } if (!onSave(normalizeDay(draft))) setError('Não foi possível salvar no navegador. Seus dados continuam nesta janela.'); } catch (e) { setError(e.message); } }
+  return <Modal title={`Registro · ${dateLabel(day.date)}`} close={() => { if ((!voiceDirty && !mealDirty && JSON.stringify(draft) === JSON.stringify(day)) || window.confirm('Descartar alterações e relatos não salvos?')) close(); }}>
     <p className="modal-copy">Os cálculos acontecem neste dispositivo. Salve ao terminar.</p>
-    <FoodForm onAdd={(name, item) => { setDraft(appendFood(draft, name, item)); }}/>
+    <SavedMeals savedMeals={library.savedMeals} onDirty={setMealDirty} onDelete={onDeleteMeal} onUse={(name,meal)=>{setDraft(previous=>useSavedMeal(previous,name,meal));setError('');}}/>
+    <FoodForm favorites={library.favoriteFoods} recent={library.recentFoods} onFavorite={onFavorite} onAdd={(name, item) => { setDraft(appendFood(draft, name, item)); }}/>
     <details className="voice-disclosure"><summary>Falar ou escrever minha refeição <span>Ditado + revisão dos alimentos</span></summary>
     <VoiceMeal onDirty={setVoiceDirty} onAdd={(meal, items) => { setDraft(previous => items.reduce((day, item) => appendFood(day, meal, item), previous)); setError(''); }}/>
     </details>
-    <div className="draft-list">{draft.meals.map((m, mi) => <section key={mi}><b>{m.name} · {fmt(m.calories)} kcal</b>{m.items.map((item, ii) => <div className="draft-row" key={ii}><span>{item.food} · {item.quantity} · {fmt(item.calories)} kcal</span><button className="outline" aria-label={`Remover ${item.food}`} onClick={() => { const meals = structuredClone(draft.meals); meals[mi].items.splice(ii, 1); if (!meals[mi].items.length) meals.splice(mi, 1); setDraft(normalizeDay({ ...draft, meals })); }}>×</button></div>)}{!m.items.length && <button className="outline" onClick={() => setDraft(normalizeDay({ ...draft, meals: draft.meals.filter((_, i) => i !== mi) }))}>Remover refeição</button>}</section>)}</div>
+    <div className="draft-list">{draft.meals.map((m, mi) => <section key={mi}><b>{m.name} · {fmt(m.calories)} kcal</b>{m.items.length>0 && <SaveMealButton meal={m} onSave={onSaveMeal}/>} {m.items.map((item, ii) => <div className="draft-row" key={ii}><span>{item.food} · {item.quantity} · {fmt(item.calories)} kcal</span><button className="outline" aria-label={`Remover ${item.food}`} onClick={() => { const meals = structuredClone(draft.meals); meals[mi].items.splice(ii, 1); if (!meals[mi].items.length) meals.splice(mi, 1); setDraft(normalizeDay({ ...draft, meals })); }}>×</button></div>)}{!m.items.length && <button className="outline" onClick={() => setDraft(normalizeDay({ ...draft, meals: draft.meals.filter((_, i) => i !== mi) }))}>Remover refeição</button>}</section>)}</div>
     <ExerciseForm onAdd={activity => setDraft(appendActivity(draft, activity))}/>
     {draft.exercise.activities.map((a, i) => <div className="draft-row" key={i}><span>{a.type} · {a.durationMinutes} min</span><button className="outline" aria-label={`Remover treino ${a.type}`} onClick={() => { const activities = draft.exercise.activities.filter((_, j) => j !== i); setDraft(normalizeDay({ ...draft, exercise: { activities, performed: activities.length > 0, totalCaloriesBurned: 0 } })); }}>×</button></div>)}
     <label className="standalone-label">Água do dia (ml)<input type="number" min="0" max="100000" value={draft.waterMl} onChange={e => setDraft({ ...draft, waterMl: e.target.value })}/></label>
@@ -147,7 +159,7 @@ function DayEditor({ day, close, onSave }) {
   </Modal>;
 }
 
-function FoodForm({ onAdd }) {
+function FoodForm({ onAdd, favorites, recent, onFavorite }) {
   const [foodId, setFoodId] = useState(foods[0].id);
   const [name, setName] = useState('');
   const [per100, setPer100] = useState('');
@@ -157,9 +169,9 @@ function FoodForm({ onAdd }) {
   const food = foods.find(f => f.id === foodId);
   let preview = '—';
   try { preview = fmt(portionCalories(grams, food ? food.kcal : per100)); } catch { /* Incomplete form. */ }
-  return <form className="entry-form" onSubmit={e => { e.preventDefault(); try { const label = food ? food.name : name.trim(); if (!label) throw new Error('Informe o alimento.'); onAdd(meal, { id: id(), food: label, quantity: `${grams} g`, grams: Number(grams), kcalPer100: food?.kcal ?? Number(per100), calories: portionCalories(grams, food ? food.kcal : per100), source: food ? (food.sourceUrl || food.referenceId || food.id) : 'Rótulo informado', referenceNote: food?.note || '' }); setError(''); } catch (e) { setError(e.message); } }}>
-    <h4>Adicionar alimento</h4><label>Refeição<select value={meal} onChange={e => setMeal(e.target.value)}>{['Café da manhã', 'Almoço', 'Lanche', 'Jantar', 'Ceia'].map(m => <option key={m}>{m}</option>)}</select></label>
-    <label>Alimento<select value={foodId} onChange={e => setFoodId(e.target.value)}>{foods.map(f => <option key={f.id} value={f.id}>{f.name} · {fmt(f.kcal)} kcal/100 g</option>)}<option value="custom">Outro alimento / rótulo</option></select></label>
+  return <form className="entry-form" onSubmit={e => { e.preventDefault(); try { const label = food ? food.name : name.trim(); if (!label) throw new Error('Informe o alimento.'); onAdd(meal, { id: id(), foodId: food?.id || '', food: label, quantity: `${grams} g`, grams: Number(grams), kcalPer100: food?.kcal ?? Number(per100), calories: portionCalories(grams, food ? food.kcal : per100), source: food ? (food.sourceUrl || food.referenceId || food.id) : 'Rótulo informado', referenceNote: food?.note || '' }); setError(''); } catch (e) { setError(e.message); } }}>
+    <h4>Adicionar alimento</h4><label>Refeição<select aria-label="Refeição" value={meal} onChange={e => setMeal(e.target.value)}>{['Café da manhã', 'Almoço', 'Lanche', 'Jantar', 'Ceia'].map(m => <option key={m}>{m}</option>)}</select></label>
+    <FoodPicker value={foodId} onChange={setFoodId} favorites={favorites} recent={recent} onFavorite={onFavorite}/>
     {!food && <><label>Nome do alimento<input required maxLength={200} value={name} onChange={e => setName(e.target.value)}/></label><label>kcal por 100 g (rótulo)<input required type="number" min="0" max="1000" step="0.1" value={per100} onChange={e => setPer100(e.target.value)}/></label></>}
     <label>Quantidade consumida (g)<input required type="number" min="0.1" max="10000" step="0.1" value={grams} onChange={e => setGrams(e.target.value)}/></label>
     {food?.portion && <button type="button" className="outline" onClick={() => setGrams(String(food.portion.grams))}>Usar {food.portion.label}</button>}

@@ -9,7 +9,7 @@ function storage(value) {
 }
 test('migra números e pesagens antigas sem inventar datas e recalcula os totais', () => {
   const s = normalizeState(legacy());
-  assert.equal(s.version, 4); assert.equal(s.profile.weight, 90);
+  assert.equal(s.version, 5); assert.equal(s.profile.weight, 90);
   assert.deepEqual(s.weights.map(w => w.value), [95, 93, 90]);
   assert.ok(s.weights.every(w => w.date === null));
   assert.equal(s.days[0].totalCalories, 204); assert.equal(s.days[0].netCalories, 104);

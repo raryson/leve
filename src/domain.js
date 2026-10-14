@@ -1,6 +1,6 @@
 export const KEY = 'leve-state-v3';
-export const VERSION = 4;
-export const emptyState = () => ({ version: VERSION, profile: null, days: [], weights: [] });
+export const VERSION = 5;
+export const emptyState = () => ({ version: VERSION, profile: null, days: [], weights: [], savedMeals: [], favoriteFoods: [], recentFoods: [] });
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const number = value => Number(typeof value === 'string' ? value.replace(',', '.') : value);
 export function numeric(value, min, max, label) {
@@ -67,7 +67,30 @@ export function normalizeState(raw) {
   if (!weights.length && profile) weights.push({ id: 'initial', date: null, value: profile.weight });
   const days = data.days.map(normalizeDay).sort((a, b) => a.date.localeCompare(b.date));
   if (new Set(days.map(d => d.date)).size !== days.length) throw new Error('Há dias duplicados no backup.');
-  return { ...data, version: VERSION, profile, days, weights };
+  const savedMeals = array(data.savedMeals, 'Refeições salvas').map(normalizeSavedMeal);
+  if (savedMeals.length > 100 || new Set(savedMeals.map(m => m.id)).size !== savedMeals.length) throw new Error('Limite excedido ou refeições salvas duplicadas.');
+  const foodIds = (value, limit) => {
+    const list = array(value, 'Preferências de alimentos');
+    if (list.length > limit || list.some(id => typeof id !== 'string' || !id || id.length > 100)) throw new Error('Preferências de alimentos inválidas.');
+    return [...new Set(list)];
+  };
+  return { ...data, version: VERSION, profile, days, weights, savedMeals, favoriteFoods: foodIds(data.favoriteFoods, 200), recentFoods: foodIds(data.recentFoods, 12) };
+}
+
+export function normalizeSavedMeal(meal) {
+  if (!meal || typeof meal.id !== 'string' || !meal.id || meal.id.length > 100 || typeof meal.name !== 'string' || !meal.name.trim() || meal.name.length > 80 || !Array.isArray(meal.items) || !meal.items.length || meal.items.length > 50) throw new Error('Informe um nome e de 1 a 50 alimentos para a refeição salva.');
+  const items = meal.items.map(item => {
+    if (!item || typeof item.food !== 'string' || !item.food.trim() || item.food.length > 200) throw new Error('Alimento inválido na refeição salva.');
+    const grams = numeric(item.grams, .1, 10000, 'Quantidade em gramas');
+    const kcalPer100 = numeric(item.kcalPer100, 0, 1000, 'kcal por 100 g');
+    return { food: item.food.trim(), foodId: typeof item.foodId === 'string' ? item.foodId.slice(0, 100) : '', grams, kcalPer100, quantity: `${grams} g`, calories: portionCalories(grams, kcalPer100), source: text(item.source).slice(0, 1000), referenceNote: text(item.referenceNote).slice(0, 2000) };
+  });
+  return { id: meal.id, name: meal.name.trim(), items };
+}
+
+export function useSavedMeal(day, destination, meal) {
+  const normalized = normalizeSavedMeal(meal);
+  return normalized.items.reduce((draft, item) => appendFood(draft, destination, { ...item, entryMethod: 'saved-meal' }), day);
 }
 export function readState(storage) {
   let raw;

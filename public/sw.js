@@ -1,7 +1,8 @@
-const CACHE = 'leve-v7';
+const CACHE = 'leve-v8';
 const PRECACHE = /* BUILD_ASSETS */ [];
+const SHELL = ['/', '/manifest.webmanifest', '/icon.svg', '/favicon.svg', '/icon-192.png', '/icon-512.png', '/icon-maskable-512.png', '/apple-touch-icon.png', '/favicon.ico', '/favicon-16.png', '/favicon-32.png', '/favicon-48.png'];
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/', '/manifest.webmanifest', '/icon.svg', '/favicon.svg', ...PRECACHE])).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll([...SHELL, ...PRECACHE])).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('leve-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim()));
@@ -19,7 +20,7 @@ self.addEventListener('fetch', event => {
     }).catch(() => caches.match('/').then(response => response || Response.error())));
     return;
   }
-  if (!PRECACHE.includes(url.pathname) && !['/manifest.webmanifest', '/icon.svg', '/favicon.svg'].includes(url.pathname)) return;
+  if (!PRECACHE.includes(url.pathname) && !SHELL.includes(url.pathname)) return;
   event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
     if (response.ok) {
       const copy = response.clone();

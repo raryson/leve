@@ -18,5 +18,5 @@ export default function InstallBanner() {
   if (!visible || !deferredPrompt) return null;
   const install = async () => { try { await deferredPrompt.prompt(); await deferredPrompt.userChoice; } finally { setVisible(false); setDeferredPrompt(null); } };
   const dismiss = () => { try { localStorage.setItem('leve-install-dismissed', '1'); } catch { /* Dismiss for this session. */ } setVisible(false); };
-  return <div className="install-banner"><div className="install-icon">✳</div><div className="install-copy"><strong>Leve sempre por perto</strong><span>Salve este app no seu dispositivo para abrir mais rápido e usar como uma PWA.</span></div><button className="install-action" onClick={install}>Instalar</button><button className="install-dismiss" onClick={dismiss} aria-label="Fechar">×</button></div>;
+  return <div className="install-banner"><div className="install-icon"><img src="/icon.svg" alt=""/></div><div className="install-copy"><strong>Leve sempre por perto</strong><span>Salve este app no seu dispositivo para abrir mais rápido e usar como uma PWA.</span></div><button className="install-action" onClick={install}>Instalar</button><button className="install-dismiss" onClick={dismiss} aria-label="Fechar">×</button></div>;
 }

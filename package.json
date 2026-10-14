@@ -8,7 +8,8 @@
     "build": "vite build && node scripts/build-sw.mjs",
     "preview": "vite preview",
     "test": "node --test",
-    "db:migrate": "node --env-file=.env.local scripts/migrate.mjs"
+    "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
+    "assets:brand": "node scripts/build-brand.mjs"
   },
   "dependencies": {
     "@clerk/backend": "^3.23.2",
@@ -16,11 +17,12 @@
     "@clerk/react": "^6.17.8",
     "@vercel/functions": "^3.10.1",
     "@vitejs/plugin-react": "latest",
-    "ai": "^7.0.140",
     "pg": "^8.23.1",
     "react": "latest",
     "react-dom": "latest",
-    "vite": "latest",
-    "zod": "^4.6.7"
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2"
   }
 }

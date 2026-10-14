@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#203e32"/>
+  <circle cx="1110" cy="40" r="300" fill="#294a3b"/>
+  <circle cx="1160" cy="640" r="240" fill="#294a3b"/>
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <text x="68" y="151" fill="#f7faee" font-size="104" font-weight="800" letter-spacing="-6">leve<tspan fill="#c2e6a5">.</tspan></text>
+    <text x="72" y="259" fill="#f7faee" font-size="52" font-weight="700" letter-spacing="-1.5">Tua rotina,</text>
+    <text x="72" y="322" fill="#f7faee" font-size="52" font-weight="700" letter-spacing="-1.5">um dia de cada vez.</text>
+    <text x="74" y="393" fill="#bdcfc0" font-size="24">Registre refeições, acompanhe seu peso</text>
+    <text x="74" y="429" fill="#bdcfc0" font-size="24">e cuide dos pequenos hábitos.</text>
+    <rect x="72" y="507" width="129" height="45" rx="22" fill="#c2e6a5"/>
+    <text x="136" y="537" text-anchor="middle" font-size="19" font-weight="600" fill="#203e32">Comida</text>
+    <rect x="213" y="507" width="108" height="45" rx="22" fill="#c2e6a5"/>
+    <text x="267" y="537" text-anchor="middle" font-size="19" font-weight="600" fill="#203e32">Água</text>
+    <rect x="333" y="507" width="164" height="45" rx="22" fill="#c2e6a5"/>
+    <text x="415" y="537" text-anchor="middle" font-size="19" font-weight="600" fill="#203e32">Movimento</text>
+    <text x="952" y="510" text-anchor="middle" font-size="21" fill="#bdcfc0">Teu diário de rotina.</text>
+  </g>
+  <rect x="800" y="132" width="304" height="304" rx="68" fill="#c2e6a5"/>
+  <g transform="translate(810 142) scale(.5546875)"><rect width="512" height="512" rx="100" fill="#203e32"/><circle cx="256" cy="283" r="119" fill="none" stroke="#f7faee" stroke-width="28"/>
+  <path d="M254 246c-16-79 28-126 112-126 1 83-41 133-112 126Z" fill="#c2e6a5"/>
+  <path d="m253 270 65-92" fill="none" stroke="#203e32" stroke-width="15" stroke-linecap="round"/>
+  <path d="M193 290c0 35 28 63 63 63" fill="none" stroke="#f7faee" stroke-width="14" stroke-linecap="round"/></g>
+</svg>

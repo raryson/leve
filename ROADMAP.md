@@ -18,7 +18,7 @@ Atualizado em 14/10/2026. Objetivo: um diário rápido e confiável para acompan
 
 Critério de aceite: registrar alimento + treino + água, salvar, recarregar e encontrar o mesmo dia no histórico. Confirmado em navegador com dados fictícios. O service worker foi verificado em testes de eventos/cache; teste real em modo avião depende de prévia HTTPS ou localhost acessível ao navegador.
 
-## 2. Login e sincronização — primeira versão conectada em prévia
+## 2. Login e sincronização — primeira versão conectada
 
 **Implementado e provisionado:** checkout vinculado a `rarysonrosts-projects/leve`; Neon Free `leve-db` em São Paulo e Clerk Hobby `leve-login` criados e conectados pelo Marketplace. Migração inicial aplicada. Prévia HTTPS publicada; usuário confirmou criação de conta, login e gravação do perfil. A contagem no banco confirmou um diário real, sem leitura do conteúdo pessoal durante a verificação.
 
@@ -26,8 +26,8 @@ Arquitetura atual: React/Vite + Clerk + Vercel Function autenticada + PostgreSQL
 
 Próximos passos:
 
-1. Configurar instância e domínio de produção do Clerk. A prévia usa credenciais de desenvolvimento; produção ainda não foi alterada.
-2. Isolar bancos por ambiente antes de promover: o provisionamento inicial conectou o recurso Neon a Production, Preview e Development. Configurar origens permitidas para qualquer domínio próprio.
+1. Decisão atual do usuário: manter `leve-fawn.vercel.app` e a instância existente de desenvolvimento do Clerk, sem comprar domínio ou alterar planos. Uma instância de produção do Clerk só será considerada se houver domínio próprio no futuro.
+2. Isolar bancos por ambiente antes de futuras migrações: o recurso Neon atual continua ligado a Production, Preview e Development. A publicação atual preserva os registros e não executa migrações. Configurar origens permitidas se houver domínio próprio.
 3. Criar entidades separadas: perfil, refeições/itens, pesagens, eventos de água e sessões de treino. Cada registro recebe UUID, `user_id`, versão, datas de criação/edição e exclusão lógica.
 4. Manter a autorização existente por sessão verificada ao passar do diário completo para entidades individuais. Adicionar exclusão de conta/dados com recuperação definida.
 5. Migrar a persistência local para IndexedDB, com fila de alterações offline, estado de sincronização e última sincronização bem-sucedida. A tela só anuncia sincronização após confirmação do servidor.
@@ -49,9 +49,9 @@ Critério de aceite completo: a mesma conta vê os mesmos registros em dois apar
 ## 3. Alimentação mais prática
 
 - Ampliar catálogo com origem, edição da fonte, alimento cru/cozido e unidades explícitas; conferir licenciamento antes de distribuir uma base maior.
-- Busca de alimentos, favoritos e alimentos pessoais; editar quantidades sem remover e adicionar novamente.
+- **Implementado:** buscador visual com categorias, busca sem acentos, favoritos e recentes. Ilustrações locais por categoria, sem fotos externas ou IA. Alimentos pessoais persistentes e edição de quantidades de itens já registrados continuam pendentes.
 - Rótulos por porção, receitas com rendimento final e porções pesadas; nunca tratar ml como g sem densidade conhecida.
-- Repetir refeição e copiar dia com confirmação para evitar duplicação acidental.
+- **Implementado:** Minhas refeições, modelos nomeados com porções em gramas, revisão de quantidades e destino antes de adicionar uma cópia ao rascunho. Modelos, favoritos e recentes entram no backup e no diário sincronizado da conta. Repetir diretamente um dia do histórico e copiar dia inteiro continuam pendentes.
 - Marcar dia como completo ou parcial. Relatórios de consumo usam apenas dias completos e mostram cobertura dos dados.
 - Ditado do navegador e interpretação local já implementados, com relato editável, revisão de cada alimento e confirmação de quantidades. Modo local depende do navegador/pacote de português; modo do serviço do navegador exige autorização e pode usar internet. A prévia HTTP por IP não habilita microfone. Ainda falta validar captura real em HTTPS. IA para receitas livres continua como possibilidade futura; soma e cálculo permanecem locais.
 
@@ -78,3 +78,11 @@ Critério de aceite completo: a mesma conta vê os mesmos registros em dois apar
 
 Navegador: criação de perfil fictício, água, 150 g de arroz branco = 192 kcal, treino de 45 minutos, detalhes do histórico, nova pesagem e persistência ao recarregar. Layout conferido em largura de celular. Clerk: usuário confirmou cadastro/login e perfil salvo na conta. Banco: verificação em transação desfeita e contagem do diário real. API implantada: resposta 401 sem sessão Clerk. Prévia publicada; nenhuma promoção para produção.
 
+
+Validação de Minhas refeições: 32 testes aprovados; migração v4→v5, backup, validação de porções, cópia sem mutar modelo, busca/filtros e API autenticada. Navegador com diário fictício: 200 g de arroz + 100 g de feijão = 333 kcal; reutilização com 150 g de arroz = 269 kcal; revisão pendente bloqueia salvar; combinação preservada ao recarregar.
+
+Identidade e compartilhamento: ícone prato + folha, PWA PNG 192/512, maskable 512, Apple 180, favicons e capa social 1200×630. Metatags OG/Twitter no HTML inicial com URLs por implantação. Validado formato/dimensões e build; validação real da tela inicial em Android/iOS e unfurl social público continuam pendentes de dispositivo e publicação pública.
+
+Publicação pública em 14/10/2026: manter a configuração Clerk/Neon existente por escolha do usuário; liberar visual, biblioteca de refeições, ícones e metatags no endereço principal da Vercel. Remover a rota e as dependências da análise de fotos cancelada. Não alterar planos, domínios ou conteúdo dos diários.
+
+Verificação da publicação pública: implantação `dpl_C3zonqxrJLadcPqJRMxvBrSAijPw`, endereço `https://leve-fawn.vercel.app`. HTML/manifesto/capa/ícones/SW responderam 200 sem bypass, inclusive com user-agent de robô social. `/api/journal` respondeu 401 sem sessão e `/api/photo` respondeu 404. Formulário Clerk abriu no navegador; não foi criada conta nem lido conteúdo de diário na verificação pública. Cache antigo observado no primeiro acesso; recarregar trouxe a versão nova.
