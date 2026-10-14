@@ -20,9 +20,9 @@ export function speechText(results) {
   return { final: final.trim(), interim: interim.trim() };
 }
 
-export function createDictation(Recognition, { local, onText, onStart, onEnd, onError }) {
+export function createDictation(Recognition, { local, lang='pt-BR', onText, onStart, onEnd, onError }) {
   const recognition = new Recognition();
-  recognition.lang = 'pt-BR';
+  recognition.lang = lang;
   recognition.continuous = true;
   recognition.interimResults = true;
   recognition.maxAlternatives = 1;

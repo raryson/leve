@@ -2,6 +2,96 @@
 
 Atualizado em 14/10/2026. Objetivo: um diário rápido e confiável para acompanhar alimentação, peso, água e movimento, funcionando offline e depois sincronizando entre dispositivos.
 
+## Ordem das próximas entregas
+
+Sequência confirmada pelo usuário após a publicação do catálogo:
+
+1. **Implementado:** corrigir a sobreposição entre data e botão Registrar dia no histórico mobile. Conferido em 320, 360, 390 e 430 px.
+2. **Implementado:** orientação dispensável da PWA na tela Hoje e ajuda permanente no Perfil, com instruções por plataforma. Instalação real em Android/iOS ainda precisa de dispositivo.
+3. **Revisão inicial concluída:** histórico/detalhes, formulários e navegação responsiva. Corrigida perda de preenchimentos de alimento/treino ao salvar o dia sem adicionar; agora exige adicionar ou descartar. Cadastro comunitário pede confirmação ao trocar de aba com alterações não salvas. Regressões de persistência/sincronização cobertas pelos testes existentes; validação completa offline em dois dispositivos continua pendente.
+4. **Integração preparada, coleta desligada:** Google tag GA4 `G-VF5TNY4EWR`, consentimento explícito com recusa/revogação no Perfil, apenas origem pública e build Production. Ativar `LEVE_GA4_REVIEWED=true` em Production somente após confirmação de Medição otimizada desligada no fluxo GA4. Eventos permitidos: abertura, navegação por identificador fixo de tela e instalação; sem dados do diário. Falta confirmar configuração externa e verificar recebimento real no GA4. Não é contêiner GTM.
+
+O status de cada item acima distingue implementação, validação e configuração externa pendente.
+
+## Catálogo comunitário de alimentos
+
+**Status:** implementada em 14/10/2026; publicada no endereço principal e conferida com a conta moderadora. Cadastros particulares, compartilhamento com revisão humana obrigatória, moderação, denúncias e integração ao buscador. Nome Leve mantido; sem IA ou serviço pago adicional.
+
+### Fluxo e dados
+
+- Usuário autenticado cadastra um alimento para uso próprio e escolhe explicitamente **Compartilhar com a comunidade**. Cadastros privados não são publicados automaticamente.
+- Campos: nome, marca opcional, categoria, estado/preparo (cru, cozido, assado etc.), kcal por 100 g da parte comestível e fonte verificável (rótulo ou tabela nutricional). Porção opcional tem peso em gramas; o app converte calorias por porção para a referência por 100 g.
+- Ao compartilhar, o alimento é enviado ao banco e recebe status `pending`, `published` ou `rejected`, com motivo. Alimentos publicados aparecem no buscador de todos, identificados como **Comunidade** e com fonte; a base oficial permanece identificada separadamente.
+- Estrutura própria no banco: UUID, autor interno obtido da sessão, campos nutricionais, fonte, versão, datas, status e motivo de moderação. Não expor e-mail, perfil ou diário do autor.
+
+### Validação mínima obrigatória no servidor
+
+- Repetir a validação na API, independentemente do formulário. Limites e restrições também no banco; soma e conversão continuam locais, sem confiar em totais enviados pelo cliente.
+- Aceitar apenas números finitos: recusar `NaN`, infinito, overflow, negativos, campos vazios e unidades ambíguas. Faixa técnica inicial: **0 a 1.000 kcal/100 g**; zero precisa de referência que o justifique. Essa faixa é um limite de entrada, não uma confirmação de plausibilidade nutricional.
+- Porções: peso finito maior que zero e até 10.000 g, com unidade explícita. Recalcular kcal/100 g a partir de kcal e gramas do rótulo quando informadas; inconsistências bloqueiam a publicação. Não converter ml em g sem uma densidade fundamentada.
+- Nome de 2 a 120 caracteres após normalização Unicode, remoção de controles e espaços repetidos; rejeitar nomes vazios, só símbolos, links, spam e caracteres invisíveis usados para burlar filtros. Preservar acentos e nomes legítimos em português.
+- Verificar termos ofensivos, discriminatórios e tentativas simples de disfarce com normalização de caixa, acentos e separadores. Usar palavras/expressões contextualizadas, evitando bloquear um nome legítimo por conter parte de outra palavra. Informar motivo de rejeição e permitir correção ou revisão de falso positivo.
+- Conferir coerência entre nome, preparo, categoria, fonte e calorias. Comparar com referências existentes e rótulos verificáveis; nomes equivalentes e valores muito divergentes, fontes ausentes ou inconclusivas e pratos mistos vão para revisão, sem publicação automática. Exemplos de suspeita: água com centenas de kcal/100 g ou óleo com quase zero kcal/100 g.
+- **Limitação explícita:** estar dentro da faixa e ter um nome aceitável não prova que as calorias correspondem ao alimento. Publicação automática só quando a referência e a conversão puderem ser verificadas; nos demais casos, exigir revisão humana. Definir faixas por categoria com fontes antes de usá-las como regra; não inventar valores nutricionais.
+- Detectar duplicatas por nome normalizado, marca e preparo; sugerir o alimento existente. Aplicar limite de envios por conta e impedir alterações de registros de outros autores. Não buscar URLs arbitrárias no servidor sem proteção contra acesso a redes internas.
+
+### Publicação, correções e segurança dos registros
+
+- Compartilhar publica apenas o cadastro do alimento, nunca refeições, fotos ou informações pessoais do diário. O usuário pode cancelar uma submissão pendente.
+- Denúncia de nome ofensivo, alimento incorreto ou valor nutricional suspeito; responsável pela moderação pode ocultar/rejeitar e registrar o motivo. A fila precisa de um fluxo de revisão utilizável antes do lançamento.
+- Alterações de alimentos publicados exigem nova validação/revisão. Refeições já registradas guardam uma cópia da referência e das calorias utilizadas; editar ou ocultar o catálogo não reescreve o histórico.
+- Guardar a última lista pública validada para consulta offline, com atualização ao reconectar; submissão só anuncia sucesso após confirmação do servidor. Favoritos e modelos devem preservar a referência quando um alimento for ocultado.
+- Isolar o banco de testes do principal antes da migração desta feature; planejar migração versionada, autorização e testes com dados sintéticos.
+
+### Critérios de aceite
+
+1. Uma conta cadastra e compartilha; após aprovação, outra conta encontra e usa o alimento. Cadastro privado e submissão pendente não aparecem publicamente.
+2. API recusa valores não finitos, negativos, porções inválidas, nomes ofensivos e tentativas de contornar os limites pelo envio direto de requisições.
+3. Valor numericamente válido, mas incompatível com o alimento/fonte, não é publicado automaticamente; duplicata é sinalizada e falso positivo pode ser revisado.
+4. Alteração ou ocultação do alimento preserva os dias e modelos existentes. Outra conta não consegue editar o cadastro ou acessar dados privados do autor.
+5. Fonte, indicação de contribuição comunitária, estados de envio/revisão e erros ficam claros. Validar o fluxo completo em duas contas, sem leitura de diários reais nos testes.
+
+## Pendências adicionais — histórico mobile, aviso PWA e analytics
+
+**Status:** histórico mobile e orientação PWA implementados em 14/10/2026. Analytics implementado com coleta desligada por escolha do usuário; ver status detalhado acima. Os critérios abaixo continuam como referência, incluindo testes reais de dispositivo ainda pendentes.
+
+### Corrigir sobreposição no histórico mobile
+
+- Bug relatado pelo usuário: no histórico, o botão **Registrar dia** fica sob/sobreposto ao campo de data em telas pequenas.
+- Revisar o layout de `.new-date`, largura mínima do campo nativo de data e quebra de linha. Em larguras pequenas, permitir empilhar campo e botão com espaçamento explícito, sem posições que sobreponham controles.
+- Aceite: campo e botão inteiramente visíveis, sem sobreposição nem rolagem horizontal, em larguras de 320, 360, 390 e 430 px; testar seletor nativo de data em Android/iOS, zoom e textos maiores.
+
+### Explicar e facilitar a instalação da PWA
+
+- Exibir um aviso discreto e dispensável explicando que o Leve é uma PWA e pode ser instalado/adicionado à tela inicial para abrir como app, sem loja de aplicativos. Manter uma opção **Como instalar** acessível no perfil/ajuda depois de dispensar o aviso.
+- Aproveitar o `InstallBanner` existente quando `beforeinstallprompt` estiver disponível, além de fornecer instruções manuais por plataforma, incluindo Safari no iPhone. Não depender desse evento para mostrar a orientação.
+- Explicar os limites com clareza: registros e cálculos locais podem funcionar offline após o primeiro carregamento; login, sincronização e atualização de dados compartilhados precisam de internet. Instalar não substitui backup e não garante que o navegador nunca limpará o armazenamento.
+- Não mostrar convite de instalação quando já estiver em modo standalone. Respeitar dispensa e evitar avisos repetitivos ou que desloquem a navegação.
+- Aceite: instruções úteis em Android/iOS/desktop, dispensa persistente, ausência do aviso no app instalado e teste de abertura offline após o primeiro acesso.
+
+### Analytics — Google Analytics 4
+
+- ID fornecido pelo usuário: **`G-VF5TNY4EWR`**.
+- O snippet é a **Google tag (`gtag.js`) para GA4**, carregada de `googletagmanager.com`; não é um contêiner do Google Tag Manager (`GTM-...`). Não instalar os dois por engano nem duplicar a coleta.
+- Integrar a tag ao site público em etapa futura, com execução restrita ao ambiente de produção. Não contar prévias, desenvolvimento ou testes internos.
+- Definir aviso de privacidade e comportamento de consentimento antes de ativar a coleta; respeitar a escolha de recusar e permitir alterá-la. Documentar o que será medido.
+- Medir somente uso agregado necessário, por exemplo instalação, navegação entre abas, registro concluído e reutilização de refeição salva. Não transmitir nomes de alimentos/refeições, relatos, fotos, anotações, nome/e-mail, ID Clerk, peso, idade, metas, calorias ou outros dados pessoais/de saúde. Não usar esses dados em URLs, títulos ou parâmetros de eventos. Revisar também medições automáticas/enhanced measurement para evitar captura involuntária.
+- Falha de rede, bloqueador ou recusa de analytics nunca deve bloquear o app, salvar dados ou sincronizar. Analytics não precisa de cache offline nem de acesso ao banco do diário.
+- Aceite: ausência de coleta em prévia/desenvolvimento e antes da escolha exigida pelo fluxo de consentimento; eventos únicos na produção, sem dados privados, verificados com ferramentas de depuração do GA4 e inspeção de requisições.
+
+Snippet recebido, guardado apenas como referência (não ativado):
+
+```html
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VF5TNY4EWR"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-VF5TNY4EWR');
+</script>
+```
+
 ## 1. Base local utilizável — implementada nesta entrega
 
 - Motor de calorias no dispositivo: gramas × kcal/100 g ÷ 100, com arredondamento por item e soma dos itens.
@@ -27,7 +117,7 @@ Arquitetura atual: React/Vite + Clerk + Vercel Function autenticada + PostgreSQL
 Próximos passos:
 
 1. Decisão atual do usuário: manter `leve-fawn.vercel.app` e a instância existente de desenvolvimento do Clerk, sem comprar domínio ou alterar planos. Uma instância de produção do Clerk só será considerada se houver domínio próprio no futuro.
-2. Isolar bancos por ambiente antes de futuras migrações: o recurso Neon atual continua ligado a Production, Preview e Development. A publicação atual preserva os registros e não executa migrações. Configurar origens permitidas se houver domínio próprio.
+2. **Implementado:** bancos lógicos `leve_preview` e `leve_development` separados do principal no recurso Neon Free existente. Novas implantações escolhem a conexão por ambiente; migrações locais exigem URL isolada, e o principal exige `--production`. Sem cópia de diários. Endpoint e credenciais ainda são compartilhados; branches/papéis independentes ficam para uma etapa futura. Configurar origens permitidas se houver domínio próprio.
 3. Criar entidades separadas: perfil, refeições/itens, pesagens, eventos de água e sessões de treino. Cada registro recebe UUID, `user_id`, versão, datas de criação/edição e exclusão lógica.
 4. Manter a autorização existente por sessão verificada ao passar do diário completo para entidades individuais. Adicionar exclusão de conta/dados com recuperação definida.
 5. Migrar a persistência local para IndexedDB, com fila de alterações offline, estado de sincronização e última sincronização bem-sucedida. A tela só anuncia sincronização após confirmação do servidor.
@@ -49,7 +139,7 @@ Critério de aceite completo: a mesma conta vê os mesmos registros em dois apar
 ## 3. Alimentação mais prática
 
 - Ampliar catálogo com origem, edição da fonte, alimento cru/cozido e unidades explícitas; conferir licenciamento antes de distribuir uma base maior.
-- **Implementado:** buscador visual com categorias, busca sem acentos, favoritos e recentes. Ilustrações locais por categoria, sem fotos externas ou IA. Alimentos pessoais persistentes e edição de quantidades de itens já registrados continuam pendentes.
+- **Implementado:** buscador visual com categorias, busca sem acentos, favoritos e recentes. Ilustrações locais por categoria, sem fotos externas ou IA. Alimentos pessoais persistentes implementados no catálogo comunitário. Edição de quantidades de itens já registrados continua pendente.
 - Rótulos por porção, receitas com rendimento final e porções pesadas; nunca tratar ml como g sem densidade conhecida.
 - **Implementado:** Minhas refeições, modelos nomeados com porções em gramas, revisão de quantidades e destino antes de adicionar uma cópia ao rascunho. Modelos, favoritos e recentes entram no backup e no diário sincronizado da conta. Repetir diretamente um dia do histórico e copiar dia inteiro continuam pendentes.
 - Marcar dia como completo ou parcial. Relatórios de consumo usam apenas dias completos e mostram cobertura dos dados.
@@ -86,3 +176,26 @@ Identidade e compartilhamento: ícone prato + folha, PWA PNG 192/512, maskable 5
 Publicação pública em 14/10/2026: manter a configuração Clerk/Neon existente por escolha do usuário; liberar visual, biblioteca de refeições, ícones e metatags no endereço principal da Vercel. Remover a rota e as dependências da análise de fotos cancelada. Não alterar planos, domínios ou conteúdo dos diários.
 
 Verificação da publicação pública: implantação `dpl_C3zonqxrJLadcPqJRMxvBrSAijPw`, endereço `https://leve-fawn.vercel.app`. HTML/manifesto/capa/ícones/SW responderam 200 sem bypass, inclusive com user-agent de robô social. `/api/journal` respondeu 401 sem sessão e `/api/photo` respondeu 404. Formulário Clerk abriu no navegador; não foi criada conta nem lido conteúdo de diário na verificação pública. Cache antigo observado no primeiro acesso; recarregar trouxe a versão nova.
+
+
+Catálogo comunitário em 14/10/2026: 38 testes aprovados e build concluído. Verificação SQL no banco isolado com identidades sintéticas cobriu cadastro particular, envio, isolamento entre contas, aprovação concorrente, edição, cancelamento, denúncia, ocultação e limites; dados sintéticos removidos. Migrações 002/003 aditivas aplicadas ao principal sem modificar diários. API pública: consulta 200 com lista vazia, cadastro sem sessão 401, diário sem sessão 401. Navegador autenticado: aba Alimentos e fila de moderação presentes, conversão de 90 kcal/150 g para 60 kcal/100 g conferida sem salvar; formulário cancelado. Layout conferido em 320 e 390 px, sem rolagem horizontal no catálogo. Ainda não houve publicação de um alimento real nem teste manual de duas contas Clerk usando o mesmo alimento; o fluxo entre identidades foi coberto no SQL isolado.
+
+Implantação final do catálogo: `dpl_7rZRtwFB6Sarret4VrBJo42coZee`, publicada em `https://leve-fawn.vercel.app`. Versão final confirmada no HTML público; catálogo 200 sem dados privados, fila e denúncias vazias conferidas na sessão moderadora. Nenhum alimento de teste salvo na conta real.
+
+
+Validação dos ajustes de rotina em 14/10/2026: 41 testes aprovados; build concluído. No navegador com diário fictício: data/botão sem sobreposição nas quatro larguras, preenchimentos pendentes de alimento e treino bloquearam Salvar dia, descarte permitiu fechar sem alterações, ajuda manual de instalação no Perfil disponível mesmo sem beforeinstallprompt. Nenhum script Google carregado no ambiente local. Nenhum registro real alterado. Testes do analytics cobrem bloqueio sem consentimento, ambiente desativado/offline, lista de eventos permitidos, URLs fixas, revogação, cookies e ausência de tag duplicada.
+
+Decisão do usuário em 14/10/2026: manter a coleta GA4 desligada por enquanto. Não configurar `LEVE_GA4_REVIEWED=true` nem carregar a tag até nova autorização para ativação, após conferir a medição otimizada.
+
+Publicação dos ajustes: `dpl_2pZ4EAH35NGLGZTTN5pKCY8pKJ6B`, endereço principal `https://leve-fawn.vercel.app`. Navegação agora reposiciona a nova aba no topo. Aviso acessível de cadastro não salvo conferido na sessão real: Continuar editando preservou o texto e Cancelar cadastro limpou o rascunho; nenhum alimento foi salvo. Ajuda PWA e controles de privacidade presentes em produção; nenhum script Google carregado. Coleta mantida desligada conforme resposta explícita do usuário. HTML, manifesto, SW e catálogo responderam 200, diário sem autenticação respondeu 401. O build em produção avisou sobre bundle acima de 500 kB (cerca de 145 kB gzip); otimização de carregamento fica como manutenção futura.
+
+## Internacionalização — português e inglês
+
+Implementado em 14/10/2026: detecção do navegador com fallback em inglês, seletor sempre acessível no cabeçalho/cadastro inicial, preferência local persistente e atualização entre abas. Tradução de navegação, perfil, histórico, peso/água, registro, biblioteca de refeições, catálogo/comunidade/moderação, instalação, privacidade, erros e confirmações. Login Clerk localizado; manifesto inglês com identidade PWA preservada e suporte offline. Datas e números seguem o idioma; unidades métricas e dados permanecem iguais.
+
+Busca de alimentos em português/inglês e relato local em inglês, incluindo números por extenso, gramas/kg e tablespoons. Sem tradução automática de contribuições e textos pessoais. Sem alteração de plano, contas, diários, schema ou valores nutricionais; analytics continua desligado.
+
+Validação: 48 testes aprovados e build concluído; detecção, preferência, fallback, erros, dados intactos e interpretação em inglês cobertos. Navegador com diário fictício: idioma mudou sem alterar os registros, busca peanut butter funcionou, porção de colher foi traduzida, relato 150 g de white rice + 100 g de black beans resultou em 269 kcal e rascunho de perfil permaneceu ao trocar o idioma. Conferência final em produção concluída: catálogo, moderação, manifesto inglês, cache offline e ausência de tag Google confirmados. Screenshots desktop/mobile registrados. Captura de áudio e instalação real em Android/iOS permanecem pendentes de dispositivo.
+
+
+Internacionalização publicada: `dpl_9BcyqCTh9GrqrR5VdJxp3M5ZxiKV`, endereço `https://leve-fawn.vercel.app`. Manifesto inglês 200 (`lang: en`, mesmo `id: /`), catálogo 200, diário sem sessão 401, SW inclui ambos os manifestos. Navegador autenticado: catálogo e moderação em inglês, seletor funcional; português restaurado na aba do usuário após a conferência. Login em inglês conferido no navegador local sem criar conta. Build em produção: cerca de 189 kB gzip no bundle principal; otimização do carregamento de traduções/localizações permanece possível em manutenção futura.

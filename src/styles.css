@@ -602,9 +602,19 @@ header h2 {
   font-weight:700;
 }
 .new-date {
-  display:flex;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  min-width:0;
+  max-width:100%;
   gap:10px;
   align-items:flex-end;
+}
+.new-date label { min-width:0; }
+.new-date input[type="date"] { display:block; width:100%; min-width:0; max-width:100%; box-sizing:border-box; }
+.new-date button { white-space:normal; }
+@media(max-width:600px) {
+  .intro .new-date { grid-template-columns:minmax(0,1fr); gap:12px; }
+  .intro .new-date button { width:100%; min-height:44px; font-size:14px; }
 }
 .history-tools {
   display:flex;
@@ -1558,3 +1568,55 @@ header h2 { overflow-wrap:anywhere; }
 .onboard-brand { display:flex; align-items:center; gap:10px; }
 .onboard-brand img { width:42px; height:42px; border-radius:10px; }
 .install-icon img { display:block; width:42px; height:42px; }
+.community-panel { margin:22px 0; }
+.community-panel>.head { align-items:flex-start; }
+.community-panel h3 { font-size:22px; }
+.community-panel>h4 { margin:22px 0 12px; }
+.community-wide { grid-column:1/-1; }
+.community-form .voice-consent { flex-direction:row; margin:0; }
+.community-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr)); gap:14px; margin:16px 0; }
+.community-card { padding:18px; background:white; border:1px solid var(--line); border-radius:14px; min-width:0; }
+.community-card>p { font-size:12px; margin:10px 0; overflow-wrap:anywhere; }
+.community-card>label,.community-card>form { margin:16px 0; }
+.community-card>.account-actions { margin-top:14px; }
+.community-card>.account-actions button { font-size:12px; }
+.community-food-title { display:flex; gap:12px; align-items:center; }
+.community-food-title>div { min-width:0; }
+.community-food-title b { display:block; font-size:14px; overflow-wrap:anywhere; }
+.community-food-title small { display:block; font-size:11px; color:var(--muted); margin-top:5px; }
+.community-status { display:inline-block; padding:5px 9px; border-radius:8px; background:#eaf1e2; color:#48693c; font-size:11px; margin:12px 0 0; }
+.source-link { font-size:12px; display:inline-block; padding:8px 0; }
+.community-hint { padding:16px; margin:16px 0; border:1px solid #d8e7cf; border-radius:12px; background:#f1f6eb; font-size:13px; line-height:1.6; }
+.community-public,.community-moderation,.catalog-editor { border:1px solid var(--line); border-radius:14px; padding:18px; margin:20px 0; background:#f8faf6; }
+.community-public>summary,.community-moderation>summary,.catalog-editor>summary { cursor:pointer; font-size:15px; font-weight:700; }
+.community-public>label { margin-top:18px; }
+.community-report { display:grid; gap:12px; }
+.community-flags { font-size:12px; color:#8a5a20; line-height:1.6; padding-left:20px; }
+.catalog-editor .community-panel { margin:12px 0 0; }
+.catalog-editor .community-panel h3 { font-size:18px; }
+@media(max-width:760px) {
+  aside nav { grid-template-columns:repeat(5,minmax(0,1fr)); gap:2px; }
+  .community-form .voice-consent { grid-column:1/-1; }
+  .community-public,.community-moderation,.catalog-editor { padding:14px; }
+  .community-panel>.head { flex-wrap:wrap; }
+  .community-panel h3 { font-size:20px; }
+  .community-card { padding:16px; }
+}
+
+.install-guide,.privacy-controls { padding:20px; margin:0 0 24px; background:#fff; border:1px solid var(--line); border-radius:16px; min-width:0; }
+.install-guide-head { display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap; }
+.install-guide-head>div { flex:1; min-width:min(220px,100%); }
+.install-guide-head img { width:38px; height:38px; }
+.install-guide h3,.privacy-controls h3 { margin:0 0 8px; font-size:18px; }
+.install-guide p,.privacy-controls p,.install-guide li { font-size:13px; line-height:1.7; color:var(--muted); }
+.install-guide details,.privacy-controls details { margin:16px 0; }
+.install-guide summary,.privacy-controls summary { cursor:pointer; font-size:14px; font-weight:700; }
+.install-guide li { margin:10px 0; }
+.install-guide small { color:var(--muted); font-size:12px; }
+@media(max-width:600px) { .install-guide,.privacy-controls { padding:16px; } .install-guide-head img { display:none; } .privacy-controls .account-actions { display:grid; grid-template-columns:1fr; } }
+
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.language-switcher { display:flex; align-items:center; flex-direction:row; gap:6px; margin:0; font-size:13px; min-width:0; }
+.language-switcher select { width:112px; min-height:36px; padding:6px 8px; background:white; border:1px solid var(--line); border-radius:9px; font-size:12px; }
+.onboard-account { flex-wrap:wrap; gap:12px; }
+@media(max-width:600px) { .language-switcher select { width:104px; min-height:34px; } }

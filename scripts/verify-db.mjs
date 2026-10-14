@@ -5,7 +5,7 @@ import { createRepository } from '../server/db.js';
 import { verifiedConnection } from '../server/connection.js';
 import { emptyState } from '../src/domain.js';
 
-const client = new pg.Client({ connectionString: verifiedConnection(process.env.DATABASE_URL_UNPOOLED), connectionTimeoutMillis: 15000 });
+const client = new pg.Client({ connectionString: verifiedConnection(process.env.LEVE_DATABASE_URL_UNPOOLED || process.env.DATABASE_URL_UNPOOLED), connectionTimeoutMillis: 15000 });
 try {
   await client.connect(); await client.query('BEGIN');
   const repo = createRepository(client), a = `verification-${randomUUID()}`, b = `verification-${randomUUID()}`;

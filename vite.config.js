@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
   const deployment = process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL;
   const siteUrl = new URL(process.env.SITE_URL || env.SITE_URL || (deployment ? `https://${deployment}` : 'https://leve-fawn.vercel.app')).origin;
   return {
-    define: { 'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(publishableKey) },
+    define: { 'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(publishableKey), 'import.meta.env.VITE_ANALYTICS_ENABLED': JSON.stringify(process.env.VERCEL_ENV==='production'&&process.env.LEVE_GA4_REVIEWED==='true') },
     plugins: [{ name:'leve-share-metadata', transformIndexHtml: html => html.replaceAll('__SITE_URL__',siteUrl) }],
   };
 });

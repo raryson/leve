@@ -5,8 +5,9 @@ import { verifiedConnection } from './connection.js';
 let pool;
 export function getPool() {
   if (!pool) {
-    if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL ausente.');
-    pool = new pg.Pool({ connectionString: verifiedConnection(process.env.DATABASE_URL), max: 3, connectionTimeoutMillis: 15000, idleTimeoutMillis: 5000 });
+    const connection = process.env.VERCEL_ENV==='production' ? process.env.DATABASE_URL : process.env.LEVE_DATABASE_URL;
+    if (!connection) throw new Error('Banco isolado não configurado para este ambiente.');
+    pool = new pg.Pool({ connectionString: verifiedConnection(connection), max: 3, connectionTimeoutMillis: 15000, idleTimeoutMillis: 5000 });
     pool.on('error', error => console.error('database_pool_error', { code: error.code || 'connection' }));
     if (process.env.VERCEL) attachDatabasePool(pool);
   }
