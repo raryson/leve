@@ -1,0 +1,33 @@
+// kcal per 100 g of edible portion, prepared as described. Overrides identify
+// manufacturer references and approximations; household portions are editable.
+export const FOOD_SOURCE = 'https://nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf';
+export const foods = [
+  { id: 'taco-1', name: 'Arroz integral, cozido', kcal: 124 },
+  { id: 'taco-3', name: 'Arroz branco tipo 1, cozido', kcal: 128 },
+  { id: 'taco-7', name: 'Aveia em flocos, crua', kcal: 394 },
+  { id: 'taco-164', name: 'Abacaxi, cru', kcal: 48 },
+  { id: 'taco-179', name: 'Banana nanica, crua', kcal: 92 },
+  { id: 'taco-182', name: 'Banana prata, crua', kcal: 98 },
+  { id: 'taco-561', name: 'Feijão carioca, cozido', kcal: 76 },
+  { id: 'taco-567', name: 'Feijão preto, cozido', kcal: 77 },
+  { id: 'taco-577', name: 'Lentilha, cozida', kcal: 93 },
+  { id: 'taco-328', name: 'Carne de panela de gado — acém sem gordura', kcal: 215, note: 'Referência: acém cozido, sem gordura aparente. Pese a carne pronta; registre molho, batata e óleo acrescentado separadamente.' },
+  { id: 'taco-371', name: 'Carne de panela de gado — músculo sem gordura', kcal: 194, note: 'Referência: músculo cozido, sem gordura aparente. Pese a carne pronta; molho e acompanhamentos não estão incluídos.' },
+  { id: 'taco-396', name: 'Coxa de frango assada, com pele', kcal: 215, note: 'Pese apenas a parte consumida, já assada e sem osso. A referência inclui a pele, sem óleo adicionado.' },
+  { id: 'taco-411', name: 'Sobrecoxa de frango assada, com pele', kcal: 260, note: 'Pese a parte consumida, já assada e sem osso. A referência inclui a pele, sem óleo adicionado.' },
+  { id: 'taco-413', name: 'Sobrecoxa de frango assada, sem pele', kcal: 233, note: 'Pese a carne pronta, sem osso e sem pele. Referência sem óleo adicionado.' },
+  { id: 'approx-taco-423', referenceId: 'taco-423', name: 'Salsichão assado (aprox. linguiça suína grelhada)', kcal: 296, note: 'Aproximação pela linguiça suína grelhada da TACO. Salsichão varia por marca e composição; prefira o rótulo do seu produto quando disponível.' },
+  { id: 'taco-432', name: 'Carne de porco — lombo assado', kcal: 210, note: 'Pese a carne pronta, sem osso. Referência sem óleo adicionado.' },
+  { id: 'taco-435', name: 'Carne de porco — pernil assado', kcal: 262, note: 'Pese a parte consumida, pronta e sem osso. Referência sem óleo adicionado.' },
+  { id: 'taco-430', name: 'Carne de porco — costela assada', kcal: 402, note: 'Pese somente a parte consumida, já assada e sem osso. Referência sem óleo adicionado.' },
+  { id: 'taco-428', name: 'Bisteca suína na frigideira (ref. frita em óleo)', kcal: 311, note: 'Referência TACO de bisteca frita em óleo e escorrida; esse preparo já está incluído no valor. Pese sem osso. Para preparo sem óleo, use a referência grelhada.' },
+  { id: 'taco-429', name: 'Bisteca suína grelhada, sem óleo adicionado', kcal: 280, note: 'Pese a parte consumida, pronta e sem osso. Referência grelhada, sem óleo adicionado; frigideira pode produzir resultado diferente.' },
+  { id: 'approx-taco-377', referenceId: 'taco-377', name: 'Bife de gado na frigideira — patinho (ref. grelhado)', kcal: 219, note: 'Aproximação pelo patinho sem gordura aparente, grelhado sem óleo. Pese o bife pronto e registre óleo ou manteiga acrescentados à parte.' },
+  { id: 'approx-taco-346', referenceId: 'taco-346', name: 'Bife de gado na frigideira — contrafilé sem gordura (ref. grelhado)', kcal: 194, note: 'Aproximação pelo contrafilé grelhado sem gordura aparente e sem óleo. Pese o bife pronto; registre óleo ou manteiga acrescentados à parte.' },
+  { id: 'approx-taco-344', referenceId: 'taco-344', name: 'Bife de gado na frigideira — contrafilé com gordura (ref. grelhado)', kcal: 278, note: 'Aproximação pelo contrafilé grelhado com gordura, sem óleo adicionado. Pese o bife pronto; registre óleo ou manteiga acrescentados à parte.' },
+  { id: 'taco-52', name: 'Pão integral de forma', kcal: 253, note: 'Referência média TACO. Confira o peso e as calorias no rótulo da sua marca; o tamanho das fatias varia.' },
+  { id: 'kibon-creme', name: 'Sorvete de creme (ref. Kibon Cremosíssimo)', kcal: 103 / 60 * 100, sourceLabel: 'Kibon — rótulo do fabricante', sourceUrl: 'https://www.kibon.com.br/p/cremos%C3%ADssimo-creme.html/07891150050235', portion: { grams: 60, label: 'Porção do rótulo · 60 g' }, note: 'Referência de 103 kcal por 60 g. Outros sabores e marcas variam; caldas e coberturas devem ser registradas separadamente. Pese em gramas, não em ml.' },
+  { id: 'nutella', name: 'Creme de avelã com cacau (ref. Nutella)', kcal: 542, sourceLabel: 'Nutella — rótulo do fabricante', sourceUrl: 'https://www.nutella.com/br/pt/produtos/nutella', portion: { grams: 20, label: '1 colher de sopa · aprox. 20 g' }, note: 'Referência Nutella. A colher é uma estimativa editável; outras marcas e receitas podem ter valores diferentes.' },
+  { id: 'ninho-recheio', name: 'Creme de leite Ninho (ref. recheio Nestlé)', kcal: 330, sourceLabel: 'Nestlé Professional — rótulo do fabricante', sourceUrl: 'https://www.nestleprofessional.com.br/ninho/recheio-e-cobertura-sabor-leite-em-po-ninho', portion: { grams: 20, label: '1 colher de sopa · aprox. 20 g' }, note: 'Referência: recheio e cobertura NINHO pronto da Nestlé, não leite em pó. Creme caseiro ou de sorveteria pode ser diferente; use o rótulo ou a receita quando disponíveis.' },
+  { id: 'sbd-power-one-integral', name: 'Pasta de amendoim integral (ref. Power One)', kcal: 91 / 15 * 100, sourceLabel: 'SBD — Manual de Contagem de Carboidratos 2023, p. 138', sourceUrl: 'https://diabetes.org.br/wp-content/uploads/2023/10/manual-contagem-carboidratos2023.pdf', portion: { grams: 15, label: '1 colher de sopa · aprox. 15 g' }, note: 'Guia: 1 colher de sopa ≈ 15 g nesta referência (91 kcal). Colher comum, cheia ou rasa pode pesar diferente. Ajuste os gramas e confira a marca, especialmente nas versões com sabores.' },
+];
