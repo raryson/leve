@@ -6,7 +6,7 @@ import { parseMealText, reviewedItems, resolveGrams } from './mealText.js';
 import { createDictation } from './speech.js';
 import { portionCalories } from './domain.js';
 
-export default function VoiceMeal({ onAdd, onDirty }) {
+export default function VoiceMeal({ onAdd, onDirty, fixedMeal }) {
   const [transcript, setTranscript] = useState('');
   const [interim, setInterim] = useState('');
   const [mode, setMode] = useState('browser');
@@ -116,7 +116,7 @@ export default function VoiceMeal({ onAdd, onDirty }) {
     <label className="standalone-label">{t("Relato da refeição")}<textarea maxLength={5000} rows="4" disabled={active} value={transcript} onChange={e => { setTranscript(e.target.value); setRows(null); setMessage(''); }} placeholder={t("150 g de arroz branco e uma colher de pasta de amendoim")}/></label>
     <button type="button" className="outline" disabled={active || !transcript.trim()} onClick={analyze}>{t("Interpretar e revisar alimentos")}</button>
     {error && <p className="error-box" role="alert">{t(error)}</p>}{message && <p className="voice-help" role="status">{t(message)}</p>}
-    {rows && <div className="voice-review"><label className="standalone-label">{t("Refeição identificada")}<select value={meal} onChange={e => setMeal(e.target.value)}>{['Café da manhã', 'Almoço', 'Lanche', 'Jantar', 'Ceia'].map(name => <option key={name} value={name}>{t(name)}</option>)}</select></label>
+    {rows && <div className="voice-review">{!fixedMeal&&<label className="standalone-label">{t("Refeição identificada")}<select value={meal} onChange={e => setMeal(e.target.value)}>{['Café da manhã', 'Almoço', 'Lanche', 'Jantar', 'Ceia'].map(name => <option key={name} value={name}>{t(name)}</option>)}</select></label>}
       {rows.map((row, index) => {
         const food = foods.find(f => f.id === row.foodId);
         let calories = '—'; try { calories = portionCalories(row.grams, food?.kcal); } catch { /* Review needed. */ }
@@ -133,7 +133,7 @@ export default function VoiceMeal({ onAdd, onDirty }) {
         </div>;
       })}
       <p>{ready ? t("Total revisado: {0} kcal",[total]) : t("Complete ou remova os trechos pendentes para continuar.")}</p>
-      <button type="button" className="primary" disabled={!ready || active} onClick={() => { try { onAdd(meal, reviewedItems(rows)); setTranscript(''); setRows(null); setMessage('Refeição adicionada ao rascunho. Toque em Salvar dia para guardar.'); setError(''); } catch (e) { setError(e.message); } }}>{t("Adicionar refeição revisada ao dia")}</button>
+      <button type="button" className="primary" disabled={!ready || active} onClick={() => { try { onAdd(fixedMeal||meal, reviewedItems(rows)); setTranscript(''); setRows(null); setMessage(fixedMeal?'Alimentos adicionados a esta refeição.':'Refeição adicionada ao rascunho. Toque em Salvar dia para guardar.'); setError(''); } catch (e) { setError(e.message); } }}>{t(fixedMeal?'Adicionar alimentos revisados':'Adicionar refeição revisada ao dia')}</button>
     </div>}
     <p className="local-note">{t('Registre bebidas pelo formulário em ml.')} {t("A interpretação usa regras e o catálogo local; não reconhece qualquer prato ou receita. A transcrição só fica no relato; o diário recebe os alimentos que você confirmar.")}</p>
   </section>;

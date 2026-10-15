@@ -22,6 +22,7 @@ function numbers(text,language='pt') {
   });
 }
 const aliases = {
+  'sbd-granola':['granola'],'sbd-yogurt-whole':['iogurte integral','iogurte natural integral'],'cisbra-chia':['chia','semente de chia','sementes de chia'],'tbca-brown-sugar':['acucar mascavo'],'quaker-fine-oats':['aveia fina','aveia em flocos finos','aveia flocos finos'],
   'taco-1': ['arroz', 'arroz integral'], 'taco-3': ['arroz', 'arroz branco'],
   'taco-7': ['aveia'], 'taco-164': ['abacaxi'], 'taco-179': ['banana', 'banana nanica'], 'taco-182': ['banana', 'banana prata'],
   'taco-561': ['feijao', 'feijao carioca'], 'taco-567': ['feijao', 'feijao preto'], 'taco-577': ['lentilha'],
@@ -45,6 +46,7 @@ const aliases = {
 };
 const singular = { coxas: 'coxa', sobrecoxas: 'sobrecoxa', bifes: 'bife', bananas: 'banana', salsichoes: 'salsichao',thighs:'thigh',drumsticks:'drumstick',sausages:'sausage',steaks:'steak',chops:'chop',beans:'bean',lentils:'lentil' };
 const englishAliases={
+  'sbd-granola':['granola'],'sbd-yogurt-whole':['plain whole milk yogurt','whole milk yogurt','whole yogurt'],'cisbra-chia':['chia','chia seeds'],'tbca-brown-sugar':['brown sugar'],'quaker-fine-oats':['fine rolled oats','fine oats'],
   'taco-1':['rice','brown rice'],'taco-3':['rice','white rice'],'taco-7':['oats','rolled oats','oatmeal'],'taco-164':['pineapple'],'taco-179':['banana','cavendish banana'],'taco-182':['banana','prata banana'],
   'taco-561':['beans','carioca beans'],'taco-567':['beans','black beans'],'taco-577':['lentils'],
   'taco-328':['beef stew','pot roast','chuck','beef chuck'],'taco-371':['beef stew','pot roast','shank','beef shank'],

@@ -20,7 +20,7 @@ export function searchFoods(query, category, favorites = [], recent = [], catalo
     if (category === 'Favoritos' && !favorites.includes(food.id)) return false;
     if (category === 'Recentes' && !recent.includes(food.id)) return false;
     if (categories.includes(category) && foodCategory(food) !== category) return false;
-    return terms.every(term => searchText(`${food.name} ${translate(food.name,[],'en')}`).includes(term));
+    return terms.every(term => searchText(`${food.name} ${translate(food.name,[],'en')} ${Array.isArray(food.searchAliases)?food.searchAliases.join(' '):''}`).includes(term));
   }).sort((a, b) => category === 'Recentes' ? recent.indexOf(a.id) - recent.indexOf(b.id) : Number(favorites.includes(b.id)) - Number(favorites.includes(a.id)));
 }
 export function trackRecentFoods(state, day) {

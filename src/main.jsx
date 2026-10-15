@@ -7,6 +7,11 @@ import VoiceMeal from './VoiceMeal.jsx';
 import CommunityFoods from './CommunityFoods.jsx';
 import useCommunityFoods from './useCommunityFoods.js';
 import FoodPicker from './FoodPicker.jsx';
+import EnergyPanel from './EnergyPanel.jsx';
+import {routineLevels,exerciseReferences,workoutEstimate,createWorkout} from './energy.js';
+import QuickAdd from './QuickAdd.jsx';
+import EntryModal from './EntryModal.jsx';
+import {applyEntry} from './entries.js';
 import SavedMeals, { SaveMealButton } from './SavedMeals.jsx';
 import { trackRecentFoods } from './foodLibrary.js';
 import { AccountRoot, SyncPanel } from './Account.jsx';
@@ -36,8 +41,11 @@ function App({ account, accountControls }) {
   const community = useCommunityFoods(account);
   const catalog = [...foods,...community.catalog];
   const [editor, setEditor] = useState(null);
+  const [entry,setEntry]=useState(null);
+  const [entryDate,setEntryDate]=useState(localDate);
+  function openEntry(mode,date=localDate()){setEntryDate(date);setEntry(mode);}
   const [importing, setImporting] = useState(false);
-  const journal = useJournal(account, Boolean(editor || importing));
+  const journal = useJournal(account, Boolean(editor || entry || importing));
   const { state: s, loaded, loadError, error: storageError, commit } = journal;
   const [toast, setToast] = useState('');
   const [today, setToday] = useState(localDate);
@@ -55,6 +63,14 @@ function App({ account, accountControls }) {
     if ((s.profile || loadError) && !window.confirm(account?t("Substituir o diário desta conta pelo backup e sincronizar a alteração? Exporte os dados atuais antes, se precisar."):t("Substituir os dados deste dispositivo pelo backup? Exporte os dados atuais antes, se precisar."))) return;
     if (commit(next)) setToast('Backup restaurado.');
   }
+  function saveMeal(name,items) {
+      if(items.some(i=>i.unit==='ml'?(i.milliliters==null||i.milliliters===''||i.kcalPer100Ml==null||i.kcalPer100Ml===''):(i.grams==null || i.grams==='' || i.kcalPer100==null || i.kcalPer100===''))) throw new Error('Para salvar uma combinação, todos os itens precisam de quantidade e referência calórica na unidade correta. Registros antigos sem esses dados precisam ser cadastrados novamente.');
+      const existing=s.savedMeals.find(m=>m.name.toLocaleLowerCase('pt-BR')===name.trim().toLocaleLowerCase('pt-BR'));
+      const template=normalizeSavedMeal({id:existing?.id || id(),name,items});
+      if(existing && !window.confirm(t("Atualizar a combinação “{0}”? Os dias já registrados não serão alterados.",[existing.name]))) return false;
+      if(!commit(x=>({...x,savedMeals:[...x.savedMeals.filter(m=>m.id!==template.id),template]}))) throw new Error('Não foi possível salvar a combinação. Confira o aviso de armazenamento.');
+      setToast('Combinação salva em Minhas refeições.');return true;
+    }
   const backup = () => download(JSON.stringify(s, null, 2), `leve-backup-${today}.json`);
   const syncPanel = <SyncPanel account={account} journal={journal} onExport={backup}/>;
   if (!journal.ready && !loadError) return <><div className="onboard-account">{accountControls}</div>{syncPanel}<div className="onboarding"><section className="onboard-card"><h1>{t("Buscando seu diário")}</h1><p>{t("Estamos verificando se esta conta já tem registros. Sua cópia local permanece neste dispositivo.")}</p>{journal.sync.phase === 'error' && <p role="alert">{t(journal.sync.message)}</p>}<button className="outline" onClick={journal.synchronize}>{t("Tentar novamente")}</button></section></div></>;
@@ -69,20 +85,15 @@ function App({ account, accountControls }) {
       {account && ['error', 'conflict'].includes(journal.sync.phase) && tab !== 'profile' && syncPanel}
       {storageError && <div className="error-box" role="alert">{t(storageError)}<button className="outline" onClick={backup}>{t("Exportar backup")}</button></div>}
       <InstallBanner mode={tab==='home'?'notice':'hidden'}/>{tab!=='profile'&&<PrivacyControls settings={false} screen={tab}/>}
-      {tab === 'home' && <Home s={s} day={day} today={today} onEdit={() => setEditor(today)} onWeight={() => setTab('evo')} onWater={delta => { if (commit(x => { const d = x.days.find(d => d.date === today) || newDay(today); return upsertDay(x, { ...d, waterMl: Math.max(0, d.waterMl + delta) }); })) setToast('Água atualizada.'); }}/>}
-      {tab === 'days' && <History s={s} today={today} onEdit={setEditor} onImport={() => setImporting(true)} onDelete={date => { if (window.confirm(t("Excluir o registro de {0}?",[dateLabel(date)]))) commit(x => ({ ...x, days: x.days.filter(d => d.date !== date) })); }}/>}
+      {tab === 'home' && <Home s={s} day={day} today={today} onMeal={()=>openEntry('meal')} onWorkout={()=>openEntry('workout')} onEdit={() => setEditor(today)} onWeight={() => openEntry('weight')} onWater={delta => { if (commit(x => { const d = x.days.find(d => d.date === today) || newDay(today); return upsertDay(x, { ...d, waterMl: Math.max(0, d.waterMl + delta) }); })) setToast('Água atualizada.'); }}/>}
+      {tab === 'days' && <History s={s} today={today} onAdd={date=>openEntry('meal',date)} onEdit={setEditor} onImport={() => setImporting(true)} onDelete={date => { if (window.confirm(t("Excluir o registro de {0}?",[dateLabel(date)]))) commit(x => ({ ...x, days: x.days.filter(d => d.date !== date) })); }}/>}
       {tab === 'evo' && <Evolution s={s} today={today} onSave={(value, date) => { let saved = false; saved = commit(x => { const records = [...x.weights, { id: id(), date, value }].sort((a, b) => (a.date || '').localeCompare(b.date || '')); return { ...x, weights: records, profile: { ...x.profile, weight: records.at(-1).value } }; }); if (saved) setToast('Pesagem salva.'); return saved; }}/>}
       {tab === 'foods' && <CommunityFoods account={account} community={community} onDirty={setCatalogPageDirty}/>}
       {tab === 'profile' && <div className="settings-stack"><div className="intro"><div><small>{t("SEU PERFIL")}</small><h3>{t("Do seu jeito.")}</h3><p>{t("Ajuste suas referências e proteja seus registros.")}</p></div></div>{syncPanel}<section className="language-settings" aria-labelledby="language-settings-title"><div><h3 id="language-settings-title">{t('Idioma / Language')}</h3><p>{t('Escolha o idioma do app neste dispositivo.')}</p></div><LanguageSwitcher/></section><section className="formbox"><ProfileForm key={JSON.stringify(s.profile)} initial={s.profile} onSave={p => { if (commit(x => ({ ...x, profile: p }))) setToast('Perfil salvo.'); }}/></section><InstallBanner mode="help"/><PrivacyControls settings screen={tab}/><section className="data-transfer"><h3>{t("Seus dados com você")}</h3><p>{t("Use o backup para guardar uma cópia. Com login, o diário sincroniza por conta; conflitos pedem sua revisão.")}</p><button className="primary" onClick={backup}>{t("Exportar backup")}</button><BackupInput onImport={restore}/></section></div>}
     </main>
-    {editor && <DayEditor key={editor} account={account} community={community} catalog={catalog} library={s} onFavorite={foodId => commit(x => ({...x, favoriteFoods: x.favoriteFoods.includes(foodId) ? x.favoriteFoods.filter(id=>id!==foodId) : [...x.favoriteFoods,foodId]}))} onSaveMeal={(name,items) => {
-      if(items.some(i=>i.unit==='ml'?(i.milliliters==null||i.milliliters===''||i.kcalPer100Ml==null||i.kcalPer100Ml===''):(i.grams==null || i.grams==='' || i.kcalPer100==null || i.kcalPer100===''))) throw new Error('Para salvar uma combinação, todos os itens precisam de quantidade e referência calórica na unidade correta. Registros antigos sem esses dados precisam ser cadastrados novamente.');
-      const existing=s.savedMeals.find(m=>m.name.toLocaleLowerCase('pt-BR')===name.trim().toLocaleLowerCase('pt-BR'));
-      const template=normalizeSavedMeal({id:existing?.id || id(),name,items});
-      if(existing && !window.confirm(t("Atualizar a combinação “{0}”? Os dias já registrados não serão alterados.",[existing.name]))) return false;
-      if(!commit(x=>({...x,savedMeals:[...x.savedMeals.filter(m=>m.id!==template.id),template]}))) throw new Error('Não foi possível salvar a combinação. Confira o aviso de armazenamento.');
-      setToast('Combinação salva em Minhas refeições.');return true;
-    }} onDeleteMeal={meal=>{if(window.confirm(t("Excluir a combinação “{0}”? Os dias já registrados serão preservados.",[meal.name]))) commit(x=>({...x,savedMeals:x.savedMeals.filter(m=>m.id!==meal.id)}));}} day={s.days.find(d => d.date === editor) || newDay(editor)} close={() => setEditor(null)} onSave={d => { const saved = commit(x => ({...upsertDay(x, d),recentFoods:trackRecentFoods(x,d)})); if (saved) { setEditor(null); setToast('Dia salvo.'); } return saved; }}/>}
+    <QuickAdd Icon={Icon} onSelect={openEntry}/>
+    {entry&&<EntryModal key={entry} mode={entry} today={today} initialDate={entryDate} library={s} catalog={catalog} Modal={Modal} FoodForm={FoodForm} ExerciseForm={ExerciseForm} onFavorite={foodId=>commit(x=>({...x,favoriteFoods:x.favoriteFoods.includes(foodId)?x.favoriteFoods.filter(id=>id!==foodId):[...x.favoriteFoods,foodId]}))} onSaveMeal={saveMeal} close={()=>setEntry(null)} onSave={payload=>{const saved=commit(x=>{const next=applyEntry(x,payload);return payload.type==='meal'?{...next,recentFoods:trackRecentFoods(next,next.days.find(d=>d.date===payload.date)||newDay(payload.date))}:next;});if(saved){setEntry(null);setToast('Registro salvo.');}return saved;}}/>}
+    {editor && <DayEditor key={editor} account={account} community={community} catalog={catalog} library={s} onFavorite={foodId => commit(x => ({...x, favoriteFoods: x.favoriteFoods.includes(foodId) ? x.favoriteFoods.filter(id=>id!==foodId) : [...x.favoriteFoods,foodId]}))} onSaveMeal={saveMeal} onDeleteMeal={meal=>{if(window.confirm(t("Excluir a combinação “{0}”? Os dias já registrados serão preservados.",[meal.name]))) commit(x=>({...x,savedMeals:x.savedMeals.filter(m=>m.id!==meal.id)}));}} day={s.days.find(d => d.date === editor) || newDay(editor)} close={() => setEditor(null)} onSave={d => { const saved = commit(x => ({...upsertDay(x, d),recentFoods:trackRecentFoods(x,d)})); if (saved) { setEditor(null); setToast('Dia salvo.'); } return saved; }}/>}
     {importing && <ImportDay close={() => setImporting(false)} onImport={d => { const existing = s.days.find(x => x.date === d.date); if (existing && !window.confirm(t("Este dia já existe. Substituir refeições e exercícios? Água registrada será preservada."))) return; if (commit(x => upsertDay(x, { ...d, waterMl: existing?.waterMl ?? d.waterMl }))) { setImporting(false); setToast('Dia importado e totais recalculados.'); } }}/>}
     {navigationTarget&&<Modal title={t("Cadastro não salvo")} close={()=>setNavigationTarget(null)}><p>{t("Este alimento ainda não foi salvo. Continue editando ou descarte o preenchimento para trocar de aba.")}</p><div className="account-actions"><button type="button" className="primary" onClick={()=>setNavigationTarget(null)}>{t("Continuar editando")}</button><button type="button" className="outline" onClick={()=>{setCatalogPageDirty(false);setTab(navigationTarget);setNavigationTarget(null);}}>{t("Descartar e trocar de aba")}</button></div></Modal>}
     {toast && <div className="toast" role="status">{t(toast)}</div>}
@@ -97,24 +108,26 @@ function ProfileForm({ initial, onSave }) {
     <label>{t("Como podemos te chamar?")}<input required maxLength={80} value={p.name} onChange={e => setP({ ...p, name: e.target.value })}/></label>
     {input('age', t("Idade (adultos)"), 18, 120)}{input('height', t("Altura (cm)"), 80, 250, 0.1)}
     {initial ? <label>{t("Peso atual")}<output>{fmt(initial.weight)}{t(" kg")}</output><small>{t("Atualize em Evolução.")}</small></label> : input('weight', t("Peso inicial (kg)"), 20, 500, 0.1)}
-    <label>{t("Sexo (perfil)")}<select value={p.sex} onChange={e => setP({ ...p, sex: e.target.value })}><option value="female">{t("Feminino")}</option><option value="male">{t("Masculino")}</option></select></label>
+    <label>{t("Sexo usado na fórmula de repouso")}<select value={p.sex} onChange={e => setP({ ...p, sex: e.target.value })}><option value="female">{t("Feminino")}</option><option value="male">{t("Masculino")}</option></select></label>
+    <label>{t('Movimento fora dos treinos')}<select aria-label={t('Movimento fora dos treinos')} value={p.activityFactor??1.4} onChange={e=>setP({...p,activityFactor:Number(e.target.value)})}>{routineLevels.map(level=><option key={level.factor} value={level.factor}>{t(level.label)}</option>)}</select></label>
     {input('waterGoal', t("Objetivo pessoal de água (ml)"), 250, 10000, 50)}{input('weeklyWorkouts', t("Dias de treino por semana"), 1, 7)}{input('calorieGoal', t("Referência de kcal (opcional)"), 1, 10000)}
     <p className="form-note">{t("Objetivos pessoais ajustáveis, sem prescrição automática de dieta. A referência de calorias pode ser definida com seu nutricionista.")}</p>
     {error && <p className="form-note error-box" role="alert">{t(error)}</p>}<button className="primary">{initial ? t("Salvar perfil") : t("Criar meu perfil →")}</button>
   </form>;
 }
 
-function Home({ s, day, today, onEdit, onWeight, onWater }) {
+function Home({ s, day, today, onEdit, onMeal, onWorkout, onWeight, onWater }) {
   const workouts = trainingDays(s.days, today);
   const change = s.profile.weight - s.weights[0].value;
   return <>
-    <div className="daily-heading"><div><span className="eyebrow">{t("SEU DIA EM UM LUGAR")}</span><h3>{t("Bora fazer hoje valer.")}</h3><p>{t("Comida, água e movimento. No seu ritmo.")}</p></div><button className="primary" onClick={onEdit}>{t("＋ Registrar refeição")}</button></div>
+    <EnergyPanel profile={s.profile} day={day} Modal={Modal}/>
+    <div className="daily-heading"><div><span className="eyebrow">{t("SEU DIA EM UM LUGAR")}</span><h3>{t("Bora fazer hoje valer.")}</h3><p>{t("Comida, água e movimento. No seu ritmo.")}</p></div><button className="primary" onClick={onMeal}>{t("＋ Registrar refeição")}</button></div>
     <div className="dashboard-metrics">
-      <article className="metric calorie-metric"><div className="metric-label"><span className="metric-icon"><Icon name="food"/></span>{t("Calorias de hoje")}</div><b className="big">{fmt(day.totalCalories)} <i>kcal</i></b>{s.profile.calorieGoal ? <><Progress value={day.totalCalories} max={s.profile.calorieGoal}/><p>{t("Referência: ")}{fmt(s.profile.calorieGoal)}{t(" kcal")}</p></> : <p>{t("Seu total de alimentos registrados")}</p>}<button className="link" onClick={onEdit}>{t("Adicionar alimento →")}</button></article>
+      <article className="metric calorie-metric"><div className="metric-label"><span className="metric-icon"><Icon name="food"/></span>{t("Calorias de hoje")}</div><b className="big">{fmt(day.totalCalories)} <i>kcal</i></b>{s.profile.calorieGoal ? <><Progress value={day.totalCalories} max={s.profile.calorieGoal}/><p>{t("Referência: ")}{fmt(s.profile.calorieGoal)}{t(" kcal")}</p></> : <p>{t("Seu total de alimentos registrados")}</p>}<button className="link" onClick={onMeal}>{t("Adicionar alimento →")}</button></article>
       <article className="metric water-metric"><div className="metric-label"><span className="metric-icon"><Icon name="water"/></span>{t("Água de hoje")}</div><b className="big">{fmt(day.waterMl)} <i>ml</i></b><Progress value={day.waterMl} max={s.profile.waterGoal}/><p>{t("Objetivo pessoal: ")}{fmt(s.profile.waterGoal)}{t(" ml")}</p><div className="water-actions"><button className="outline" disabled={!day.waterMl} aria-label={t("Remover 250 ml de água")} onClick={() => onWater(-250)}>−</button><button className="primary" onClick={() => onWater(250)}>{t("+ 250 ml")}</button><button className="outline" onClick={() => onWater(500)}>{t("+ 500 ml")}</button></div></article>
       <article className="metric weight-metric"><div className="metric-label"><span className="metric-icon"><Icon name="trend"/></span>{t("Meu peso")}</div><b className="big">{fmt(s.profile.weight)} <i>kg</i></b><p>{change > 0 ? '+' : ''}{fmt(change)}{t(" kg desde o primeiro registro")}</p><button className="link" onClick={onWeight}>{t("Registrar pesagem →")}</button></article>
     </div>
-    <section className={`movement-card ${day.exercise.performed ? 'done' : ''}`}><div className="movement-title"><span className="metric-icon"><Icon name="move"/></span><div><span className="eyebrow">{t("MOVIMENTO NA SEMANA")}</span><h3>{day.exercise.performed ? t("Boa! Você se movimentou hoje.") : t("Seu próximo treino começa com um passo.")}</h3><p>{day.exercise.activities.map(a => t("{0} · {1} min",[t(a.type),a.durationMinutes])).join(' / ') || t("Academia ou caminhada: escolha o que cabe no seu dia.")}</p></div></div><div className="workout-progress"><b>{workouts}<span> / {s.profile.weeklyWorkouts}{t(" dias")}</span></b><div className="workout-dots" aria-label={t("{0} de {1} dias de treino na semana",[workouts,s.profile.weeklyWorkouts])}>{Array.from({length:s.profile.weeklyWorkouts}, (_, i) => <span key={i} className={i < workouts ? 'completed' : ''}/>)}</div><small>{workouts >= s.profile.weeklyWorkouts ? t("Objetivo da semana alcançado!") : t("Um dia de cada vez.")}</small></div><button className="outline" onClick={onEdit}>{t("Registrar treino")}</button></section>
+    <section className={`movement-card ${day.exercise.performed ? 'done' : ''}`}><div className="movement-title"><span className="metric-icon"><Icon name="move"/></span><div><span className="eyebrow">{t("MOVIMENTO NA SEMANA")}</span><h3>{day.exercise.performed ? t("Boa! Você se movimentou hoje.") : t("Seu próximo treino começa com um passo.")}</h3><p>{day.exercise.activities.map(activityLabel).join(' / ') || t("Academia ou caminhada: escolha o que cabe no seu dia.")}</p></div></div><div className="workout-progress"><b>{workouts}<span> / {s.profile.weeklyWorkouts}{t(" dias")}</span></b><div className="workout-dots" aria-label={t("{0} de {1} dias de treino na semana",[workouts,s.profile.weeklyWorkouts])}>{Array.from({length:s.profile.weeklyWorkouts}, (_, i) => <span key={i} className={i < workouts ? 'completed' : ''}/>)}</div><small>{workouts >= s.profile.weeklyWorkouts ? t("Objetivo da semana alcançado!") : t("Um dia de cada vez.")}</small></div><button className="outline" onClick={onWorkout}>{t("Registrar treino")}</button></section>
     <div className="head"><div><span className="eyebrow">{t("NO SEU PRATO")}</span><h3>{t("Refeições de hoje")}</h3></div><button className="outline" onClick={onEdit}>{t("Editar dia")}</button></div><DayCard day={day}/>
 
   </>;
@@ -132,18 +145,19 @@ function Icon({ name }) {
   return <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]}/></svg>;
 }
 function Progress({ value, max }) { return <div className="bar" role="progressbar" aria-label={t("Progresso registrado")} aria-valuenow={Math.min(value, max)} aria-valuemin={0} aria-valuemax={max}><span style={{ width: `${Math.min(100, value / max * 100)}%` }}/></div>; }
+function activityLabel(a){return [t('{0} · {1} min',[t(a.type),a.durationMinutes]),a.energyEstimate?t(' · ~{0} kcal durante o treino',[fmt(a.energyEstimate.gross)]):''].join('');}
 function DayCard({ day }) { return <div className="list">
-  {day.meals.length ? day.meals.map((m, i) => <div className="meal" key={i}><div><b>{t(m.name)}</b>{m.items.map((item, j) => <small key={j}>{itemName(item)} · {itemQuantity(item) || t("Quantidade não informada")} · {fmt(item.calories)}{t(" kcal")}</small>)}</div><strong>{fmt(m.calories)} <i>kcal</i></strong></div>) : <p className="empty-day">{t("Nenhuma refeição registrada para este dia.")}</p>}
-  {day.exercise.performed && <div className="exercise-row"><div><b>{t("Movimento")}</b><small>{day.exercise.activities.map(a => t("{0} · {1} min",[a.type,a.durationMinutes])).join(' / ') || t("Atividade registrada em importação")}</small></div><strong>{day.exercise.totalCaloriesBurned ? t("{0} kcal estimadas",[fmt(day.exercise.totalCaloriesBurned)]) : t("Sem estimativa de gasto")}</strong></div>}
+  {day.meals.length ? day.meals.map((m, i) => <div className="meal" key={i}><div><b>{t(m.name)}{m.time&&<span className="meal-time"> · {m.time}</span>}</b>{m.items.map((item, j) => <small key={j}>{itemName(item)} · {itemQuantity(item) || t("Quantidade não informada")} · {fmt(item.calories)}{t(" kcal")}</small>)}</div><strong>{fmt(m.calories)} <i>kcal</i></strong></div>) : <p className="empty-day">{t("Nenhuma refeição registrada para este dia.")}</p>}
+  {day.exercise.performed && <div className="exercise-row"><div><b>{t("Movimento")}</b><small>{day.exercise.activities.map(activityLabel).join(' / ') || t("Atividade registrada em importação")}</small></div><strong>{day.exercise.totalCaloriesBurned ? t("{0} kcal estimadas",[fmt(day.exercise.totalCaloriesBurned)]) : t("Sem estimativa de gasto")}</strong></div>}
   <div className="day-total"><b>{t("Total registrado")}</b><strong>{fmt(day.totalCalories)}{t(" kcal")}</strong><small>{t("Água: ")}{fmt(day.waterMl)}{t(" ml")}{day.exercise.totalCaloriesBurned > 0 ? t(" · Ingestão − exercício estimado: {0} kcal (não é o déficit diário)",[fmt(day.netCalories)]) : ''}</small></div>{day.notes && <p className="detail-notes day-notes">{day.notes}</p>}
 </div>; }
 
-function History({ s, today, onEdit, onImport, onDelete }) {
+function History({ s, today, onAdd, onEdit, onImport, onDelete }) {
   const [query, setQuery] = useState('');
   const [date, setDate] = useState(today);
   const [selected, setSelected] = useState(null);
   const days = [...s.days].reverse().filter(d => `${d.date} ${dateLabel(d.date)} ${d.notes} ${d.meals.map(m => `${m.name} ${t(m.name)} ${m.items.map(i => `${i.food} ${itemName(i)}`).join(' ')}`).join(' ')}`.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')));
-  return <><div className="intro"><div><small>{t("SEU DIÁRIO")}</small><h3>{t("Seu diário, dia a dia.")}</h3><p>{t("Veja suas refeições, água e movimento em cada dia.")}</p></div><form className="new-date" onSubmit={e => { e.preventDefault(); onEdit(date); }}><label>{t("Data do registro")}<input required type="date" max={today} value={date} onChange={e => setDate(e.target.value)}/></label><button className="primary">{t("＋ Registrar dia")}</button></form></div><div className="history-tools"><label>{t("Buscar no histórico")}<input type="search" placeholder={t("Data, alimento ou anotação")} value={query} onChange={e => setQuery(e.target.value)}/></label><button className="outline" onClick={onImport}>{t("Importar dia em JSON")}</button></div><p className="local-note">{days.length}{t(" dia(s) encontrado(s)")}</p><div className="day-list">{days.map(d => <article key={d.date}><button className="day-open" onClick={() => setSelected(d.date)}><small>{dateLabel(d.date)}</small><h4>{d.meals.length}{t(" refeições · ")}{fmt(d.totalCalories)}{t(" kcal")}</h4><p>{fmt(d.waterMl)}{t(" ml de água · ")}{d.exercise.performed ? t("Treino registrado") : t("Sem treino")}</p></button><div className="row-actions"><button className="outline" onClick={() => onEdit(d.date)}>{t("Editar")}</button><button className="outline danger" aria-label={t("Excluir dia {0}",[dateLabel(d.date)])} onClick={() => onDelete(d.date)}>{t("Excluir")}</button></div></article>)}</div>{!days.length && <p className="empty-day">{s.days.length ? t("Nenhum registro corresponde à busca.") : t("Seu histórico começa com o primeiro registro.")}</p>}{selected && s.days.find(d => d.date === selected) && <Modal title={dateLabel(selected)} close={() => setSelected(null)}><DayCard day={s.days.find(d => d.date === selected)}/></Modal>}</>;
+  return <><div className="intro"><div><small>{t("SEU DIÁRIO")}</small><h3>{t("Seu diário, dia a dia.")}</h3><p>{t("Veja suas refeições, água e movimento em cada dia.")}</p></div><form className="new-date" onSubmit={e => { e.preventDefault(); onAdd(date); }}><label>{t("Data do registro")}<input required type="date" max={today} value={date} onInput={e => setDate(e.currentTarget.value)} onChange={e => setDate(e.target.value)}/></label><button className="primary">{t("＋ Registrar refeição")}</button></form></div><div className="history-tools"><label>{t("Buscar no histórico")}<input type="search" placeholder={t("Data, alimento ou anotação")} value={query} onChange={e => setQuery(e.target.value)}/></label><button className="outline" onClick={onImport}>{t("Importar dia em JSON")}</button></div><p className="local-note">{days.length}{t(" dia(s) encontrado(s)")}</p><div className="day-list">{days.map(d => <article key={d.date}><button className="day-open" onClick={() => setSelected(d.date)}><small>{dateLabel(d.date)}</small><h4>{d.meals.length}{t(" refeições · ")}{fmt(d.totalCalories)}{t(" kcal")}</h4><p>{fmt(d.waterMl)}{t(" ml de água · ")}{d.exercise.performed ? t("Treino registrado") : t("Sem treino")}</p></button><div className="row-actions"><button className="outline" onClick={() => onEdit(d.date)}>{t("Editar")}</button><button className="outline danger" aria-label={t("Excluir dia {0}",[dateLabel(d.date)])} onClick={() => onDelete(d.date)}>{t("Excluir")}</button></div></article>)}</div>{!days.length && <p className="empty-day">{s.days.length ? t("Nenhum registro corresponde à busca.") : t("Seu histórico começa com o primeiro registro.")}</p>}{selected && s.days.find(d => d.date === selected) && <Modal title={dateLabel(selected)} close={() => setSelected(null)}><DayCard day={s.days.find(d => d.date === selected)}/></Modal>}</>;
 }
 
 function Modal({ title, close, children }) {
@@ -172,7 +186,7 @@ function DayEditor({ day, close, onSave, library, onFavorite, onSaveMeal, onDele
     <VoiceMeal onDirty={setVoiceDirty} onAdd={(meal, items) => { setDraft(previous => items.reduce((day, item) => appendFood(day, meal, item), previous)); setError(''); }}/>
     </details>
     <div className="draft-list">{draft.meals.map((m, mi) => <section key={mi}><b>{t(m.name)} · {fmt(m.calories)}{t(" kcal")}</b>{m.items.length>0 && <SaveMealButton meal={m} onSave={onSaveMeal}/>} {m.items.map((item, ii) => <div className="draft-row" key={ii}><span>{itemName(item)} · {itemQuantity(item)} · {fmt(item.calories)}{t(" kcal")}</span><button className="outline" aria-label={t("Remover {0}",[itemName(item)])} onClick={() => { const meals = structuredClone(draft.meals); meals[mi].items.splice(ii, 1); if (!meals[mi].items.length) meals.splice(mi, 1); setDraft(normalizeDay({ ...draft, meals })); }}>×</button></div>)}{!m.items.length && <button className="outline" onClick={() => setDraft(normalizeDay({ ...draft, meals: draft.meals.filter((_, i) => i !== mi) }))}>{t("Remover refeição")}</button>}</section>)}</div>
-    <ExerciseForm onDirty={setExerciseDirty} onAdd={activity => setDraft(appendActivity(draft, activity))}/>
+    <ExerciseForm profile={library.profile} onDirty={setExerciseDirty} onAdd={activity => setDraft(appendActivity(draft, createWorkout(activity,library.profile)))}/>
     {draft.exercise.activities.map((a, i) => <div className="draft-row" key={i}><span>{t(a.type)} · {a.durationMinutes}{t(" min")}</span><button className="outline" aria-label={t("Remover treino {0}",[t(a.type)])} onClick={() => { const activities = draft.exercise.activities.filter((_, j) => j !== i); setDraft(normalizeDay({ ...draft, exercise: { activities, performed: activities.length > 0, totalCaloriesBurned: 0 } })); }}>×</button></div>)}
     <label className="standalone-label">{t("Água do dia (ml)")}<input type="number" min="0" max="100000" value={draft.waterMl} onChange={e => setDraft({ ...draft, waterMl: e.target.value })}/></label>
     <label className="standalone-label">{t("Anotações")}<textarea rows="3" maxLength={5000} value={draft.notes} onChange={e => setDraft({ ...draft, notes: e.target.value })} placeholder={t("Como foi seu dia?")}/></label>
@@ -180,7 +194,7 @@ function DayEditor({ day, close, onSave, library, onFavorite, onSaveMeal, onDele
   </Modal>;
 }
 
-function FoodForm({ onDirty, onAdd, favorites, recent, onFavorite, catalog, onCreate }) {
+function FoodForm({ onDirty, onAdd, favorites, recent, onFavorite, catalog, onCreate, fixedMeal }) {
   const [foodId,setFoodId]=useState(foods[0].id),[name,setName]=useState(''),[per100,setPer100]=useState('');
   const [amount,setAmount]=useState('100'),[mode,setMode]=useState('g'),[sliceWeight,setSliceWeight]=useState('25');
   const [meal,setMeal]=useState('Almoço'),[error,setError]=useState(''),[dirty,setDirty]=useState(false);
@@ -192,9 +206,9 @@ function FoodForm({ onDirty, onAdd, favorites, recent, onFavorite, catalog, onCr
   return <form className="entry-form" onChange={()=>setDirty(true)} onSubmit={e=>{e.preventDefault();try{
     const label=food?food.name:name.trim();if(!label)throw new Error('Informe o alimento.');
     const value=measured(),density=food?food.kcal:Number(per100);
-    onAdd(meal,{id:id(),foodId:food?.id||'',food:label,calories:portionCalories(value,density),...(unit==='ml'?{unit:'ml',milliliters:value,kcalPer100Ml:density,grams:null,kcalPer100:null,quantity:value+' ml'}:{grams:value,kcalPer100:density,quantity:value+' g',...(mode==='slice'?{servingUnit:'slice',servings:Number(amount),gramsPerSlice:Number(sliceWeight)}:{})}),source:food?(food.sourceUrl||food.source||food.referenceId||food.id):'Rótulo informado',referenceNote:food?.note||''});setDirty(false);setError('');
+    onAdd(fixedMeal||meal,{id:id(),foodId:food?.id||'',food:label,calories:portionCalories(value,density),...(unit==='ml'?{unit:'ml',milliliters:value,kcalPer100Ml:density,grams:null,kcalPer100:null,quantity:value+' ml'}:{grams:value,kcalPer100:density,quantity:value+' g',...(mode==='slice'?{servingUnit:'slice',servings:Number(amount),gramsPerSlice:Number(sliceWeight)}:{})}),source:food?(food.sourceUrl||food.source||food.referenceId||food.id):'Rótulo informado',referenceNote:food?.note||''});setDirty(false);setError('');
   }catch(e){setError(e.message);}}}>
-    <h4>{t('Adicionar alimento')}</h4><label>{t('Refeição')}<select aria-label={t('Refeição')} value={meal} onChange={e=>setMeal(e.target.value)}>{['Café da manhã','Almoço','Lanche','Jantar','Ceia'].map(m=><option key={m} value={m}>{t(m)}</option>)}</select></label>
+    <h4>{t('Adicionar alimento')}</h4>{!fixedMeal&&<label>{t('Refeição')}<select aria-label={t('Refeição')} value={meal} onChange={e=>setMeal(e.target.value)}>{['Café da manhã','Almoço','Lanche','Jantar','Ceia'].map(m=><option key={m} value={m}>{t(m)}</option>)}</select></label>}
     <FoodPicker catalog={catalog} onCreate={onCreate} value={foodId} onChange={select} favorites={favorites} recent={recent} onFavorite={onFavorite}/>
     {!food&&<><label>{t('Nome do alimento')}<input required maxLength={200} value={name} onChange={e=>setName(e.target.value)}/></label><label>{t('kcal por 100 g (rótulo)')}<input required type="number" min="0" max="1000" step="0.1" value={per100} onChange={e=>setPer100(e.target.value)}/></label></>}
     {food?.slice&&<label>{t('Registrar pão por')}<select value={mode} onChange={e=>{const next=e.target.value;try{const grams=measured();setAmount(String(next==='slice'?Math.round(grams/Number(sliceWeight)*100)/100:grams));}catch{setAmount('');}setMode(next);}}><option value="slice">{t('Fatias')}</option><option value="g">{t('Gramas')}</option></select></label>}
@@ -208,13 +222,22 @@ function FoodForm({ onDirty, onAdd, favorites, recent, onFavorite, catalog, onCr
   </form>;
 }
 
-function ExerciseForm({ onAdd, onDirty }) {
-  const [type, setType] = useState(()=>t('Academia'));
-  const [minutes, setMinutes] = useState('45');
-  const [dirty,setDirty]=useState(false);
+function ExerciseForm({ onAdd, onDirty, submitLabel, profile }) {
+  const [referenceId,setReferenceId]=useState('strength-35'),[type,setType]=useState('');
+  const [minutes,setMinutes]=useState('45'),[dirty,setDirty]=useState(false),[error,setError]=useState('');
   useEffect(()=>onDirty(dirty),[dirty,onDirty]);
-  const [error, setError] = useState('');
-  return <form className="entry-form" onChange={()=>setDirty(true)} onSubmit={e => { e.preventDefault(); try { if (!type.trim()) throw new Error('Informe a atividade.'); onAdd({ id: id(), type: type.trim(), durationMinutes: numeric(minutes, 1, 1440, 'Duração'), caloriesBurned: 0 }); setDirty(false);setError(''); } catch (e) { setError(e.message); } }}><h4>{t("Registrar movimento")}</h4><label>{t("Atividade")}<input required maxLength={150} value={type} onChange={e => setType(e.target.value)}/></label><label>{t("Duração (minutos)")}<input required type="number" min="1" max="1440" value={minutes} onChange={e => setMinutes(e.target.value)}/></label><p className="form-note">{t("O treino conta para sua constância. O app não presume quantas calorias você gastou.")}</p>{error && <p role="alert">{t(error)}</p>}<button className="outline">{t("＋ Adicionar treino")}</button>{dirty&&<button type="button" className="outline" onClick={()=>{setType(t('Academia'));setMinutes('45');setDirty(false);setError('');}}>{t("Descartar preenchimento do treino")}</button>}</form>;
+  let estimate=null;try{if(referenceId)estimate=workoutEstimate(referenceId,minutes,profile);}catch{/* Incomplete inputs do not show an estimate. */}
+  return <form className="entry-form" onChange={()=>setDirty(true)} onSubmit={e=>{e.preventDefault();try{
+    const reference=exerciseReferences.find(r=>r.id===referenceId),label=reference?.label||type.trim();if(!label)throw new Error('Informe a atividade.');
+    if(onAdd({id:id(),type:label,referenceId,durationMinutes:numeric(minutes,1,1440,'Duração'),caloriesBurned:0})===false)return;
+    setDirty(false);setError('');
+  }catch(e){setError(e.message);}}}>
+    <h4>{t('Registrar movimento')}</h4><label>{t('Exercício e intensidade')}<select aria-label={t('Exercício e intensidade')} value={referenceId} onChange={e=>setReferenceId(e.target.value)}>{exerciseReferences.map(r=><option value={r.id} key={r.id}>{t(r.label)}</option>)}<option value="">{t('Outra atividade — sem estimativa')}</option></select></label>
+    {!referenceId&&<label>{t('Atividade')}<input required maxLength={150} value={type} onChange={e=>setType(e.target.value)}/></label>}
+    <label>{t('Duração (minutos)')}<input required type="number" min="1" max="1440" value={minutes} onChange={e=>setMinutes(e.target.value)}/></label>
+    {estimate?<div className="exercise-estimate" aria-live="polite"><b>{t('Gasto durante o treino: ~{0} kcal',[fmt(estimate.gross)])}</b><p>{t('Extra somado ao dia: ~{0} kcal. Descontamos o gasto da rotina já previsto nesses minutos.',[fmt(estimate.additional)])}</p><small>{t('Estimado com {0} kg e {1} MET. Confira o exercício, o ritmo e inclua as pausas na sua avaliação.',[fmt(estimate.weightKg),fmt(estimate.met)])}</small><a href="https://pacompendium.com/" target="_blank" rel="noreferrer">Compendium 2024 ↗</a></div>:<p className="form-note">{t('Sem referência selecionada, o treino conta para sua constância, sem inventar calorias.')}</p>}
+    {error&&<p role="alert">{t(error)}</p>}<button className="outline">{t(submitLabel||'＋ Adicionar treino')}</button>{dirty&&<button type="button" className="outline" onClick={()=>{setReferenceId('strength-35');setType('');setMinutes('45');setDirty(false);setError('');}}>{t('Descartar preenchimento do treino')}</button>}
+  </form>;
 }
 
 function Evolution({ s, today, onSave }) {

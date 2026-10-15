@@ -1,3 +1,4 @@
+import {validateWorkoutEstimate,routineLevels} from './energy.js';
 export const KEY = 'leve-state-v3';
 export const VERSION = 6;
 export const emptyState = () => ({ version: VERSION, profile: null, days: [], weights: [], savedMeals: [], favoriteFoods: [], recentFoods: [] });
@@ -37,7 +38,8 @@ const array = (value, label) => {
 const kcal = value => numeric(value ?? 0, 0, 100000, 'Calorias');
 export function normalizeProfile(p) {
   if (!p || !text(p.name).trim()) throw new Error('Informe seu nome.');
-  return { ...p, name: p.name.trim(), age: numeric(p.age, 18, 120, 'Idade'), height: numeric(p.height, 80, 250, 'Altura'), weight: numeric(p.weight, 20, 500, 'Peso'), sex: p.sex === 'male' ? 'male' : 'female', calorieGoal: p.calorieGoal ? numeric(p.calorieGoal, 1, 10000, 'Referência de calorias') : null, waterGoal: numeric(p.waterGoal ?? 2000, 250, 10000, 'Objetivo de água'), weeklyWorkouts: numeric(p.weeklyWorkouts ?? 3, 1, 7, 'Treinos por semana') };
+  if(!routineLevels.some(level=>level.factor===Number(p.activityFactor??1.4)))throw new Error('Nível de atividade inválido.');
+  return { ...p, activityFactor: numeric(p.activityFactor??1.4,1.4,1.8,'Nível de atividade'), name: p.name.trim(), age: numeric(p.age, 18, 120, 'Idade'), height: numeric(p.height, 80, 250, 'Altura'), weight: numeric(p.weight, 20, 500, 'Peso'), sex: p.sex === 'male' ? 'male' : 'female', calorieGoal: p.calorieGoal ? numeric(p.calorieGoal, 1, 10000, 'Referência de calorias') : null, waterGoal: numeric(p.waterGoal ?? 2000, 250, 10000, 'Objetivo de água'), weeklyWorkouts: numeric(p.weeklyWorkouts ?? 3, 1, 7, 'Treinos por semana') };
 }
 export function normalizeDay(d) {
   if (!d || !Array.isArray(d.meals)) throw new Error('O dia precisa conter uma lista de refeições (meals).');
@@ -51,7 +53,8 @@ export function normalizeDay(d) {
   });
   const activities = array(d.exercise?.activities, 'Atividades').map(a => {
     if (!a || typeof a !== 'object') throw new Error('Atividade inválida.');
-    return { ...a, type: text(a.type, 'Atividade'), durationMinutes: numeric(a.durationMinutes ?? 0, 0, 1440, 'Duração'), caloriesBurned: kcal(a.caloriesBurned) };
+    const energyEstimate=a.energyEstimate?validateWorkoutEstimate(a.energyEstimate,a.durationMinutes):null;
+    return { ...a, ...(energyEstimate?{energyEstimate,caloriesBurned:energyEstimate.additional}:{}), type: text(a.type, 'Atividade'), durationMinutes: numeric(a.durationMinutes ?? 0, 0, 1440, 'Duração'), caloriesBurned: energyEstimate?energyEstimate.additional:kcal(a.caloriesBurned) };
   });
   const totalCalories = meals.reduce((sum, m) => sum + m.calories, 0);
   const totalCaloriesBurned = activities.length ? activities.reduce((sum, a) => sum + a.caloriesBurned, 0) : kcal(d.exercise?.totalCaloriesBurned);
