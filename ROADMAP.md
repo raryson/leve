@@ -199,3 +199,15 @@ Validação: 48 testes aprovados e build concluído; detecção, preferência, f
 
 
 Internacionalização publicada: `dpl_9BcyqCTh9GrqrR5VdJxp3M5ZxiKV`, endereço `https://leve-fawn.vercel.app`. Manifesto inglês 200 (`lang: en`, mesmo `id: /`), catálogo 200, diário sem sessão 401, SW inclui ambos os manifestos. Navegador autenticado: catálogo e moderação em inglês, seletor funcional; português restaurado na aba do usuário após a conferência. Login em inglês conferido no navegador local sem criar conta. Build em produção: cerca de 189 kB gzip no bundle principal; otimização do carregamento de traduções/localizações permanece possível em manutenção futura.
+
+## Bebidas e pão por fatias — 14/10/2026
+
+- [x] Catálogo embutido com 35 opções: espresso, café com leite meio a meio, leite integral preparado, Coca-Cola original/sem açúcar e sucos 100% laranja/uva. Produto/preparo, fontes oficiais e adições não incluídas identificados; português/inglês e ilustrações por categoria.
+- [x] Registro em ml com referência por 100 ml, sem conversão fictícia para gramas. Modelos, repetição, histórico, backup e API preservam a unidade.
+- [x] Pão integral de forma por fatias como padrão, estimativa inicial editável de 25 g por fatia, frações, peso total e alternativa em gramas. Fonte do peso separada da referência calórica; não se trata de média universal.
+- [x] Relato local entende fatias de pão em português/inglês. Bebidas são direcionadas ao formulário em ml para evitar confusão entre densidades por massa/volume.
+- [x] Schema JSON versão 6, preservando registros históricos sem inferir fatias ou recalcular calorias antigas; nenhuma migração SQL. Analytics desligado e nenhum serviço pago adicional.
+
+Validação: 54 testes e build aprovados. Testes cobrem referências de volume, receita meio a meio, limites numéricos, modelo misto, repetição, backup, migração e API com proprietário autenticado. No navegador com dados fictícios: duas fatias de 25 g resultaram em 50 g/127 kcal; peso de 30 g resultou em 60 g/152 kcal; troca para gramas preservou a massa. Coca-Cola 200 ml resultou em 85 kcal; modelo com pão e bebida preservou ambos, permitiu alterar fatias/ml e reabriu o diário com as mesmas medidas. Café com leite 200 ml mostrou 65 kcal e fontes. Formulário em 390 px sem rolagem horizontal. Nenhum registro real alterado. Fontes e limites detalhados no README.
+
+Publicado em https://leve-fawn.vercel.app: dpl_4r4efU3j2ixnPBDnukhbXs8oKX7p. HTML e bundle final conferidos, manifesto e catálogo responderam 200, diário sem sessão respondeu 401. Navegador confirmou o bundle novo e nenhum script Google carregado. Build em produção: cerca de 193 kB gzip no bundle principal; aviso de tamanho já existente permanece para manutenção futura. Screenshots da interface registrados; nenhuma conta/diário real modificada nos testes.

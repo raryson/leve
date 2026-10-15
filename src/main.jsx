@@ -12,10 +12,10 @@ import { trackRecentFoods } from './foodLibrary.js';
 import { AccountRoot, SyncPanel } from './Account.jsx';
 import useJournal from './useJournal.js';
 import { accountKey } from './cloud.js';
-import { KEY, localDate, normalizeProfile, normalizeState, normalizeDay, newDay, upsertDay, portionCalories, parseDay, trainingDays, numeric, appendFood, appendActivity, normalizeSavedMeal, useSavedMeal } from './domain.js';
+import { KEY, localDate, normalizeProfile, normalizeState, normalizeDay, newDay, upsertDay, portionCalories, parseDay, trainingDays, numeric, appendFood, appendActivity, normalizeSavedMeal, useSavedMeal, amountUnit, sliceGrams } from './domain.js';
 import { foods, FOOD_SOURCE } from './foods.js';
 import LanguageSwitcher from './LanguageSwitcher.jsx';
-import {foodNote,itemName} from './foodLabels.js';
+import {foodNote,itemName,itemQuantity} from './foodLabels.js';
 import './styles.css';
 
 const fmt = n => Number(n).toLocaleString(getLocale(), { maximumFractionDigits: 1 });
@@ -76,7 +76,7 @@ function App({ account, accountControls }) {
       {tab === 'profile' && <>{syncPanel}<div className="intro"><div><small>{t("SEU PERFIL")}</small><h3>{t("Do seu jeito.")}</h3><p>{t("Ajuste suas referências e proteja seus registros.")}</p></div></div><section className="formbox"><ProfileForm key={JSON.stringify(s.profile)} initial={s.profile} onSave={p => { if (commit(x => ({ ...x, profile: p }))) setToast('Perfil salvo.'); }}/></section><section className="data-transfer"><h3>{t("Seus dados com você")}</h3><p>{t("Use o backup para guardar uma cópia. Com login, o diário sincroniza por conta; conflitos pedem sua revisão.")}</p><button className="primary" onClick={backup}>{t("Exportar backup")}</button><BackupInput onImport={restore}/></section></>}
     </main>
     {editor && <DayEditor key={editor} account={account} community={community} catalog={catalog} library={s} onFavorite={foodId => commit(x => ({...x, favoriteFoods: x.favoriteFoods.includes(foodId) ? x.favoriteFoods.filter(id=>id!==foodId) : [...x.favoriteFoods,foodId]}))} onSaveMeal={(name,items) => {
-      if(items.some(i=>i.grams==null || i.grams==='' || i.kcalPer100==null || i.kcalPer100==='')) throw new Error('Para salvar uma combinação, todos os alimentos precisam de gramas e kcal por 100 g. Registros antigos sem esses dados precisam ser cadastrados novamente pelo formulário.');
+      if(items.some(i=>i.unit==='ml'?(i.milliliters==null||i.milliliters===''||i.kcalPer100Ml==null||i.kcalPer100Ml===''):(i.grams==null || i.grams==='' || i.kcalPer100==null || i.kcalPer100===''))) throw new Error('Para salvar uma combinação, todos os itens precisam de quantidade e referência calórica na unidade correta. Registros antigos sem esses dados precisam ser cadastrados novamente.');
       const existing=s.savedMeals.find(m=>m.name.toLocaleLowerCase('pt-BR')===name.trim().toLocaleLowerCase('pt-BR'));
       const template=normalizeSavedMeal({id:existing?.id || id(),name,items});
       if(existing && !window.confirm(t("Atualizar a combinação “{0}”? Os dias já registrados não serão alterados.",[existing.name]))) return false;
@@ -133,7 +133,7 @@ function Icon({ name }) {
 }
 function Progress({ value, max }) { return <div className="bar" role="progressbar" aria-label={t("Progresso registrado")} aria-valuenow={Math.min(value, max)} aria-valuemin={0} aria-valuemax={max}><span style={{ width: `${Math.min(100, value / max * 100)}%` }}/></div>; }
 function DayCard({ day }) { return <div className="list">
-  {day.meals.length ? day.meals.map((m, i) => <div className="meal" key={i}><div><b>{t(m.name)}</b>{m.items.map((item, j) => <small key={j}>{itemName(item)} · {item.quantity || t("Quantidade não informada")} · {fmt(item.calories)}{t(" kcal")}</small>)}</div><strong>{fmt(m.calories)} <i>kcal</i></strong></div>) : <p className="empty-day">{t("Nenhuma refeição registrada para este dia.")}</p>}
+  {day.meals.length ? day.meals.map((m, i) => <div className="meal" key={i}><div><b>{t(m.name)}</b>{m.items.map((item, j) => <small key={j}>{itemName(item)} · {itemQuantity(item) || t("Quantidade não informada")} · {fmt(item.calories)}{t(" kcal")}</small>)}</div><strong>{fmt(m.calories)} <i>kcal</i></strong></div>) : <p className="empty-day">{t("Nenhuma refeição registrada para este dia.")}</p>}
   {day.exercise.performed && <div className="exercise-row"><div><b>{t("Movimento")}</b><small>{day.exercise.activities.map(a => t("{0} · {1} min",[a.type,a.durationMinutes])).join(' / ') || t("Atividade registrada em importação")}</small></div><strong>{day.exercise.totalCaloriesBurned ? t("{0} kcal estimadas",[fmt(day.exercise.totalCaloriesBurned)]) : t("Sem estimativa de gasto")}</strong></div>}
   <div className="day-total"><b>{t("Total registrado")}</b><strong>{fmt(day.totalCalories)}{t(" kcal")}</strong><small>{t("Água: ")}{fmt(day.waterMl)}{t(" ml")}{day.exercise.totalCaloriesBurned > 0 ? t(" · Ingestão − exercício estimado: {0} kcal (não é o déficit diário)",[fmt(day.netCalories)]) : ''}</small></div>{day.notes && <p className="detail-notes day-notes">{day.notes}</p>}
 </div>; }
@@ -171,7 +171,7 @@ function DayEditor({ day, close, onSave, library, onFavorite, onSaveMeal, onDele
     <details className="voice-disclosure"><summary>{t("Falar ou escrever minha refeição ")}<span>{t("Ditado + revisão dos alimentos")}</span></summary>
     <VoiceMeal onDirty={setVoiceDirty} onAdd={(meal, items) => { setDraft(previous => items.reduce((day, item) => appendFood(day, meal, item), previous)); setError(''); }}/>
     </details>
-    <div className="draft-list">{draft.meals.map((m, mi) => <section key={mi}><b>{t(m.name)} · {fmt(m.calories)}{t(" kcal")}</b>{m.items.length>0 && <SaveMealButton meal={m} onSave={onSaveMeal}/>} {m.items.map((item, ii) => <div className="draft-row" key={ii}><span>{itemName(item)} · {item.quantity} · {fmt(item.calories)}{t(" kcal")}</span><button className="outline" aria-label={t("Remover {0}",[itemName(item)])} onClick={() => { const meals = structuredClone(draft.meals); meals[mi].items.splice(ii, 1); if (!meals[mi].items.length) meals.splice(mi, 1); setDraft(normalizeDay({ ...draft, meals })); }}>×</button></div>)}{!m.items.length && <button className="outline" onClick={() => setDraft(normalizeDay({ ...draft, meals: draft.meals.filter((_, i) => i !== mi) }))}>{t("Remover refeição")}</button>}</section>)}</div>
+    <div className="draft-list">{draft.meals.map((m, mi) => <section key={mi}><b>{t(m.name)} · {fmt(m.calories)}{t(" kcal")}</b>{m.items.length>0 && <SaveMealButton meal={m} onSave={onSaveMeal}/>} {m.items.map((item, ii) => <div className="draft-row" key={ii}><span>{itemName(item)} · {itemQuantity(item)} · {fmt(item.calories)}{t(" kcal")}</span><button className="outline" aria-label={t("Remover {0}",[itemName(item)])} onClick={() => { const meals = structuredClone(draft.meals); meals[mi].items.splice(ii, 1); if (!meals[mi].items.length) meals.splice(mi, 1); setDraft(normalizeDay({ ...draft, meals })); }}>×</button></div>)}{!m.items.length && <button className="outline" onClick={() => setDraft(normalizeDay({ ...draft, meals: draft.meals.filter((_, i) => i !== mi) }))}>{t("Remover refeição")}</button>}</section>)}</div>
     <ExerciseForm onDirty={setExerciseDirty} onAdd={activity => setDraft(appendActivity(draft, activity))}/>
     {draft.exercise.activities.map((a, i) => <div className="draft-row" key={i}><span>{t(a.type)} · {a.durationMinutes}{t(" min")}</span><button className="outline" aria-label={t("Remover treino {0}",[t(a.type)])} onClick={() => { const activities = draft.exercise.activities.filter((_, j) => j !== i); setDraft(normalizeDay({ ...draft, exercise: { activities, performed: activities.length > 0, totalCaloriesBurned: 0 } })); }}>×</button></div>)}
     <label className="standalone-label">{t("Água do dia (ml)")}<input type="number" min="0" max="100000" value={draft.waterMl} onChange={e => setDraft({ ...draft, waterMl: e.target.value })}/></label>
@@ -181,26 +181,30 @@ function DayEditor({ day, close, onSave, library, onFavorite, onSaveMeal, onDele
 }
 
 function FoodForm({ onDirty, onAdd, favorites, recent, onFavorite, catalog, onCreate }) {
-  const [foodId, setFoodId] = useState(foods[0].id);
-  const [name, setName] = useState('');
-  const [per100, setPer100] = useState('');
-  const [grams, setGrams] = useState('100');
-  const [meal, setMeal] = useState('Almoço');
-  const [error, setError] = useState('');
-  const [dirty,setDirty]=useState(false);
+  const [foodId,setFoodId]=useState(foods[0].id),[name,setName]=useState(''),[per100,setPer100]=useState('');
+  const [amount,setAmount]=useState('100'),[mode,setMode]=useState('g'),[sliceWeight,setSliceWeight]=useState('25');
+  const [meal,setMeal]=useState('Almoço'),[error,setError]=useState(''),[dirty,setDirty]=useState(false);
   useEffect(()=>onDirty(dirty),[dirty,onDirty]);
-  const food = catalog.find(f => f.id === foodId);
-  let preview = '—';
-  try { preview = fmt(portionCalories(grams, food ? food.kcal : per100)); } catch { /* Incomplete form. */ }
-  return <form className="entry-form" onChange={()=>setDirty(true)} onSubmit={e => { e.preventDefault(); try { const label = food ? food.name : name.trim(); if (!label) throw new Error('Informe o alimento.'); onAdd(meal, { id: id(), foodId: food?.id || '', food: label, quantity: `${grams} g`, grams: Number(grams), kcalPer100: food?.kcal ?? Number(per100), calories: portionCalories(grams, food ? food.kcal : per100), source: food ? (food.sourceUrl || food.source || food.referenceId || food.id) : 'Rótulo informado', referenceNote: food?.note || '' }); setDirty(false); setError(''); } catch (e) { setError(e.message); } }}>
-    <h4>{t("Adicionar alimento")}</h4><label>{t("Refeição")}<select aria-label={t("Refeição")} value={meal} onChange={e => setMeal(e.target.value)}>{['Café da manhã', 'Almoço', 'Lanche', 'Jantar', 'Ceia'].map(m => <option key={m} value={m}>{t(m)}</option>)}</select></label>
-    <FoodPicker catalog={catalog} onCreate={onCreate} value={foodId} onChange={value=>{setFoodId(value);setDirty(true);}} favorites={favorites} recent={recent} onFavorite={onFavorite}/>
-    {!food && <><label>{t("Nome do alimento")}<input required maxLength={200} value={name} onChange={e => setName(e.target.value)}/></label><label>{t("kcal por 100 g (rótulo)")}<input required type="number" min="0" max="1000" step="0.1" value={per100} onChange={e => setPer100(e.target.value)}/></label></>}
-    <label>{t("Quantidade consumida (g)")}<input required type="number" min="0.1" max="10000" step="0.1" value={grams} onChange={e => setGrams(e.target.value)}/></label>
-    {food?.portion && <button type="button" className="outline" onClick={() => {setGrams(String(food.portion.grams));setDirty(true);}}>{t("Usar ")}{t(food.portion.label)}</button>}
-    {food?.note && <p className="form-note">{foodNote(food)}</p>}
-    <p className="form-note" aria-live="polite">{preview}{t(" kcal · quantidade × kcal por 100 g ÷ 100. Considere a parte comestível e o preparo. Óleo e acompanhamentos não incluídos na referência devem ser registrados à parte. ")}{food && (food.sourceUrl || !food.communityStatus) && <a href={food.sourceUrl || FOOD_SOURCE} target="_blank" rel="noreferrer">{t("Fonte: ")}{t(food.sourceLabel || 'TACO, 4ª edição')}</a>}</p>
-    {error && <p role="alert" className="error-box">{t(error)}</p>}<button className="outline">{t("＋ Adicionar alimento")}</button>{dirty&&<button type="button" className="outline" onClick={()=>{setFoodId(foods[0].id);setName('');setPer100('');setGrams('100');setDirty(false);setError('');}}>{t("Descartar preenchimento do alimento")}</button>}
+  const food=catalog.find(f=>f.id===foodId),unit=amountUnit(food);
+  function select(value){const next=catalog.find(f=>f.id===value);setFoodId(value);setMode(next?.slice?'slice':amountUnit(next));setSliceWeight(String(next?.slice?.grams||25));setAmount(next?.slice?'1':String(next?.defaultAmount||100));setDirty(true);setError('');}
+  function measured(){return mode==='slice'?sliceGrams(amount,sliceWeight):numeric(amount,.1,10000,unit==='ml'?'Volume em ml':'Quantidade');}
+  let preview='—',total=null;try{total=measured();preview=fmt(portionCalories(total,food?food.kcal:per100));}catch{/* Incomplete fields are reviewed before adding. */}
+  return <form className="entry-form" onChange={()=>setDirty(true)} onSubmit={e=>{e.preventDefault();try{
+    const label=food?food.name:name.trim();if(!label)throw new Error('Informe o alimento.');
+    const value=measured(),density=food?food.kcal:Number(per100);
+    onAdd(meal,{id:id(),foodId:food?.id||'',food:label,calories:portionCalories(value,density),...(unit==='ml'?{unit:'ml',milliliters:value,kcalPer100Ml:density,grams:null,kcalPer100:null,quantity:value+' ml'}:{grams:value,kcalPer100:density,quantity:value+' g',...(mode==='slice'?{servingUnit:'slice',servings:Number(amount),gramsPerSlice:Number(sliceWeight)}:{})}),source:food?(food.sourceUrl||food.source||food.referenceId||food.id):'Rótulo informado',referenceNote:food?.note||''});setDirty(false);setError('');
+  }catch(e){setError(e.message);}}}>
+    <h4>{t('Adicionar alimento')}</h4><label>{t('Refeição')}<select aria-label={t('Refeição')} value={meal} onChange={e=>setMeal(e.target.value)}>{['Café da manhã','Almoço','Lanche','Jantar','Ceia'].map(m=><option key={m} value={m}>{t(m)}</option>)}</select></label>
+    <FoodPicker catalog={catalog} onCreate={onCreate} value={foodId} onChange={select} favorites={favorites} recent={recent} onFavorite={onFavorite}/>
+    {!food&&<><label>{t('Nome do alimento')}<input required maxLength={200} value={name} onChange={e=>setName(e.target.value)}/></label><label>{t('kcal por 100 g (rótulo)')}<input required type="number" min="0" max="1000" step="0.1" value={per100} onChange={e=>setPer100(e.target.value)}/></label></>}
+    {food?.slice&&<label>{t('Registrar pão por')}<select value={mode} onChange={e=>{const next=e.target.value;try{const grams=measured();setAmount(String(next==='slice'?Math.round(grams/Number(sliceWeight)*100)/100:grams));}catch{setAmount('');}setMode(next);}}><option value="slice">{t('Fatias')}</option><option value="g">{t('Gramas')}</option></select></label>}
+    <label>{mode==='slice'?t('Quantidade de fatias'):unit==='ml'?t('Volume consumido (ml)'):t('Quantidade consumida (g)')}<input required type="number" min={mode==='slice'?0.01:0.1} max={mode==='slice'?100:10000} step={mode==='slice'?0.01:0.1} value={amount} onChange={e=>setAmount(e.target.value)}/></label>
+    {mode==='slice'&&<><label>{t('Peso médio por fatia (g)')}<input required type="number" min="0.1" max="500" step="0.1" value={sliceWeight} onChange={e=>setSliceWeight(e.target.value)}/></label><p className="form-note">{t('Estimativa editável: {0} g por fatia. Confira o rótulo ou pese sua fatia; o tamanho varia.',[fmt(food.slice.grams)])} {t('Peso total calculado: {0} g.',[total==null?'—':fmt(total)])} <a href={food.slice.sourceUrl} target="_blank" rel="noreferrer">{t('Referência do peso da fatia ↗')}</a></p></>}
+    {food?.portion&&<button type="button" className="outline" onClick={()=>{setAmount(String(food.portion.grams));setDirty(true);}}>{t('Usar ')}{t(food.portion.label)}</button>}
+    {unit==='ml'&&<p className="form-note">{t('Referência por volume. ml não são convertidos em gramas. Açúcar e outros ingredientes extras devem ser registrados separadamente.')}</p>}
+    {food?.note&&<p className="form-note">{foodNote(food)}</p>}
+    <p className="form-note" aria-live="polite">{t('{0} kcal · quantidade × kcal por 100 {1} ÷ 100.',[preview,unit])} {food&&(food.sourceUrl||!food.communityStatus)&&<a href={food.sourceUrl||FOOD_SOURCE} target="_blank" rel="noreferrer">{t('Fonte: ')}{t(food.sourceLabel||'TACO, 4ª edição')}</a>} {food?.extraSources?.map(source=><a key={source.url} href={source.url} target="_blank" rel="noreferrer">{t(source.label)} ↗</a>)}</p>
+    {error&&<p role="alert" className="error-box">{t(error)}</p>}<button className="outline">{t('＋ Adicionar alimento')}</button>{dirty&&<button type="button" className="outline" onClick={()=>{setFoodId(foods[0].id);setName('');setPer100('');setAmount('100');setMode('g');setDirty(false);setError('');}}>{t('Descartar preenchimento do alimento')}</button>}
   </form>;
 }
 

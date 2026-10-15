@@ -10,7 +10,7 @@ npm run build
 npm run preview
 ```
 
-O catálogo local tem 28 opções com referências da TACO, de fabricantes e do manual da SBD, além da opção para informar o rótulo. Carnes têm corte e preparo identificados; aproximações são sinalizadas. Pasta de amendoim e cremes têm atalhos de colher com gramas editáveis. Quantidades usam gramas; atenção ao preparo e à parte comestível. IA não é necessária, e a importação JSON do fluxo antigo continua disponível.
+O catálogo local tem 35 opções com referências da TACO, de fabricantes e do manual da SBD, além da opção para informar o rótulo. Carnes têm corte e preparo identificados; aproximações são sinalizadas. Pasta de amendoim e cremes têm atalhos de colher com gramas editáveis. Sólidos usam gramas, pão de forma também aceita fatias com peso editável, e as novas bebidas usam ml; atenção ao preparo e à parte comestível. IA não é necessária, e a importação JSON do fluxo antigo continua disponível.
 
 Sem login, os dados continuam no `localStorage` deste navegador, na chave original `leve-state-v3`, com migração dos backups antigos. Com login, cada conta usa uma cópia local própria e um diário no PostgreSQL Neon. A cópia de visitante não é enviada automaticamente: use **Importar dados deste dispositivo** quando a conta estiver vazia ou restaure um backup pelo perfil. A prévia tem outro endereço e não enxerga os registros locais do endereço antigo; nesse caso, transfira um backup.
 
@@ -42,7 +42,7 @@ No registro do dia, **Alimento** abre um buscador visual com texto, categorias, 
 
 Monte a refeição no rascunho e use **Salvar combinação para repetir**. Dê um nome, como “Almoço de casa”. Em **Minhas refeições**, use **Revisar e usar** para escolher a refeição de destino e ajustar cada quantidade em gramas antes de adicionar. O total é recalculado localmente; usar a combinação não modifica o modelo nem os dias anteriores. Salvar outro modelo com o mesmo nome pede confirmação para atualizar. Exclusão da combinação também preserva os registros anteriores.
 
-Até 100 combinações, com 50 alimentos por combinação. Alimentos precisam ter gramas e kcal/100 g; registros antigos com apenas um total não são convertidos em porções inventadas. A biblioteca e as preferências fazem parte do backup e do diário da conta, usando a sincronização existente por versão completa. O schema passa para versão 5, preservando dados anteriores; versões antigas do app podem pedir atualização depois que este diário for salvo.
+Até 100 combinações, com 50 alimentos por combinação. Alimentos precisam ter gramas e kcal/100 g ou ml e kcal/100 ml; registros antigos com apenas um total não são convertidos em porções inventadas. A biblioteca e as preferências fazem parte do backup e do diário da conta, usando a sincronização existente por versão completa. O schema passa para versão 6, preservando dados anteriores; versões antigas do app podem pedir atualização depois que este diário for salvo.
 
 Não há serviço de IA ou armazenamento de fotos nesta funcionalidade. Nenhum recurso pago adicional foi contratado.
 
@@ -110,8 +110,18 @@ O seletor **Idioma / Language** aparece no cabeçalho e antes do cadastro inicia
 
 IDs de alimentos, categorias e refeições padrão continuam canônicos; a apresentação usa o idioma selecionado. A busca local aceita nomes em português e inglês. Calorias, gramas, kg, cm, ml, fontes e valores do diário não são convertidos ou recalculados pela mudança de idioma. Notas, nomes de modelos e contribuições dos usuários permanecem no idioma em que foram escritos, sem tradução automática ou IA. Os alimentos continuam usando as mesmas referências brasileiras e de fabricantes; tradução não transforma uma referência em outro produto ou preparo.
 
-O ditado solicita `pt-BR` ou `en-US`. O interpretador local aceita inglês com números por extenso, gramas/kg e tablespoons; teaspoons, fatias ou unidades sem peso continuam pendentes para revisão. Cortes ambíguos não são escolhidos automaticamente. Captura real de áudio em inglês ainda exige teste em navegador compatível; interpretação de texto, configuração do reconhecedor e regressões em português são testadas.
+O ditado solicita `pt-BR` ou `en-US`. O interpretador local aceita inglês com números por extenso, gramas/kg e tablespoons; fatias de pão integral usam a estimativa editável do catálogo. Teaspoons e unidades sem peso continuam pendentes; bebidas devem ser registradas pelo formulário em ml. Cortes ambíguos não são escolhidos automaticamente. Captura real de áudio em inglês ainda exige teste em navegador compatível; interpretação de texto, configuração do reconhecedor e regressões em português são testadas.
 
 O manifesto inglês é `/manifest.en.webmanifest`, com a mesma identidade e os mesmos ícones da PWA; os dois manifestos e o catálogo de tradução entram no cache offline. Idioma, título e descrição do documento acompanham a seleção. Textos de controles nativos do navegador/SO e páginas externas seguem as configurações desses serviços. A capa social estática mantém a identidade atual do Leve.
 
 Testes de internacionalização cobrem detecção, fallback, preferência manual, armazenamento restrito, mensagens parametrizadas, preservação dos dados, busca em inglês, relato com números/porções e ausência de chaves estáticas sem tradução. Analytics continua desligado conforme a decisão anterior; nenhum serviço pago foi adicionado.
+
+## Bebidas e fatias
+
+O catálogo inclui espresso sem açúcar, café com leite sem açúcar, leite integral preparado, Coca-Cola original/sem açúcar e sucos 100% de laranja/uva. Cada item identifica o produto ou preparo de referência e liga à fonte. Bebidas usam `unit: ml`, `milliliters` e `kcalPer100Ml`; não se assume que ml sejam gramas. Adições de açúcar e outros ingredientes devem ser registradas separadamente. Café com leite é uma receita explícita de volumes iguais de espresso e leite integral preparado; outras proporções exigem registrar os componentes separadamente.
+
+Referências: [Nespresso](https://www.contact.nespresso.com/faq-3/mx/en), [NINHO Integral preparado](https://www.nestleparaespecialistas.com.br/produtos/ninho-integral), [Coca-Cola Brasil](https://www.coca-cola.com/br/pt/brands/coca-cola/produtos) e [Del Valle 100%](https://www.coca-cola.com/br/pt/brands/del-valle/del-valle-100). Sucos são referências de produtos específicos; não equivalem a qualquer suco fresco, néctar ou receita adoçada. Confira o rótulo da marca/país utilizado.
+
+Pão integral de forma começa em uma fatia de 25 g, **estimativa editável**, baseada na porção de 50 g/2 fatias da [Wickbold](https://wickbold.com.br/produtos/grao-sabor-100-natural-tradicional/); não é uma média universal. A referência calórica continua TACO, 253 kcal/100 g, separada da fonte do peso. É possível usar frações de fatia, ajustar o peso e alternar para gramas. Diário/modelos guardam `servingUnit: slice`, `servings`, `gramsPerSlice` e massa total, preservando a porção usada.
+
+Modelos mistos preservam ml/fatias e permitem editar o volume ou a quantidade ao repetir. Backup e API usam a mesma validação. Versão 6 preserva os registros antigos em gramas e suas calorias históricas, sem inventar fatias retroativamente; nenhuma migração SQL é necessária. O relato local entende fatias de pão em português/inglês, mas exclui bebidas por volume para não interpretar kcal/100 ml como kcal/100 g. Não há serviço pago novo; analytics permanece desligado.

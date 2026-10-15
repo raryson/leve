@@ -121,11 +121,12 @@ export default function VoiceMeal({ onAdd, onDirty }) {
         const food = foods.find(f => f.id === row.foodId);
         let calories = '—'; try { calories = portionCalories(row.grams, food?.kcal); } catch { /* Review needed. */ }
         return <div className="voice-item" key={row.id}><p>{t("Trecho: “")}{row.text}”</p>
-          <label>{t("Alimento do trecho ")}{index + 1}<select value={row.foodId} onChange={e => { const foodId = e.target.value; changeRow(index, { foodId, grams: row.measure === 'spoon' ? resolveGrams(row, foodId) : row.grams }); }}><option value="">{row.candidates.length > 1 ? t("Escolha o tipo ou preparo") : t("Selecione um alimento")}</option>{foods.map(f => <option value={f.id} key={f.id}>{row.candidates.includes(f.id) ? t("Sugestão: ") : ''}{foodName(f)}</option>)}</select></label>
+          <label>{t("Alimento do trecho ")}{index + 1}<select value={row.foodId} onChange={e => { const foodId = e.target.value; changeRow(index, { foodId, grams: ['spoon','slice'].includes(row.measure) ? resolveGrams(row, foodId) : row.grams }); }}><option value="">{row.candidates.length > 1 ? t("Escolha o tipo ou preparo") : t("Selecione um alimento")}</option>{foods.filter(f=>f.unit!=='ml').map(f => <option value={f.id} key={f.id}>{row.candidates.includes(f.id) ? t("Sugestão: ") : ''}{foodName(f)}</option>)}</select></label>
           <label>{t("Gramas do trecho ")}{index + 1}<input type="number" min="0.1" max="10000" step="0.1" value={row.grams} onChange={e => changeRow(index, { grams: e.target.value })}/></label>
           <span>{calories}{t(" kcal")}</span><button type="button" className="outline" onClick={() => setRows(previous => previous.filter((_, i) => i !== index))}>{t("Remover trecho ")}{index + 1}</button>
           {!row.foodId && <small>{row.candidates.length > 1 ? t("Há mais de uma referência possível. Confirme corte, tipo ou preparo.") : t("Não encontrei uma referência única. Escolha o alimento ou use o formulário por rótulo.")}</small>}
           {row.needsSplit && <small>{t("Este trecho tem vários alimentos ou quantidades. Separe cada alimento por “e” ou vírgula no relato e interprete novamente.")}</small>}
+          {row.measure==='slice'&&food?.slice&&<small>{t('Fatia estimada em {0} g. Confira o peso e ajuste os gramas se necessário.',[food.slice.grams])}</small>}
           {row.measure === 'spoon' && <small>{t("Colher é uma estimativa, e o peso depende do alimento. Confira os gramas.")}</small>}
           {row.grams === '' && <small>{t("Quantidade em gramas não definida. Unidades, fatias e pratos precisam ser pesados ou estimados por você.")}</small>}
           {food?.note && <small>{foodNote(food)}</small>}
@@ -134,6 +135,6 @@ export default function VoiceMeal({ onAdd, onDirty }) {
       <p>{ready ? t("Total revisado: {0} kcal",[total]) : t("Complete ou remova os trechos pendentes para continuar.")}</p>
       <button type="button" className="primary" disabled={!ready || active} onClick={() => { try { onAdd(meal, reviewedItems(rows)); setTranscript(''); setRows(null); setMessage('Refeição adicionada ao rascunho. Toque em Salvar dia para guardar.'); setError(''); } catch (e) { setError(e.message); } }}>{t("Adicionar refeição revisada ao dia")}</button>
     </div>}
-    <p className="local-note">{t("A interpretação usa regras e o catálogo local; não reconhece qualquer prato ou receita. A transcrição só fica no relato; o diário recebe os alimentos que você confirmar.")}</p>
+    <p className="local-note">{t('Registre bebidas pelo formulário em ml.')} {t("A interpretação usa regras e o catálogo local; não reconhece qualquer prato ou receita. A transcrição só fica no relato; o diário recebe os alimentos que você confirmar.")}</p>
   </section>;
 }

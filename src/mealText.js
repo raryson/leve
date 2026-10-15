@@ -59,7 +59,7 @@ const tokens = text => normalize(text).replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).
 function candidatesFor(text,language='pt') {
   const haystack = ` ${tokens(text)} `;
   if (/\bnao\b/.test(normalize(text))||(language==='en'&&/\b(?:not|didn't|did not)\b/.test(text))) return { candidates: [], needsSplit: false };
-  const ranked = foods.map(food => {
+  const ranked = foods.filter(food=>food.unit!=='ml').map(food => {
     const name = normalize(food.name);
     if(language==='en'){
       if(/skinless|without skin/.test(text)&&/com pele/.test(name))return {id:food.id,score:0};
@@ -91,6 +91,7 @@ export function resolveGrams(row, foodId = row.foodId) {
   if (row.measure === 'grams') return row.amount;
   const food = foods.find(f => f.id === foodId);
   if (row.measure === 'spoon' && food?.portion?.label.includes('colher de sopa')) return row.amount * food.portion.grams;
+  if (row.measure === 'slice' && food?.slice) return row.amount * food.slice.grams;
   return '';
 }
 export function parseMealText(transcript,language='pt') {
@@ -104,10 +105,11 @@ export function parseMealText(transcript,language='pt') {
     if (masses.length > 1) return { id: index, text: clause, candidates: [], foodId: '', measure: 'unknown', amount: null, grams: '', needsSplit: true };
     const mass = clause.match(/\b(\d+(?:[.,]\d+)?)\s*(kg|kilograms?|quilos?|quilogramas?|gramas?|grams?|g)\b/);
     const spoon = clause.match(language==='en'?/\b(\d+(?:[.,]\d+)?)\s*(tablespoons?|tbsp|teaspoons?|tsp|spoonfuls?)\b/:/\b(\d+(?:[.,]\d+)?)\s*colher(?:es)?(?:\s+(?:de\s+)?(sopa|cha|cafe))?/);
+    const slice=clause.match(/\b(\d+(?:[.,]\d+)?)\s*(?:fatias?|slices?)\b/);
     const { candidates, needsSplit } = candidatesFor(clause,language);
     const foodId = !needsSplit && candidates.length === 1 ? candidates[0] : '';
-    const measure = mass ? 'grams' : spoon && !['cha', 'cafe'].includes(spoon[2])&&!/^teaspoon|^tsp/.test(spoon[2]) ? 'spoon' : 'unknown';
-    const amount = mass ? Number(mass[1].replace(',', '.')) * (/^(kg|quilo|kilogram)/.test(mass[2]) ? 1000 : 1) : spoon ? Number(spoon[1].replace(',', '.')) : null;
+    const measure = mass ? 'grams' : slice?'slice':spoon && !['cha', 'cafe'].includes(spoon[2])&&!/^teaspoon|^tsp/.test(spoon[2]) ? 'spoon' : 'unknown';
+    const amount = mass ? Number(mass[1].replace(',', '.')) * (/^(kg|quilo|kilogram)/.test(mass[2]) ? 1000 : 1) : slice?Number(slice[1].replace(',','.')):spoon ? Number(spoon[1].replace(',', '.')) : null;
     const row = { id: index, text: clause, candidates, foodId, measure, amount, needsSplit };
     return { ...row, grams: resolveGrams(row) };
   });
@@ -121,7 +123,8 @@ export function reviewedItems(rows) {
     if (row.needsSplit) throw new Error('Separe os alimentos do trecho por “e” ou vírgula e interprete novamente.');
     const food = foods.find(f => f.id === row.foodId);
     if (!food) throw new Error(`Escolha o alimento para “${row.text}”. Se ele não estiver na lista, use o registro por rótulo.`);
+    if(food.unit==='ml')throw new Error('Registre bebidas pelo formulário em ml.');
     const calories = portionCalories(row.grams, food.kcal);
-    return { food: food.name, quantity: `${row.grams} g`, grams: Number(row.grams), kcalPer100: food.kcal, calories, source: food.sourceUrl || food.referenceId || food.id, referenceNote: food.note || '', entryMethod: 'reviewed-dictation' };
+    return { foodId:food.id,food: food.name, quantity: `${row.grams} g`, grams: Number(row.grams), kcalPer100: food.kcal, calories,...(row.measure==='slice'&&food.slice?{servingUnit:'slice',servings:row.amount,gramsPerSlice:Number(row.grams)/row.amount}:{}), source: food.sourceUrl || food.referenceId || food.id, referenceNote: food.note || '', entryMethod: 'reviewed-dictation' };
   });
 }

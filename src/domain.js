@@ -1,5 +1,5 @@
 export const KEY = 'leve-state-v3';
-export const VERSION = 5;
+export const VERSION = 6;
 export const emptyState = () => ({ version: VERSION, profile: null, days: [], weights: [], savedMeals: [], favoriteFoods: [], recentFoods: [] });
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const number = value => Number(typeof value === 'string' ? value.replace(',', '.') : value);
@@ -7,6 +7,22 @@ export function numeric(value, min, max, label) {
   const n = number(value);
   if (value === '' || value == null || !Number.isFinite(n) || n < min || n > max) throw new Error(`${label}: informe um número entre ${min} e ${max}.`);
   return n;
+}
+export const amountUnit=item=>item?.unit==='ml'?'ml':'g';
+export const itemAmount=item=>amountUnit(item)==='ml'?item.milliliters:item.grams;
+export const itemDensity=item=>amountUnit(item)==='ml'?item.kcalPer100Ml:item.kcalPer100;
+export function sliceGrams(slices,gramsPerSlice){return numeric(Math.round(numeric(slices,.01,100,'Quantidade de fatias')*numeric(gramsPerSlice,.1,500,'Peso por fatia')*100)/100,.1,10000,'Quantidade em gramas');}
+function sliceDetails(item,grams){
+  if(item.servingUnit!=='slice')return {};
+  const servings=numeric(item.servings,.01,100,'Quantidade de fatias'),gramsPerSlice=numeric(item.gramsPerSlice,.1,500,'Peso por fatia');
+  const mass=numeric(grams,.1,10000,'Quantidade em gramas');
+  if(Math.abs(sliceGrams(servings,gramsPerSlice)-mass)>.01)throw new Error('As fatias não correspondem ao peso total. Confira a porção.');
+  return {servingUnit:'slice',servings,gramsPerSlice};
+}
+function volumeDetails(item){
+  if(item.servingUnit!=null)throw new Error('Bebidas em ml não usam porções em fatias.');
+  const milliliters=numeric(item.milliliters,.1,10000,'Volume em ml'),kcalPer100Ml=numeric(item.kcalPer100Ml,0,1000,'kcal por 100 ml');
+  return {unit:'ml',milliliters,kcalPer100Ml,grams:null,kcalPer100:null,quantity:`${milliliters} ml`,calories:portionCalories(milliliters,kcalPer100Ml)};
 }
 export function validDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || localDate(new Date(`${value}T12:00:00`)) !== value) throw new Error('Data inválida.');
@@ -29,7 +45,7 @@ export function normalizeDay(d) {
     if (!m || typeof m !== 'object') throw new Error('Refeição inválida.');
     const items = array(m.items, 'Itens').map(i => {
       if (!i || typeof i !== 'object') throw new Error('Alimento inválido.');
-      return { ...i, food: text(i.food, 'Alimento'), quantity: text(i.quantity), calories: kcal(i.calories) };
+      return { ...i, food: text(i.food, 'Alimento'), quantity: text(i.quantity), calories: kcal(i.calories),...(i.unit==='ml'?volumeDetails(i):sliceDetails(i,i.grams)) };
     });
     return { ...m, name: text(m.name, 'Refeição'), items, calories: items.length ? items.reduce((sum, i) => sum + i.calories, 0) : kcal(m.calories) };
   });
@@ -81,9 +97,9 @@ export function normalizeSavedMeal(meal) {
   if (!meal || typeof meal.id !== 'string' || !meal.id || meal.id.length > 100 || typeof meal.name !== 'string' || !meal.name.trim() || meal.name.length > 80 || !Array.isArray(meal.items) || !meal.items.length || meal.items.length > 50) throw new Error('Informe um nome e de 1 a 50 alimentos para a refeição salva.');
   const items = meal.items.map(item => {
     if (!item || typeof item.food !== 'string' || !item.food.trim() || item.food.length > 200) throw new Error('Alimento inválido na refeição salva.');
-    const grams = numeric(item.grams, .1, 10000, 'Quantidade em gramas');
-    const kcalPer100 = numeric(item.kcalPer100, 0, 1000, 'kcal por 100 g');
-    return { food: item.food.trim(), foodId: typeof item.foodId === 'string' ? item.foodId.slice(0, 100) : '', grams, kcalPer100, quantity: `${grams} g`, calories: portionCalories(grams, kcalPer100), source: text(item.source).slice(0, 1000), referenceNote: text(item.referenceNote).slice(0, 2000) };
+    if(item.unit!=null&&!['g','ml'].includes(item.unit))throw new Error('Unidade de medida inválida.');
+    const measured=item.unit==='ml'?volumeDetails(item):(()=>{const grams=numeric(item.grams,.1,10000,'Quantidade em gramas'),kcalPer100=numeric(item.kcalPer100,0,1000,'kcal por 100 g');return {grams,kcalPer100,quantity:`${grams} g`,calories:portionCalories(grams,kcalPer100),...sliceDetails(item,grams)};})();
+    return { food: item.food.trim(), foodId: typeof item.foodId === 'string' ? item.foodId.slice(0, 100) : '', ...measured, source: text(item.source).slice(0, 1000), referenceNote: text(item.referenceNote).slice(0, 2000) };
   });
   return { id: meal.id, name: meal.name.trim(), items };
 }

@@ -28,7 +28,7 @@ test('busca em inglês mantém as referências nutricionais originais e os filtr
 });
 test('relato em inglês reconhece números, gramas e colheres sem converter unidades ambíguas',()=>{
   const result=parseMealText('For lunch I ate one hundred and fifty grams of white rice and one tablespoon of peanut butter','en');assert.equal(result.meal,'Almoço');assert.equal(result.rows.length,2);assert.equal(result.rows[0].foodId,'taco-3');assert.equal(result.rows[0].grams,150);assert.equal(result.rows[1].grams,15);assert.equal(reviewedItems(result.rows)[0].calories,192);
-  assert.equal(parseMealText('100 grams of skinless chicken thighs','en').rows[0].foodId,'taco-413');assert.equal(parseMealText('one teaspoon of peanut butter','en').rows[0].grams,'');assert.equal(parseMealText('two slices of whole wheat bread','en').rows[0].grams,'');
+  assert.equal(parseMealText('100 grams of skinless chicken thighs','en').rows[0].foodId,'taco-413');assert.equal(parseMealText('one teaspoon of peanut butter','en').rows[0].grams,'');assert.equal(parseMealText('two slices of whole wheat bread','en').rows[0].grams,50);
   assert.equal(parseMealText('half a kilogram of black beans','en').rows[0].grams,500);
   assert.equal(parseMealText('1,000 grams of black beans','en').rows[0].grams,1000);
 });

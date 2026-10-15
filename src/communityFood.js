@@ -50,7 +50,7 @@ export function nutritionFlags(food) {
   if(food.kcal===0) flags.push('Zero kcal exige conferência da referência e do arredondamento.');
   if(/\bagua\b/.test(name) && !/coco|sabor|tonica/.test(name) && food.kcal>1) flags.push('Água com valor energético: conferir composição.');
   if(/\b(oleo|azeite)\b/.test(name) && food.kcal<700) flags.push('Óleo/azeite com valor muito baixo: conferir a unidade.');
-  const official=foods.find(f=>normalizedText(f.name)===name);
+  const official=foods.find(f=>f.unit!=='ml'&&normalizedText(f.name)===name);
   if(official && Math.abs(official.kcal-food.kcal)>Math.max(20,official.kcal*.2)) flags.push('Valor divergente da referência já existente no catálogo.');
   if(!food.sourceUrl) flags.push('Referência sem link: conferir o rótulo descrito manualmente.');
   flags.push('A faixa numérica não confirma a composição. Conferir nome, preparo, porção e fonte antes de publicar.');
