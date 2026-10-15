@@ -104,7 +104,7 @@ Decisão do usuário em 14/10/2026: manter a coleta GA4 desligada por enquanto. 
 
 ## Português e inglês
 
-O seletor **Idioma / Language** aparece no cabeçalho e antes do cadastro inicial, inclusive enquanto o login carrega. No primeiro acesso, o app percorre `navigator.languages` e escolhe o primeiro português/inglês disponível; outros idiomas usam inglês como fallback. Uma escolha manual prevalece e fica na chave `leve-language-v1` deste navegador. Se o armazenamento estiver indisponível, a escolha vale só nesta sessão. Abas da mesma origem acompanham mudanças dessa preferência. A preferência é por navegador, não sincronizada com o diário da conta.
+O seletor **Idioma / Language** fica somente na tela **Perfil**, junto às configurações do usuário. O cabeçalho, cadastro inicial e carregamento usam a detecção automática do idioma, sem exibir o seletor. No primeiro acesso, o app percorre `navigator.languages` e escolhe o primeiro português/inglês disponível; outros idiomas usam inglês como fallback. Uma escolha manual prevalece e fica na chave `leve-language-v1` deste navegador. Se o armazenamento estiver indisponível, a escolha vale só nesta sessão. Abas da mesma origem acompanham mudanças dessa preferência. A preferência é por navegador, não sincronizada com o diário da conta.
 
 `src/i18n.js` controla a seleção, mensagens parametrizadas, datas/números e idioma do documento. `src/locales/en.json` contém a tradução da interface e do catálogo embutido. A troca atualiza React sem remontar formulários: rascunhos são mantidos. Clerk usa os recursos `ptBR`/`enUS` de `@clerk/localizations`, seguindo a [documentação oficial de localização](https://clerk.com/docs/guides/customizing-clerk/localization); não há mudança nas contas, sessões ou permissões.
 

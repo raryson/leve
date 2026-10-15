@@ -2,14 +2,14 @@ import { t } from './i18n.js';
 import React, { useState } from 'react';
 import { ClerkProvider, SignInButton, SignUpButton, UserButton, useAuth } from '@clerk/react';
 import { ptBR, enUS } from '@clerk/localizations';
-import LanguageSwitcher, {useLanguage} from './LanguageSwitcher.jsx';
+import {useLanguage} from './LanguageSwitcher.jsx';
 import { readState } from './domain.js';
 
 function AccountApp({ App }) {
   const { isLoaded, userId, getToken } = useAuth();
   const [localOnly, setLocalOnly] = useState(false);
   if (localOnly) return <App account={null} accountControls={<button className="outline" onClick={() => setLocalOnly(false)}>{t('Conectar conta')}</button>}/>;
-  if (!isLoaded) return <div className="account-bar"><LanguageSwitcher/><p role="status">{t("Conectando à sua conta… Se estiver offline, você pode continuar com os registros de visitante deste navegador.")}</p><button className="outline" onClick={() => setLocalOnly(true)}>{t("Continuar localmente")}</button></div>;
+  if (!isLoaded) return <div className="account-bar"><p role="status">{t("Conectando à sua conta… Se estiver offline, você pode continuar com os registros de visitante deste navegador.")}</p><button className="outline" onClick={() => setLocalOnly(true)}>{t("Continuar localmente")}</button></div>;
   const controls = <div className="account-actions">{userId ? <UserButton/> : <><SignInButton mode="modal"><button className="outline">{t("Entrar")}</button></SignInButton><SignUpButton mode="modal"><button className="primary">{t("Criar conta")}</button></SignUpButton></>}</div>;
   return <App key={userId || 'guest'} account={userId ? { userId, getToken } : null} accountControls={controls}/>;
 }
