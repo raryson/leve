@@ -1,9 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {newDay,appendFood} from '../src/domain.js';
-import {registrationStreak,weeklySummary} from '../src/routineSummary.js';
+import {registrationStreak,weeklySummary,streakIncentive} from '../src/routineSummary.js';
 const water=date=>({...newDay(date),waterMl:250});
 const state=(days=[],weights=[])=>({days,weights});
+test('marcos celebram o dia alcançado e mantêm conquistas do histórico após pausa',()=>{
+  const s=state(['2026-10-12','2026-10-13','2026-10-14'].map(water));
+  const achieved=streakIncentive(s,'2026-10-14');
+  assert.deepEqual(achieved.achieved,[1,3]);assert.equal(achieved.milestoneToday,true);assert.equal(achieved.next,7);assert.equal(achieved.remaining,4);
+  const tomorrow=streakIncentive(s,'2026-10-15');assert.equal(tomorrow.milestoneToday,false);assert.equal(tomorrow.current,3);
+  const paused=streakIncentive(s,'2026-10-16');assert.equal(paused.returning,true);assert.equal(paused.next,1);assert.deepEqual(paused.achieved,[1,3]);
+  s.days.push(water('2026-10-16'));const resumed=streakIncentive(s,'2026-10-16');assert.equal(resumed.current,1);assert.equal(resumed.next,3);assert.deepEqual(resumed.achieved,[1,3]);
+});
+test('início tem missão de um dia; grandes sequências continuam tendo próximo marco',()=>{
+  const initial=streakIncentive(state(),'2026-10-16');assert.equal(initial.next,1);assert.equal(initial.returning,false);assert.deepEqual(initial.achieved,[]);
+  const days=[];for(let i=0;i<400;i++){const d=new Date('2025-01-01T12:00:00Z');d.setUTCDate(d.getUTCDate()+i);days.push(water(d.toISOString().slice(0,10)));}
+  const long=streakIncentive(state(days),days.at(-1).date);assert.equal(long.current,400);assert.equal(long.next,500);assert.equal(long.remaining,100);
+});
 test('sequência dá até o fim do dia para continuar, reinicia após pausa e preserva recorde',()=>{
   const s=state(['2026-10-12','2026-10-13','2026-10-14'].map(water));
   assert.deepEqual(registrationStreak(s,'2026-10-15'),{current:3,best:3,recordedToday:false,total:3});

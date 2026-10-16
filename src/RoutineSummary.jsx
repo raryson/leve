@@ -1,16 +1,23 @@
 import React,{useState} from 'react';
 import {t,getLocale} from './i18n.js';
-import {registrationStreak,weeklySummary} from './routineSummary.js';
+import {streakIncentive,streakMilestones,weeklySummary} from './routineSummary.js';
 
 const number=value=>value.toLocaleString(getLocale(),{maximumFractionDigits:0});
 const label=date=>new Date(`${date}T12:00:00`).toLocaleDateString(getLocale(),{day:'numeric',month:'short'});
 export function RegistrationStreak({state,today,onRegister}){
-  const streak=registrationStreak(state,today);
-  return <section className="streak-card" aria-label={t('Sua constância')}>
-    <span className="streak-symbol" aria-hidden="true">✳</span><div className="streak-copy"><h3>{streak.current===0?t('Cada registro conta'):streak.current===1?t('1 dia de registros'):t('{0} dias seguidos',[streak.current])}</h3>
-    <p>{streak.recordedToday?t('Hoje já contou. Cada registro ajuda a construir tua rotina.'):streak.current?t('Tua sequência segue viva. Um registro hoje já conta.'):t('Bora começar ou retomar? Um registro já é um passo.')}</p>
-    <small>{t('Maior sequência: {0} dias',[streak.best])} · {t('Refeição, água, treino, pesagem ou anotação contam.')}</small></div>
-    {!streak.recordedToday&&<button className="outline" onClick={onRegister}>{t('Registrar hoje')}</button>}
+  const streak=streakIncentive(state,today);
+  return <section className={`streak-card streak-game ${streak.recordedToday?'is-complete':''}`} aria-label={t('Sua constância')}>
+    <div className="streak-overview"><span className="streak-flame" aria-hidden="true"><svg viewBox="0 0 64 76" fill="none"><path d="M35 3C42 21 22 24 34 38c6-4 9-10 9-17 14 13 18 25 12 38C46 79 13 78 7 56 2 39 14 30 16 19c3 9 6 13 10 15C18 17 28 12 35 3Z" fill="currentColor"/><path d="M31 39c4 10-6 14-3 21 3-1 6-5 6-9 10 11 5 20-3 20-12 0-15-13 0-32Z" fill="#ffe3a0"/></svg></span>
+      <div><span className="eyebrow">{t('TUA OFENSIVA')}</span><h3><strong>{number(streak.current)}</strong> {streak.current===1?t('dia seguido'):t('dias seguidos')}</h3><p>{t('Maior sequência: {0} dias',[streak.best])}</p></div>
+      <span className={`streak-today ${streak.recordedToday?'done':''}`}>{streak.recordedToday?t('✓ Hoje tá feito!'):t('Hoje ainda conta')}</span>
+    </div>
+    <div className="streak-mission"><p role="status">{streak.milestoneToday?t('Marco alcançado! {0} dias cuidando da tua rotina.',[streak.current]):streak.recordedToday?t('Mais um dia na conta. Amanhã tem outro pequeno passo.'):streak.current?t('Um registro hoje mantém tua ofensiva acesa.'):streak.returning?t('Bora reacender? Tua próxima sequência começa hoje.'):t('Acende tua ofensiva com o primeiro registro de hoje.')}</p>
+      <div className="streak-goal"><b>{t('Próximo marco: {0} dias',[streak.next])}</b><span>{streak.remaining===1?t('Falta 1 dia'):t('Faltam {0} dias',[streak.remaining])}</span></div>
+      <div className="streak-meter" role="progressbar" aria-label={t('Progresso até o próximo marco')} aria-valuemin={0} aria-valuemax={streak.next} aria-valuenow={streak.current}><span style={{width:`${streak.current/streak.next*100}%`}}/></div>
+      {!streak.recordedToday&&<button className="primary" onClick={onRegister}>{streak.returning?t('Bora retomar'):t('Registrar hoje')}</button>}
+    </div>
+    <div className="streak-achievements"><span>{t('TEUS MARCOS')}</span><ul>{streakMilestones.slice(0,5).map(days=><li key={days} className={streak.achieved.includes(days)?'earned':''}><span aria-hidden="true">{streak.achieved.includes(days)?'★':'☆'}</span><b>{days}</b><small>{days===1?t('dia'):t('dias')}</small><span className="sr-only">{streak.achieved.includes(days)?t('Alcançado'):t('Ainda não alcançado')}</span></li>)}</ul></div>
+    <details className="streak-rules"><summary>{t('Como funciona a ofensiva?')}</summary><p>{t('Refeição, água, treino, pesagem ou anotação contam.')} {t('Vários registros no mesmo dia contam uma vez. Tu tem até o fim do dia para continuar a sequência de ontem.')}</p><p>{t('Pausou? A sequência recomeça, mas os marcos do teu histórico continuam aqui. Não precisa comer menos nem treinar todos os dias para contar.')}</p><p>{t('Registros adicionados no histórico também contam. Editar ou excluir dados recalcula a ofensiva e os marcos.')}</p><ul className="streak-long-goals">{streakMilestones.slice(5).map(days=><li key={days}>{streak.achieved.includes(days)?'★':'☆'} {t('{0} dias',[days])} — {streak.achieved.includes(days)?t('Alcançado'):t('Ainda não alcançado')}</li>)}</ul></details>
   </section>;
 }
 export default function WeeklySummary({state,today}){

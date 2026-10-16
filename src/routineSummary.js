@@ -18,6 +18,15 @@ export function registrationStreak(state,today){
   while(dates.has(cursor)){current++;cursor=shiftDate(cursor,-1);}
   return {current,best,recordedToday,total:dates.size};
 }
+export const streakMilestones=[1,3,7,14,30,60,100,200,365];
+export function streakIncentive(state,today){
+  const streak=registrationStreak(state,today);
+  const next=streakMilestones.find(days=>days>streak.current)??(Math.floor(streak.current/100)+1)*100;
+  const achieved=streakMilestones.filter(days=>days<=streak.best);
+  return {...streak,next,remaining:next-streak.current,achieved,
+    milestoneToday:streak.recordedToday&&streakMilestones.includes(streak.current),
+    returning:streak.current===0&&streak.total>0};
+}
 export function weeklySummary(state,today,offset=0){
   const period=evolutionPeriod(today,'week',offset),dates=recordedDates(state,today);
   const days=state.days.filter(d=>period.dates.includes(d.date));
