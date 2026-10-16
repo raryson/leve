@@ -31,3 +31,15 @@ test('revogar bloqueia novos eventos e limpa só cookies GA; permitir outra vez 
   assert.equal(removedCookies.length,2);assert.ok(removedCookies.every(c=>c.startsWith('_ga')));
   client.choose('granted');assert.equal(scripts.length,1);assert.equal(client.track('navigation','foods'),true);
 });
+
+test('cada tela consentida envia uma page_view manual com metadados fixos; repetição e entradas arbitrárias não enviam',()=>{
+  const {client,win}=setup();client.track('navigation','home');assert.equal(win.dataLayer,undefined);
+  client.choose('granted');
+  for(const screen of ['home','days','evo','foods','profile']){assert.equal(client.track('navigation',screen),true);assert.equal(client.track('navigation',screen),false);}
+  const views=win.dataLayer.filter(e=>e[0]==='event'&&e[1]==='page_view');assert.equal(views.length,5);
+  assert.deepEqual(views.map(e=>e[2].page_location),['https://leve-fawn.vercel.app/','https://leve-fawn.vercel.app/history','https://leve-fawn.vercel.app/progress','https://leve-fawn.vercel.app/foods','https://leve-fawn.vercel.app/profile']);
+  for(const event of views){assert.equal(event[2].send_to,ANALYTICS_ID);assert.equal(event[2].page_referrer,'');assert.ok(event[2].page_title.startsWith('Leve — '));assert.deepEqual(Object.keys(event[2]).sort(),['page_location','page_referrer','page_title','send_to']);}
+  const count=win.dataLayer.length;client.track('navigation','?email=private');client.track('page_view',{weight:90});assert.equal(win.dataLayer.length,count);
+  client.choose('denied');const deniedCount=win.dataLayer.length;assert.equal(client.track('navigation','home'),false);assert.equal(win.dataLayer.length,deniedCount);
+  client.choose('granted');assert.equal(client.track('navigation','home'),true);
+});

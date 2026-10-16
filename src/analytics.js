@@ -1,6 +1,13 @@
 export const ANALYTICS_ID='G-VF5TNY4EWR';
 export const CONSENT_KEY='leve-analytics-consent-v1';
 const screens=new Set(['home','days','evo','foods','profile']);
+const pageReferences={
+  home:{page_location:'https://leve-fawn.vercel.app/',page_title:'Leve — Today'},
+  days:{page_location:'https://leve-fawn.vercel.app/history',page_title:'Leve — History'},
+  evo:{page_location:'https://leve-fawn.vercel.app/progress',page_title:'Leve — My weight'},
+  foods:{page_location:'https://leve-fawn.vercel.app/foods',page_title:'Leve — Foods'},
+  profile:{page_location:'https://leve-fawn.vercel.app/profile',page_title:'Leve — Profile'},
+};
 
 // Strict allowlist: callers cannot attach journal values or arbitrary parameters.
 export function createAnalytics({enabled,win,doc}) {
@@ -34,7 +41,12 @@ export function createAnalytics({enabled,win,doc}) {
   }
   function track(event,screen){
     if(!allowed())return false;start();
-    if(event==='navigation'&&screens.has(screen)){if(lastScreen===screen)return false;lastScreen=screen;gtag('event','app_navigation',{send_to:ANALYTICS_ID,screen});return true;}
+    if(event==='navigation'&&screens.has(screen)){
+      if(lastScreen===screen)return false;lastScreen=screen;
+      // Explicit SPA pageviews populate GA4's standard reports without leaking the live URL/title.
+      gtag('event','page_view',{send_to:ANALYTICS_ID,...pageReferences[screen],page_referrer:''});
+      gtag('event','app_navigation',{send_to:ANALYTICS_ID,screen});return true;
+    }
     if(event==='pwa_installed'){gtag('event','pwa_installed',{send_to:ANALYTICS_ID});return true;}
     return false;
   }
