@@ -1,5 +1,6 @@
 import {readyMeals} from './readyMeals.js';
 import {alcoholicDrinks} from './alcoholicDrinks.js';
+import {vegetables} from './vegetables.js';
 // kcal per 100 g, or per 100 ml ONLY when unit:'ml' is explicit. Overrides identify
 // manufacturer references and approximations; household portions are editable.
 export const FOOD_SOURCE = 'https://nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf';
@@ -46,4 +47,5 @@ export const foods = [
   {"id":"quaker-fine-oats","searchAliases":["aveia fina","fine oats"],"name":"Aveia em flocos finos, crua (ref. Quaker)","category":"Grãos e pães","kcal":346.6666666666667,"defaultAmount":30,"sourceUrl":"https://quaker.lat/br/productos-quaker/avenas/aveia-em-flocos-finos-quakerr","sourceLabel":"Quaker — rótulo do fabricante","portion":{"grams":30,"label":"2 colheres de sopa · aprox. 30 g"},"note":"Referência do fabricante: 104 kcal por 30 g de aveia em flocos finos. Pese a aveia seca; leite, água e ingredientes do mingau não estão incluídos. Confira a embalagem, pois formulações e rótulos podem mudar."},
   ...readyMeals,
   ...alcoholicDrinks,
+  ...vegetables,
 ];

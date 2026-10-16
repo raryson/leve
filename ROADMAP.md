@@ -284,3 +284,11 @@ A correção de presença não preenchia o gráfico de kcal, pois o diário anti
 `dailyEnergy` e os gráficos agora compartilham o fallback; mistura de referências estimáveis/desconhecidas continua marcada parcial. 77 testes cobrem estimativa de Academia/Caminhada legadas, limites, preservação de registros/snapshots e recusa de atividade insuficiente.
 
 Publicado: `dpl_An1sX8XzhDgXbDv7H6yNBv2d8U8o`, alias público HTTP 200, bundle `index-Dj4KPTgs.js`. Prévia local conferida: dois dias com extra disponível (366 kcal adicionais no total do diário fictício), antes com um dia ausente. Nenhum registro foi editado para a verificação.
+
+## Legumes e verduras — 16/10/2026
+
+Adicionadas 21 opções na categoria Verduras e legumes e azeite separado: mix grelhado sem óleo, mix com azeite, legumes assados (ratatouille), abobrinha/berinjela grelhadas, brócolis, cenoura, couve-flor, chuchu, abobrinha, abóbora cabotiá, berinjela, beterraba, batata, batata-doce, mandioca, pepino, tomate, alface, pimentão e couve refogada. Nomes/notas em PT/EN, ícone de vegetais, mixes com atalhos 100/150/200 g e gramas editáveis.
+
+Fontes: TACO para preparos simples e azeite; TBCA BRC0263B/BRC0156B para grelhados e BRC0718B para ratatouille. Mix sem óleo usa pesos prontos iguais de abobrinha (27 kcal/100 g na página consultada) e berinjela (23); mix com óleo usa 95 g dessa mistura + 5 g de azeite por 100 g finais (67,95 kcal). Ratatouille 76 kcal/100 g já inclui molho/óleo; não representa todo tipo de assado. Preparo, composição e óleo incluído/excluído ficam explícitos. Sem migração, custo ou modificação de registros antigos. 77 testes aprovados, build e revisão do seletor/formulário.
+
+Publicação confirmada: `dpl_8RdBwmmQ5WyYswKVC3qurq7wBA7v`, alias público HTTP 200, bundle `index-B2RN7jga.js` com novos legumes e azeite.
