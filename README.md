@@ -185,3 +185,9 @@ O recebedor autorizou a publicação da chave aleatória, nome e cidade usados e
 A lista pública de agradecimentos é mantida manualmente em `supporters`, no mesmo arquivo. Adicione somente um apelido/nome de exibição autorizado, depois de conferir o recebimento fora do app. Cada entrada usa `id`, `displayName`, `date` (YYYY-MM-DD), `verified: true` e `consent: true`. Não inclua dados bancários, comprovantes, CPF, valor ou contato. Os últimos cinco registros autorizados aparecem no modal; remova a entrada e publique novamente se a pessoa retirar a autorização. Não há integração com banco nem confirmação automática de Pix.
 
 O convite automático acompanha apenas uma pesagem de hoje, salva com sucesso e menor que o último registro datado até hoje. Registros retroativos, importação/sincronização e perfil não abrem o convite. A dispensa fica separada por visitante/conta neste navegador e o apoio manual continua disponível no Perfil.
+
+## Screenshots de divulgação
+
+Capturas em inglês com dados fictícios estão em `public/screenshots/`, com um ZIP para download. Elas mostram a interface real de desktop e mobile; o nome Alex e todos os registros são sintéticos.
+
+Para renovar o diário de demonstração: `node scripts/build-store-demo.mjs YYYY-MM-DD caminho-do-backup.json`. Importe pelo app somente em uma origem local vazia, em modo visitante, sem substituir diários reais nem sincronizar esses dados com uma conta. A data final deve corresponder ao dia da captura. Ajuste o idioma pelo Perfil e capture as telas pelo navegador. O JSON é temporário e não deve ir para a hospedagem; publique somente as imagens revisadas.
