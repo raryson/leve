@@ -236,3 +236,25 @@ Publicado como dpl_4EQdWRrgZ3E7ekHrkqhtXDVQG9hH em https://leve-fawn.vercel.app;
 
 15/10/2026 — Catálogo conferido: havia apenas aveia comum em flocos. Adicionados granola, iogurte natural integral, chia seca, açúcar mascavo e aveia em flocos finos, totalizando 40 IDs únicos. Referências SBD/TBCA/fabricantes, notas de preparo, quantidades e PT/EN. Busca e relato reconhecem os cinco termos; aveia comum preservada. 65 testes e build aprovados; conferidos 174 kcal/40 g de granola, 126/170 g de iogurte, 54/15 g de chia, 38/10 g de açúcar e 104/30 g de aveia fina. Sem SQL, custo novo ou alteração de diário real.
 Publicado como dpl_3mo3F1RBjDCFTFzgvumj1KCU5GmH em https://leve-fawn.vercel.app; HTML/bundle com os cinco IDs novos confirmados. Busca dos cinco itens conferida no navegador, seleção de aveia fina iniciou 30 g/104 kcal com fonte e porção corretas. Formulário descartado, sem salvar refeição. Screenshot disponível.
+
+## Refeições prontas — 16/10/2026
+
+Implementadas oito referências locais em **Refeições prontas**: poke de salmão com cream cheese (400 g), mix de sushi (10/20/30/40 peças), quatro hambúrgueres artesanais (simples, bacon, duplo e duplo com bacon) e pizzas de muçarela/calabresa (¼, meia ou inteira). Atalhos mostram kcal e peso; o usuário pode editar os gramas. Busca e textos em PT/EN.
+
+São receitas ilustrativas, não médias estatísticas de restaurantes. Sushi: metade salmão e metade salmão com cream cheese, 30 g/peça, sem fritura. Pizza inteira: hipótese de 800 g (8×100 g), sem borda recheada. Hambúrgueres: peso da carne já pronta, pão aproximado pelo francês, patinho magro; bacon aproximado pelo toucinho frito. Ingredientes e limitações aparecem no formulário. Fontes: [SBD 2024](https://diabetes.org.br/wp-content/uploads/2024/11/Manual-contagem-carboidratos2024.pdf) e [TACO](https://nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf).
+
+Presets são atalhos para gramas: sem migração de banco/versão, novo serviço ou custo. Histórico e modelos exibem peças/fração apenas quando o peso corresponde ao atalho; alterar o peso remove a indicação incompatível. GA4 continua desligado. Validação: 68 testes aprovados, build de produção e revisão do formulário no navegador.
+
+Publicação confirmada: `dpl_DvofxPnYgMHTWxtBTRdDD4Zqe5jS`, alias `https://leve-fawn.vercel.app`, HTTP 200 e bundle `index-CWZw7mWa.js` com as novas referências. Revisão mobile em 390 px: atalhos sem sobreposição/overflow; 40 peças geram 1.780 kcal no rascunho. Rascunho descartado sem salvar no diário.
+
+## Copos e bebidas alcoólicas — 16/10/2026
+
+Implementados atalhos com ícones SVG: copo americano 190 ml, caneca/copo alto 300 ml, xícaras 40/50 ml, copo de cerveja 300 ml, caneca de cerveja 500 ml, lata 350 ml, long neck 330 ml, garrafa 600 ml, vinho servido 75/150 ml e doses 30/50/60 ml. São referências editáveis e filtradas pelo tipo de bebida. O copo americano tradicional tem referência [Nadir](https://nadir.com.br/o-copo-oficial-do-brasileiro/); os demais volumes são escolhas ilustrativas de porção, não tamanhos universais.
+
+Nova categoria local **Bebidas alcoólicas**: cerveja comum, vermute tinto doce, vinho tinto/branco seco, gin puro 40%, caipirinha com açúcar, Negroni e Mimosa. Fontes SBD e fabricantes; receitas/variações estão explícitas no formulário. Negroni usa a aproximação 58 and CO (185 kcal/90 ml), com Bianco e British Red Bitter, distinta da receita clássica IBA. Mimosa usa proporção 1:1 da IBA, com referências de calorias SBD e Del Valle. Drinks têm atalhos de 1/2 receitas, sem inferir volume pela capacidade do copo ou gelo. Registros continuam em ml, preservados ao repetir refeições; não somam ao controle de água.
+
+Validação: 71 testes, build e revisão mobile em 390 px; copo americano gera 190 ml/78 kcal de cerveja no rascunho. Nenhum serviço pago, migração de banco ou ativação de analytics.
+
+Publicação confirmada: `dpl_4GGpNDri7EiQ8tzv9PdFqDTgnrHf`, alias `https://leve-fawn.vercel.app`; build remoto concluído. Dois Negronis no formulário mostram 180 ml/370 kcal; rascunhos de teste descartados sem gravar registros.
+
+Batata frita adicionada em 16/10/2026 à categoria Refeições prontas: referência TACO 93 (267 kcal/100 g), com atalhos ilustrativos pequena 70 g, média 100 g e grande 150 g, ajustáveis. Peso pronto, já inclui fritura; extras à parte. PT/EN, cálculo local, sem mudar porções de registros anteriores.

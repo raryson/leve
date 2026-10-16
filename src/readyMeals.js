@@ -1,0 +1,22 @@
+// Illustrative recipes, not restaurant averages. Edible, ready-to-eat masses.
+// Presets resolve to grams, preserving backup and saved-meal arithmetic.
+const sbd='https://diabetes.org.br/wp-content/uploads/2024/11/Manual-contagem-carboidratos2024.pdf';
+const taco='https://nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf';
+const common={category:'Refeições prontas',sourceLabel:'Estimativa de receita — referências SBD e TACO',sourceUrl:sbd,extraSources:[{label:'TACO, 4ª edição',url:taco}]};
+const burgerCalories=70*135/50+150*219/100+30*65/20+15*52/17+10*9/100+25*15/100;
+const burgerNote='Receita ilustrativa: pão 70 g (aproximado pelo pão francês), patinho grelhado pronto 150 g, muçarela 30 g, maionese 15 g, alface 10 g e tomate 25 g. A carne usa uma referência magra; blends mais gordurosos, brioche e molhos podem aumentar bastante o total. Sem batata e bebida.';
+const pizzaPresets=[{grams:200,label:'¼ de pizza'},{grams:400,label:'Meia pizza'},{grams:800,label:'Pizza inteira'}];
+const pizzaNote='Referência ilustrativa de pizza inteira com 800 g: 8 fatias de 100 g. Um quarto equivale a 2 fatias; meia, a 4. O peso real varia com diâmetro, massa e cobertura. Sem borda recheada. Ajuste os gramas se souber o peso; a estimativa muda conforme o sabor.';
+export const readyMeals=[
+  {...common,id:'ready-fries',name:'Batata frita (estimativa TACO)',kcal:267,defaultAmount:100,presets:[{grams:70,label:'Batata pequena'},{grams:100,label:'Batata média'},{grams:150,label:'Batata grande'}],sourceUrl:taco+'#page=33',sourceLabel:'TACO, 4ª edição — batata inglesa frita',extraSources:[],searchAliases:['batata frita fritas french fries chips fast food'],note:'Referência TACO de batata inglesa frita: 267 kcal por 100 g, já incluindo a fritura. Porções ilustrativas: pequena 70 g, média 100 g e grande 150 g; não são tamanhos padronizados de restaurantes. Pese a batata pronta ou ajuste os gramas. Corte, óleo absorvido e marca variam. Sem queijo, bacon, ketchup ou outros molhos.'},
+  {...common,id:'ready-poke-salmon',name:'Poke de salmão com cream cheese (estimativa)',kcal:(180*1.28+120*1.5+40*70/30+30*.1+30*.67)/4,defaultAmount:400,presets:[{grams:400,label:'1 bowl · 400 g'}],searchAliases:['poke salmao creamcheese'],note:'Bowl de referência de 400 g: arroz branco cozido 180 g, salmão cru 120 g, cream cheese 40 g, pepino 30 g e manga 30 g. Usa referências SBD e TACO. Sem teriyaki, crispy ou outros extras. A proporção dos ingredientes e o salmão do restaurante podem mudar bastante as calorias.'},
+  {...common,id:'ready-sushi-mix',name:'Sushi de salmão — mix com cream cheese (estimativa)',kcal:44.5/30*100,defaultAmount:300,sourceUrl:sbd+'#page=162',presets:[10,20,30,40].map(count=>({grams:count*30,label:count+' peças'})),searchAliases:['sushi combinado japones japanese salmon sushi'],note:'Mix ilustrativo: metade sushi de salmão (38 kcal por peça) e metade sushi de salmão com cream cheese (51 kcal por peça), com 30 g por peça. Média deste mix: 44,5 kcal por peça. Não inclui hot roll, sashimi, molhos ou frituras; outros combinados podem ser bem diferentes.'},
+  ...[
+    ['simple','Hambúrguer artesanal simples (estimativa)',300,burgerCalories,''],
+    ['bacon','Hambúrguer artesanal com bacon (estimativa)',330,burgerCalories+30*6.97,' Versão com 30 g extras de bacon pronto, aproximado pelo toucinho frito da TACO.'],
+    ['double','Hambúrguer artesanal duplo (estimativa)',480,burgerCalories+150*2.19+30*3.25,' Versão dupla: 2 carnes prontas de 150 g e 60 g de queijo no total.'],
+    ['double-bacon','Hambúrguer artesanal duplo com bacon (estimativa)',510,burgerCalories+150*2.19+30*3.25+30*6.97,' Versão dupla com bacon: 2 carnes prontas de 150 g, 60 g de queijo e 30 g de bacon pronto, aproximado pelo toucinho frito da TACO.'],
+  ].map(([variant,name,grams,calories,extra])=>({...common,id:'ready-burger-'+variant,name,kcal:calories/grams*100,defaultAmount:grams,presets:[{grams,label:'1 hambúrguer'}],searchAliases:['hamburger burger cheeseburger',variant==='double'||variant==='double-bacon'?'duplo double':''],note:burgerNote+extra})),
+  {...common,id:'ready-pizza-mozzarella',name:'Pizza de muçarela (estimativa)',kcal:278,defaultAmount:400,presets:pizzaPresets,sourceUrl:sbd+'#page=143',searchAliases:['pizza mussarela queijo cheese'],note:pizzaNote},
+  {...common,id:'ready-pizza-calabresa',name:'Pizza de calabresa (estimativa)',kcal:240,defaultAmount:400,presets:pizzaPresets,sourceUrl:sbd+'#page=143',searchAliases:['pizza sausage'],note:pizzaNote},
+];

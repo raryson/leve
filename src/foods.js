@@ -1,3 +1,5 @@
+import {readyMeals} from './readyMeals.js';
+import {alcoholicDrinks} from './alcoholicDrinks.js';
 // kcal per 100 g, or per 100 ml ONLY when unit:'ml' is explicit. Overrides identify
 // manufacturer references and approximations; household portions are editable.
 export const FOOD_SOURCE = 'https://nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf';
@@ -42,4 +44,6 @@ export const foods = [
   {"id":"cisbra-chia","name":"Chia em sementes secas (ref. Cisbra)","category":"Grãos e pães","kcal":359,"defaultAmount":15,"sourceUrl":"https://cisbra.com.br/chia/","sourceLabel":"Cisbra — rótulo do fabricante","portion":{"grams":15,"label":"1 colher de sopa · aprox. 15 g"},"note":"Referência do fabricante: 359 kcal por 100 g de sementes secas. A colher de 15 g é uma estimativa editável. Não use o peso do gel hidratado; pese as sementes antes de hidratar. Outros produtos e tabelas podem diferir."},
   {"id":"tbca-brown-sugar","name":"Açúcar mascavo","category":"Doces e pastas","kcal":381,"defaultAmount":10,"sourceUrl":"https://www.tbca.net.br/base-dados/int_composicao_estatistica.php?n0REd3kv7e86D%2BViXWYUnQ%3D%3D=4wpXogwA4ZDyIQG%2B%2BEdEMQ%3D%3D","sourceLabel":"TBCA — BRC0006K","note":"Referência TBCA de açúcar mascavo, por 100 g. Registre o açúcar acrescentado em gramas; não inclui café, leite ou outros ingredientes."},
   {"id":"quaker-fine-oats","searchAliases":["aveia fina","fine oats"],"name":"Aveia em flocos finos, crua (ref. Quaker)","category":"Grãos e pães","kcal":346.6666666666667,"defaultAmount":30,"sourceUrl":"https://quaker.lat/br/productos-quaker/avenas/aveia-em-flocos-finos-quakerr","sourceLabel":"Quaker — rótulo do fabricante","portion":{"grams":30,"label":"2 colheres de sopa · aprox. 30 g"},"note":"Referência do fabricante: 104 kcal por 30 g de aveia em flocos finos. Pese a aveia seca; leite, água e ingredientes do mingau não estão incluídos. Confira a embalagem, pois formulações e rótulos podem mudar."},
+  ...readyMeals,
+  ...alcoholicDrinks,
 ];

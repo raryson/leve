@@ -4,7 +4,7 @@ import {translate} from './i18n.js';
 
 export const searchText = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
 export function foodCategory(food) {
-  if(COMMUNITY_CATEGORIES.includes(food.category)) return food.category;
+  if(categories.includes(food.category)) return food.category;
   const name = searchText(food.name);
   if (/arroz|aveia|pao/.test(name)) return 'Grãos e pães';
   if (/feijao|lentilha/.test(name)) return 'Feijões';
@@ -13,7 +13,7 @@ export function foodCategory(food) {
   if (/carne|bife|bisteca|salsichao/.test(name)) return 'Carnes';
   return 'Doces e pastas';
 }
-export const categories = COMMUNITY_CATEGORIES;
+export const categories = [...COMMUNITY_CATEGORIES, 'Refeições prontas', 'Bebidas alcoólicas'];
 export function searchFoods(query, category, favorites = [], recent = [], catalog = foods) {
   const terms = searchText(query).trim().split(/\s+/).filter(Boolean);
   return catalog.filter(food => {
