@@ -416,6 +416,16 @@ GA4 — diagnóstico e visualizações manuais em 16/10/2026: após relato de au
 
 ## Google Play — preparação de lançamento (16/10/2026)
 
+### Próxima melhoria — modal de aceite das regras
+
+Status: planejado a pedido do usuário em 16/10/2026; ainda não implementado.
+
+- Ao abrir o app, verificar se o usuário aceitou a versão vigente das regras. Se não houver aceite, apresentar um modal com resumo, acesso ao texto completo e ação explícita de aceitar, em português/inglês.
+- Registrar a versão aceita e a data do aceite por conta, sincronizando entre dispositivos; para visitante, guardar neste dispositivo. Apresentar novamente quando houver uma nova versão das regras que exija aceite, incluindo usuários antigos.
+- Não considerar fechar o modal, navegar ou continuar usando o app como aceite. Explicar o que acontece ao recusar/adiar, preservando os registros e o acesso a ajuda, privacidade, exportação e solicitação de exclusão. Definir quais ações dependem do aceite antes da implementação.
+- Manter o aceite das regras separado do consentimento opcional de analytics. Para operações que exigirem aceite, validar a versão também na API; não depender apenas da presença do modal.
+- Conferir acessibilidade (foco, teclado, leitor de tela), telas mobile, uso offline, troca de conta e ausência de repetição após um aceite válido. O aceite por envio de alimentos já existente não substitui esse novo controle geral.
+
 Prioridade atual autorizada: Google Play; PWA Directory já enviado pelo titular. PayPal para público internacional fica para depois.
 
 Implementado: páginas públicas bilíngues de privacidade, suporte, exclusão por solicitação verificada e regras; acesso pelo Perfil e onboarding; aviso de saúde; aceitação das regras em cada envio/edição de alimento, validada na API e registrada no histórico de moderação; correção do cache para páginas legais não substituírem o app offline; registro do service worker independente da inicialização do login. Contato público autorizado: raryson.rost@gmail.com. Nenhuma conta ou diário real excluído.
