@@ -292,3 +292,13 @@ Adicionadas 21 opções na categoria Verduras e legumes e azeite separado: mix g
 Fontes: TACO para preparos simples e azeite; TBCA BRC0263B/BRC0156B para grelhados e BRC0718B para ratatouille. Mix sem óleo usa pesos prontos iguais de abobrinha (27 kcal/100 g na página consultada) e berinjela (23); mix com óleo usa 95 g dessa mistura + 5 g de azeite por 100 g finais (67,95 kcal). Ratatouille 76 kcal/100 g já inclui molho/óleo; não representa todo tipo de assado. Preparo, composição e óleo incluído/excluído ficam explícitos. Sem migração, custo ou modificação de registros antigos. 77 testes aprovados, build e revisão do seletor/formulário.
 
 Publicação confirmada: `dpl_8RdBwmmQ5WyYswKVC3qurq7wBA7v`, alias público HTTP 200, bundle `index-B2RN7jga.js` com novos legumes e azeite.
+
+## Refinamento visual de Meu peso — 16/10/2026
+
+Reorganizada a hierarquia: peso/tendência primeiro, ações de pesagem e histórico em blocos expansíveis próximos ao gráfico, resumo do período (água e consumo por dia registrado, dias de treino, extra total), visão combinada antes dos gráficos individuais, treinos compactos e lista de atividades recolhível. Explicações metodológicas ficam em Como ler as estimativas; etiqueta de estimativa retroativa continua visível. Tabela diária preservada.
+
+Espaçamentos, tipografia, raios e controles reduzidos/consistentes. Gráficos agora acompanham a largura real do cartão com ResizeObserver, mantendo altura e tamanho de texto legíveis sem esticar no desktop ou encolher todo o texto no celular. Frequência de treino usa gráfico compacto. Resumo em 4 colunas no desktop/2 no mobile; legenda em duas colunas e navegação do período alinhada no mobile. Formulário e dados/cálculos preservados. 77 testes aprovados e build; revisão visual/interativa desktop e mobile.
+
+Publicação confirmada: `dpl_8AGttD4S1YAAraMDHUqmjwrCHwuZ`, alias HTTP 200, bundle `index-CmRAkCz1.js`. Revisão em 1280 e 320 px, sem overflow horizontal; filtros, formulário recolhível e lista de treinos funcionam. Nenhum registro foi alterado na verificação visual.
+
+Fluxo de versões confirmado pelo usuário em 16/10/2026: após concluir e validar cada versão, fazer commit das alterações realizadas e push para o remoto do projeto. Excluir segredos, arquivos de ambiente e artefatos gerados; não reescrever histórico remoto.

@@ -933,5 +933,20 @@
   "Receita de referência — abobrinha e berinjela TBCA": "Reference recipe — TBCA zucchini and eggplant",
   "Receita de referência — mix TBCA + azeite TACO": "Reference recipe — TBCA mix + TACO olive oil",
   "TBCA — berinjela grelhada": "TBCA — grilled eggplant",
-  "TACO — azeite de oliva": "TACO — olive oil"
+  "TACO — azeite de oliva": "TACO — olive oil",
+  "＋ Registrar peso": "＋ Log weight",
+  "Histórico de pesagens": "Weight records",
+  "{0} registros": "{0} records",
+  "Ver treinos do período": "View workouts for this period",
+  "Resumo do período": "Period overview",
+  "Água por dia registrado": "Water per recorded day",
+  "Consumo por dia registrado": "Intake per recorded day",
+  "Dias com treino": "Workout days",
+  "Extra no período": "Extra exercise this period",
+  "Inclui estimativas retroativas": "Includes retrospective estimates",
+  "Como ler as estimativas": "Understanding the estimates",
+  "Os eixos de kcal e ml têm escalas independentes. Alturas iguais não representam quantidades equivalentes.": "The kcal and ml axes have independent scales. Equal heights do not represent equivalent amounts.",
+  "Calorias no eixo esquerdo, água no direito. Use a legenda para escolher o que comparar.": "Calories on the left axis, water on the right. Use the legend to choose what to compare.",
+  "Peso e tendência": "Weight and trend",
+  "último peso": "latest weight"
 }

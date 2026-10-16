@@ -1760,3 +1760,101 @@ header h2 { overflow-wrap:anywhere; }
 .training-day p { margin:0 0 4px; font-size:14px; }
 .training-day small { color:var(--muted); }
 .training-marker-note { color:#376d56; }
+/* Meu peso: weight first, period overview second, supporting detail on demand. */
+.weight-page { display:grid; gap:18px; }
+.weight-overview { padding:24px; background:#fff; border:1px solid var(--line); border-radius:20px; }
+.weight-overview .intro { margin:0 0 12px; gap:20px; align-items:center; }
+.weight-overview .intro h3 { font-size:22px; margin:6px 0; }
+.weight-overview .intro p { font-size:13px; margin:0; }
+.weight-overview .stat { font-size:28px; letter-spacing:-.8px; }
+.weight-overview .stat small { font-size:11px; letter-spacing:0; margin-top:5px; }
+.weight-overview .weight-chart { border:0; border-radius:0; padding:0; margin:0; background:transparent; }
+.weight-overview .weight-chart svg { height:180px; width:100%; }
+.weight-overview .weight-chart .local-note { font-size:11px; margin:8px 0 0; }
+.weight-tools { display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
+.weight-tools>details { min-width:0; background:white; border:1px solid var(--line); border-radius:14px; }
+.weight-tools summary { padding:16px 18px; cursor:pointer; font-size:13px; font-weight:650; }
+.weight-records summary span { float:right; margin-left:12px; font-size:11px; font-weight:400; color:var(--muted); }
+.weight-entry .entry-form { border:0; margin:0; padding:0 18px 18px; gap:12px; background:transparent; }
+.weight-entry .entry-form h4 { display:none; }
+.weight-entry .entry-form label { font-size:12px; }
+.weight-entry .entry-form button { grid-column:1/-1; }
+.weight-records .weight-history { padding:0 18px 12px; border:0; margin:0; }
+.weight-records .draft-row { padding:10px 0; font-size:12px; }
+.weight-page .evolution-trends { margin:8px 0 0; }
+.weight-page .evolution-trends>.head { margin:0; gap:12px; align-items:center; }
+.weight-page .evolution-trends>.head h3 { font-size:22px; margin:5px 0; }
+.weight-page .evolution-trends>.head p { font-size:12px; margin:4px 0 0; }
+.weight-page .period-filter { padding:3px; border:1px solid var(--line); border-radius:12px; background:#edf3ee; gap:3px; }
+.weight-page .period-filter button { border:0; background:transparent; min-height:36px; padding:8px 16px; border-radius:9px; font-size:12px; }
+.weight-page .period-filter button[aria-pressed="true"] { background:#fff; box-shadow:0 1px 3px #183c1910; color:#205e49; }
+.weight-page .period-navigation { gap:10px; margin:16px 0 10px; }
+.weight-page .period-navigation button.outline { min-height:34px; width:34px; padding:0; border-radius:10px; }
+.weight-page .period-navigation strong { font-size:13px; font-weight:600; }
+.weight-page .period-navigation small { font-size:11px; }
+.weight-page .evolution-trends>.local-note { font-size:11px; line-height:1.6; margin:0 0 16px; }
+.evolution-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:18px 0; }
+.evolution-summary>div { background:#edf4ee; border-radius:13px; padding:15px; min-width:0; }
+.evolution-summary span { display:block; color:#526d60; font-size:11px; line-height:1.5; margin-bottom:8px; }
+.evolution-summary strong { font-size:23px; font-weight:650; letter-spacing:-.5px; }
+.evolution-summary small { font-size:11px; font-weight:400; letter-spacing:0; }
+.weight-page .evolution-chart-card { padding:20px; border-radius:16px; }
+.weight-page .evolution-chart-card h4 { font-size:14px; font-weight:650; }
+.weight-page .chart-card-heading { align-items:center; gap:8px; }
+.weight-page .chart-card-heading strong { font-size:20px; letter-spacing:-.4px; }
+.weight-page .evolution-chart-card .local-note { font-size:11px; line-height:1.6; margin:8px 0 12px; }
+.weight-page .evolution-plot { margin-top:12px; }
+.weight-page .evolution-plot text { font-size:12px; }
+.weight-page .evolution-chart-grid { gap:14px; margin:14px 0; }
+.weight-page .combined-chart { position:relative; }
+.chart-estimate-tag { float:right; margin:0 0 8px 12px; font-size:10px; color:#80601f; background:#faf1d9; border-radius:6px; padding:5px 7px; }
+.weight-page .chart-legend { gap:6px; margin:12px 0 8px; }
+.weight-page .chart-legend button { min-height:32px; padding:7px 9px; border-radius:8px; background:#f7faf7; border-color:#e6eee7; font-size:10px; }
+.weight-page .training-marker-note { font-size:10px; margin:4px 0 0; }
+.weight-page .training-history { margin:14px 0; }
+.weight-page .training-history .evolution-plot { max-height:none; }
+.training-details { border-top:1px solid var(--line); margin-top:12px; padding-top:12px; }
+.training-details summary { cursor:pointer; font-size:12px; font-weight:600; }
+.training-details .training-day-list { margin-top:12px; }
+.weight-page .training-day p { font-size:12px; }
+.weight-page .training-day small { font-size:11px; line-height:1.5; display:block; margin-top:6px; }
+.evolution-help { margin:14px 0 10px; border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.evolution-help summary,.weight-page .evolution-data summary { font-size:12px; font-weight:600; cursor:pointer; }
+.evolution-help .local-note { font-size:12px; line-height:1.7; }
+.weight-page .evolution-data { border-radius:12px; padding:14px 16px; }
+@media(max-width:760px) {
+  .weight-overview { padding:18px; }
+  .weight-overview .intro { align-items:flex-start; gap:12px; }
+  .weight-overview .intro h3 { font-size:19px; }
+  .weight-overview .stat { font-size:25px; }
+  .weight-overview .weight-chart svg { height:155px; }
+  .weight-tools { grid-template-columns:minmax(0,1fr); gap:8px; }
+  .weight-page .evolution-trends>.head h3 { font-size:20px; }
+  .evolution-summary { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:14px 0; }
+  .evolution-summary>div { padding:13px; }
+  .evolution-summary strong { font-size:21px; }
+  .weight-page .evolution-chart-card { padding:16px; }
+  .weight-page .evolution-plot text { font-size:12px; }
+  .weight-page .chart-legend button { min-height:40px; font-size:10px; }
+  .chart-estimate-tag { float:none; display:inline-block; margin:0 0 10px; }
+  .weight-page .period-filter button { min-height:40px; }
+  .weight-page .period-navigation button.outline { min-height:40px; width:40px; }
+}
+@media(max-width:380px) { .weight-overview .intro { flex-direction:column; } .weight-overview .stat { align-self:flex-start; } }
+.weight-page .weight-chart text { display:none; }
+.weight-range { display:flex; justify-content:space-between; gap:12px; font-size:11px; color:var(--muted); padding:0 14px; }
+.weight-records>.local-note { margin:0; padding:0 18px 16px; font-size:11px; line-height:1.6; }
+@media(max-width:480px) {
+  .weight-overview .intro { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; }
+  .weight-overview .intro p { font-size:12px; }
+  .weight-overview .stat { font-size:24px; }
+  .weight-overview .stat small { font-size:10px; }
+  .weight-overview .weight-chart svg { height:135px; }
+}
+@media(max-width:480px) {
+  .weight-page .period-navigation { display:grid; grid-template-columns:40px minmax(0,1fr) 40px; gap:8px; }
+  .weight-page .period-navigation strong { font-size:11px; }
+  .weight-page .period-navigation>.link { grid-column:1/-1; justify-self:center; }
+  .weight-page .chart-legend { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .weight-page .chart-legend button { justify-content:flex-start; text-align:left; line-height:1.4; }
+}
