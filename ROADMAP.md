@@ -50,6 +50,31 @@ O status de cada item acima distingue implementação, validação e configuraç
 - **Restrição de custo:** conferir limites gratuitos vigentes de hospedagem, agendamento, banco e envio antes da implementação. Priorizar a infraestrutura existente e Web Push sem serviço pago adicional; não contratar plano, ativar cobrança ou prometer gratuidade ilimitada. Se a solução exigir custo, documentar e aguardar decisão do usuário antes de habilitar.
 - Aceite: testar permissão concedida/negada/revogada, ativação/desativação por dispositivo, troca de conta, horários silenciosos/fuso, deduplicação, registro que cancela lembrete, inscrição expirada e clique abrindo a tela correta. Validar em Windows, Android e iPhone instalado, com app fechado e reconexão após falta de rede; mostrar suporte indisponível sem quebrar os registros. Analytics permanece desligado.
 
+## Distribuição em lojas e catálogos — começar pelo Leve
+
+**Status:** planejado a pedido do usuário em 16/10/2026. O Leve será o primeiro dos PWAs do usuário a seguir esse fluxo. Priorizar **Microsoft Store (Windows)** e **PWA Directory, submissão gratuita**; Google Play e App Store ficam para avaliação futura por envolverem taxas. Nenhuma submissão ou criação de conta foi realizada nesta etapa.
+
+### Preparar o Leve
+
+- Conferir a versão pública HTTPS, manifesto/identidade estável, ícones, instalação, atualização da PWA e funcionamento offline. Validar login, sincronização e saída da conta no aplicativo instalado, incluindo redirecionamentos do Clerk e preservação do diário.
+- Preparar título, descrição curta/completa em português e inglês, categoria, screenshots reais com dados fictícios, ícones, endereço de suporte e política de privacidade pública. Descrever cálculos nutricionais como estimativas e explicar limites offline, sem promessas médicas ou recursos ainda não implementados.
+- Conferir os requisitos vigentes e elegibilidade da conta antes de empacotar ou enviar, inclusive classificação etária, declarações sobre dados e exigências de exclusão de conta. Resolver pendências reais do Leve encontradas nessa revisão antes da submissão.
+
+### 1. Microsoft Store — Windows
+
+- Usar o fluxo oficial de publicação de PWA: cadastro de desenvolvedor individual, reserva do nome/identidade, pacote gerado com PWABuilder e submissão pelo Partner Center. O cadastro individual está gratuito na documentação consultada; confirmar essa condição no momento da execução e não aceitar cobranças sem decisão do usuário.
+- Preservar identidade/assinatura do pacote entre versões, testar instalação e abertura no Windows e revisar permissões. Alterações web normalmente chegam pela hospedagem; mudanças no manifesto/identidade podem exigir atualização do pacote da loja. Não prometer aprovação nem prazo fixo de análise.
+- Preparar todos os arquivos e formulários revisáveis antes da etapa final. Verificação de identidade, aceite de termos e ações que exigirem participação do titular ficam para o usuário, sem pedir documento ou credenciais no chat.
+- Aceite: pacote validado, materiais consistentes com a versão publicada, submissão acompanhada até aprovação ou motivo de rejeição documentado; após aprovação, conferir instalação pelo link público da Store e registrar o endereço no app/material de divulgação.
+
+### 2. PWA Directory — descoberta pelo navegador
+
+- Submeter o endereço público do Leve pelo plano Standard gratuito, com descrição e screenshots preparados. É um catálogo que encaminha ao app web, não uma instalação nativa pela loja do sistema.
+- Revisar os dados de contato enviados e os critérios atuais de publicação; manter o app funcional para a revisão. Não escolher Pro Launch, destaque pago ou outro serviço adicional. A inclusão depende de aprovação do catálogo.
+- Aceite: submissão registrada, resultado acompanhado e página pública conferida após aprovação, com link/descrição corretos e instalação pelo navegador testada.
+
+Referências consultadas: [Microsoft — publicar uma PWA](https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps/how-to/microsoft-store), [cadastro individual gratuito](https://learn.microsoft.com/en-us/windows/apps/publish/whats-new-individual-developer), [PWA Directory — submissão](https://pwa.directory/submit). Reutilizar o checklist nos demais PWAs somente depois de validar o processo com o Leve; uma vitrine própria de todos os apps pode ser avaliada mais adiante.
+
 ## Catálogo comunitário de alimentos
 
 **Status:** implementada em 14/10/2026; publicada no endereço principal e conferida com a conta moderadora. Cadastros particulares, compartilhamento com revisão humana obrigatória, moderação, denúncias e integração ao buscador. Nome Leve mantido; sem IA ou serviço pago adicional.
