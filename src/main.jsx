@@ -1,4 +1,5 @@
 import EvolutionCharts from './EvolutionCharts.jsx';
+import WeeklySummary, {RegistrationStreak} from './RoutineSummary.jsx';
 import BeveragePortions from './BeveragePortions.jsx';
 import { t, getLocale } from './i18n.js';
 import React, { useEffect, useRef, useState } from 'react';
@@ -124,6 +125,7 @@ function Home({ s, day, today, onEdit, onMeal, onWorkout, onWeight, onWater }) {
   const change = s.profile.weight - s.weights[0].value;
   return <>
     <EnergyPanel profile={s.profile} day={day} Modal={Modal}/>
+    <RegistrationStreak state={s} today={today} onRegister={onMeal}/>
     <div className="daily-heading"><div><span className="eyebrow">{t("SEU DIA EM UM LUGAR")}</span><h3>{t("Bora fazer hoje valer.")}</h3><p>{t("Comida, água e movimento. No seu ritmo.")}</p></div><button className="primary" onClick={onMeal}>{t("＋ Registrar refeição")}</button></div>
     <div className="dashboard-metrics">
       <article className="metric calorie-metric"><div className="metric-label"><span className="metric-icon"><Icon name="food"/></span>{t("Calorias de hoje")}</div><b className="big">{fmt(day.totalCalories)} <i>kcal</i></b>{s.profile.calorieGoal ? <><Progress value={day.totalCalories} max={s.profile.calorieGoal}/><p>{t("Referência: ")}{fmt(s.profile.calorieGoal)}{t(" kcal")}</p></> : <p>{t("Seu total de alimentos registrados")}</p>}<button className="link" onClick={onMeal}>{t("Adicionar alimento →")}</button></article>
@@ -131,6 +133,7 @@ function Home({ s, day, today, onEdit, onMeal, onWorkout, onWeight, onWater }) {
       <article className="metric weight-metric"><div className="metric-label"><span className="metric-icon"><Icon name="trend"/></span>{t("Meu peso")}</div><b className="big">{fmt(s.profile.weight)} <i>kg</i></b><p>{change > 0 ? '+' : ''}{fmt(change)}{t(" kg desde o primeiro registro")}</p><button className="link" onClick={onWeight}>{t("Registrar pesagem →")}</button></article>
     </div>
     <section className={`movement-card ${day.exercise.performed ? 'done' : ''}`}><div className="movement-title"><span className="metric-icon"><Icon name="move"/></span><div><span className="eyebrow">{t("MOVIMENTO NA SEMANA")}</span><h3>{day.exercise.performed ? t("Boa! Você se movimentou hoje.") : t("Seu próximo treino começa com um passo.")}</h3><p>{day.exercise.activities.map(activityLabel).join(' / ') || t("Academia ou caminhada: escolha o que cabe no seu dia.")}</p></div></div><div className="workout-progress"><b>{workouts}<span> / {s.profile.weeklyWorkouts}{t(" dias")}</span></b><div className="workout-dots" aria-label={t("{0} de {1} dias de treino na semana",[workouts,s.profile.weeklyWorkouts])}>{Array.from({length:s.profile.weeklyWorkouts}, (_, i) => <span key={i} className={i < workouts ? 'completed' : ''}/>)}</div><small>{workouts >= s.profile.weeklyWorkouts ? t("Objetivo da semana alcançado!") : t("Um dia de cada vez.")}</small></div><button className="outline" onClick={onWorkout}>{t("Registrar treino")}</button></section>
+    <WeeklySummary state={s} today={today}/>
     <div className="head"><div><span className="eyebrow">{t("NO SEU PRATO")}</span><h3>{t("Refeições de hoje")}</h3></div><button className="outline" onClick={onEdit}>{t("Editar dia")}</button></div><DayCard day={day}/>
 
   </>;

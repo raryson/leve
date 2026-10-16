@@ -302,3 +302,13 @@ Espaçamentos, tipografia, raios e controles reduzidos/consistentes. Gráficos a
 Publicação confirmada: `dpl_8AGttD4S1YAAraMDHUqmjwrCHwuZ`, alias HTTP 200, bundle `index-CmRAkCz1.js`. Revisão em 1280 e 320 px, sem overflow horizontal; filtros, formulário recolhível e lista de treinos funcionam. Nenhum registro foi alterado na verificação visual.
 
 Fluxo de versões confirmado pelo usuário em 16/10/2026: após concluir e validar cada versão, fazer commit das alterações realizadas e push para o remoto do projeto. Excluir segredos, arquivos de ambiente e artefatos gerados; não reescrever histórico remoto.
+
+## Resumo semanal e constância — 16/10/2026
+
+Implementado na tela Hoje, em português e inglês:
+- Resumo da semana de segunda a domingo, com navegação para semanas anteriores e retorno à atual; calendário distingue registros, dias sem dados e futuros.
+- Médias de calorias e água calculadas separadamente só sobre dias com alimentos/água registrados, com cobertura explícita e aviso de registros possivelmente incompletos. Total de refeições, dias de treino mesmo sem calorias e variação entre primeira/última pesagem do período; menos de duas pesagens deixa a variação indisponível.
+- Sequência de dias com algum registro significativo (alimento, água, treino, pesagem ou anotação). Dias vazios e registros sem data/futuros não contam; múltiplos registros contam uma vez. Sequência até ontem continua ativa durante hoje. Maior sequência é derivada do histórico atual; editar/excluir/importar registros recalcula o resultado, sem novo campo persistido.
+- Incentivo à continuidade e à retomada, sem vincular sequência a comer menos ou perder peso. Cálculos locais reaproveitam o diário já sincronizado, sem serviço/custo novo e sem ativar analytics.
+
+Validação: 82 testes aprovados e build concluído (aviso existente de bundle >500 kB). Testes novos cobrem pausas, virada de mês/ano, datas ausentes/futuras, duplicação de pesagens na mesma data, treino sem estimativa, médias com lacunas e semanas passadas. Navegador com diário fictício: sequência 2→3 ao adicionar água hoje, retorno a 2 removendo a água; resumo atualizado imediatamente, semanas anteriores vazias sem médias inventadas, português/inglês e layout mobile/desktop sem rolagem horizontal. Nenhum registro de conta real modificado.

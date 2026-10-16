@@ -1858,3 +1858,44 @@ header h2 { overflow-wrap:anywhere; }
   .weight-page .chart-legend { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
   .weight-page .chart-legend button { justify-content:flex-start; text-align:left; line-height:1.4; }
 }
+.streak-card { display:flex; align-items:center; gap:16px; padding:18px 22px; margin:18px 0 24px; border:1px solid var(--line); border-radius:16px; background:#f2f7ed; }
+.streak-symbol { display:grid; place-items:center; flex-shrink:0; width:44px; height:44px; border-radius:14px; background:#dceacb; color:#41652d; font-size:28px; }
+.streak-copy { flex:1; min-width:0; }
+.streak-copy h3 { margin:0 0 5px; font-size:18px; }
+.streak-copy p { margin:0 0 7px; font-size:13px; line-height:1.5; }
+.streak-copy small { color:var(--muted); font-size:11px; line-height:1.5; display:block; }
+.weekly-recap { border:1px solid var(--line); background:var(--card,#fff); border-radius:18px; padding:24px; margin:24px 0; }
+.recap-heading { display:flex; justify-content:space-between; align-items:center; gap:18px; flex-wrap:wrap; }
+.recap-heading h3 { margin:6px 0 0; font-size:21px; }
+.recap-navigation { display:flex; align-items:center; gap:10px; font-size:12px; }
+.recap-navigation button { padding:0; width:40px; height:40px; min-height:40px; }
+.recap-current { display:block; margin:12px 0 0 auto; font-size:12px; }
+.recap-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; margin:22px 0 12px; }
+.recap-days>div { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.recap-days span { font-size:11px; color:var(--muted); }
+.recap-days b { display:grid; place-items:center; width:36px; height:36px; border:1px solid var(--line); border-radius:50%; font-size:12px; color:var(--muted); }
+.recap-days .recorded b { background:#41652d; color:white; border-color:#41652d; }
+.recap-days .future b { border-style:dashed; opacity:.5; }
+.recap-coverage { font-size:12px; color:var(--muted); text-align:center; margin:0 0 20px; }
+.recap-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+.recap-stats>div { min-width:0; padding:0 14px 0 0; border-right:1px solid var(--line); }
+.recap-stats>div:last-child { border:0; }
+.recap-stats span { display:block; font-size:12px; color:var(--muted); line-height:1.5; }
+.recap-stats strong { display:block; font-size:25px; margin:8px 0; font-weight:650; }
+.recap-stats strong small { font-size:12px; font-weight:400; }
+.recap-stats p { font-size:11px; color:var(--muted); line-height:1.6; margin:0; }
+.recap-note { font-size:12px; line-height:1.7; color:var(--muted); border-top:1px solid var(--line); margin:20px 0 0; padding-top:16px; }
+@media(max-width:760px) {
+  .streak-card { padding:16px; gap:12px; flex-wrap:wrap; }
+  .streak-card>.outline { margin-left:56px; }
+  .streak-copy { flex-basis:calc(100% - 56px); }
+  .streak-copy h3 { font-size:17px; }
+  .weekly-recap { padding:18px 16px; }
+  .recap-heading { gap:14px; }
+  .recap-navigation { justify-content:space-between; width:100%; }
+  .recap-stats { grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px 12px; }
+  .recap-stats>div:nth-child(2n) { border:0; padding-right:0; }
+  .recap-stats strong { font-size:23px; }
+  .recap-days { gap:4px; }
+  .recap-days b { width:30px; height:30px; }
+}
