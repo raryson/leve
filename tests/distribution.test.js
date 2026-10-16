@@ -24,3 +24,17 @@ test('páginas públicas têm contato, idiomas, exclusão acessível e nenhum sc
     assert.doesNotMatch(html,/googletagmanager|google-analytics|<script[^>]+src="[^\"]*clerk|<iframe/i);
   }
 });
+
+test('artes Play são RGB sem alfa e vínculo Android aponta para o certificado do pacote verificado', () => {
+  for(const lang of ['pt','en']) {
+    const png=readFileSync(new URL(`../distribution/google-play/assets/feature-${lang}.png`,import.meta.url));
+    assert.equal(png.readUInt32BE(16),1024);
+    assert.equal(png.readUInt32BE(20),500);
+    assert.equal(png[24],8);
+    assert.equal(png[25],2);
+  }
+  const report=JSON.parse(readFileSync(new URL('../distribution/google-play/build-report.json',import.meta.url)));
+  const [link]=JSON.parse(readFileSync(new URL('../public/.well-known/assetlinks.json',import.meta.url)));
+  assert.equal(link.target.package_name,report.packageId);
+  assert.ok(link.target.sha256_cert_fingerprints.includes(report.uploadCertificateSha256));
+});

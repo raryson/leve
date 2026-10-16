@@ -1,0 +1,28 @@
+{
+  "generatedOn": "2026-10-16",
+  "builder": "PWABuilder Android / Bubblewrap",
+  "packageId": "app.raryson.leve",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "minimumSdk": 24,
+  "targetSdk": 36,
+  "compileSdk": 36,
+  "aabBytes": 1139561,
+  "aabSha256": "615013A2D4420E93FCD5F4B8760410BEB39A1B1F6B7DC68FCDD26E830FC35531",
+  "uploadCertificateSha256": "AC:BE:E1:FB:C8:FB:84:94:8A:6A:16:5D:23:9E:D4:6F:1F:A6:4E:BF:ED:04:1B:03:E0:28:14:17:5A:3E:34:CE",
+  "signatureCheck": "Detached CMS signature, signed manifest digest and 456 entry digests verified locally",
+  "settings": {
+    "display": "standalone",
+    "fallback": "custom-tabs",
+    "notificationDelegation": false,
+    "locationDelegation": false,
+    "playBilling": false,
+    "chromeOsOnly": false,
+    "metaQuest": false
+  },
+  "privateArtifactsDirectory": "distribution/google-play/private/",
+  "googlePlaySigningCertificate": null,
+  "uploadedToPlay": false,
+  "testedOnPhysicalAndroid": false,
+  "notes": "Public assetlinks uses the upload certificate for local APK testing. Add the real Play App Signing fingerprint before validating the Play-distributed build. Signing credentials are private and excluded from Git and deployment."
+}

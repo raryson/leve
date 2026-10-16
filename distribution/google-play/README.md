@@ -11,7 +11,7 @@ Atualizado em 16/10/2026. Preparação técnica não equivale a aprovação pela
 - Suporte: https://leve-fawn.vercel.app/support/
 - Regras: https://leve-fawn.vercel.app/terms/
 - Ícone 512 PNG: https://leve-fawn.vercel.app/icon-512.png
-- Capturas reais com dados fictícios: `public/screenshots/`.
+- Capturas mobile reais com dados fictícios: `assets/phone-*-pt.jpg` e `assets/phone-*-en.jpg` (415 × 800, JPEG, duas por idioma). Capturas anteriores para divulgação: `public/screenshots/`.
 - Artes de destaque 1024 × 500: `distribution/google-play/assets/`.
 
 ## Sequência de lançamento
@@ -31,9 +31,18 @@ Atualizado em 16/10/2026. Preparação técnica não equivale a aprovação pela
 
 - Conta/estado de verificação no Play Console ainda não confirmados.
 - Clerk de produção/domínio ainda pendente.
-- AAB assinado, chave preservada e certificado Play App Signing ainda precisam ser confirmados.
-- Digital Asset Links e teste em Android distribuído pela Play pendentes.
+- Certificado Play App Signing e teste em Android distribuído pela Play pendentes. AAB e chave de upload já gerados e preservados localmente.
 - Declarações e teste fechado, quando aplicável, dependem do Console e de participantes reais.
+
+## Pacote Android gerado
+
+`private/Leve.aab` é o arquivo para enviar à Play; `private/Leve.apk` é para teste local. O ZIP completo, a chave e as instruções de assinatura estão em `private/`, excluídos do Git e da Vercel. Faça uma cópia segura dessa pasta antes de qualquer limpeza da máquina. Não coloque o ZIP na hospedagem: ele contém a chave e as senhas.
+
+O PWABuilder gerou versão 1.0.0/code 1 com ID `app.raryson.leve`, minSdk 24 e targetSdk 36. Assinatura CMS, manifesto e hashes de 456 entradas do AAB foram verificados; detalhes públicos e SHA-256 em `build-report.json`. O ID só fica reservado após criação/upload no Console. A ausência de um ensaio em aparelho físico continua explícita.
+
+`public/.well-known/assetlinks.json` contém o certificado de **upload**, para teste do APK local. Antes de usar o pacote da Play, acrescente o certificado **Play App Signing** com o gerador. Não substitua inadvertidamente o fingerprint real por um exemplo. Um Android confirmado sem barra de navegador é a validação final do vínculo; HTTP 200 sozinho não comprova isso.
+
+As capturas do diretório `assets/` têm proporção inferior a 2:1, conforme o limite da Play, e retratam o PWA com dados fictícios. Ainda devem ser comparadas com a interface instalada em Android. Não apresentamos as capturas como prova de teste nativo. As artes de destaque são PNG RGB sem alfa, 1024 × 500. [Requisitos de materiais](https://support.google.com/googleplay/android-developer/answer/9866151).
 
 ## Referências oficiais
 

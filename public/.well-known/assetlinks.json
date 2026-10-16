@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.raryson.leve",
+      "sha256_cert_fingerprints": [
+        "AC:BE:E1:FB:C8:FB:84:94:8A:6A:16:5D:23:9E:D4:6F:1F:A6:4E:BF:ED:04:1B:03:E0:28:14:17:5A:3E:34:CE"
+      ]
+    }
+  }
+]
