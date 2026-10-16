@@ -1,0 +1,1 @@
+export const COMMUNITY_POLICY_VERSION = '2026-10-16';

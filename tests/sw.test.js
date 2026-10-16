@@ -37,3 +37,19 @@ test('não intercepta API, outros domínios, POST nem responde HTML para asset a
   assert.equal(await w.request('/assets/app.js', 'cors', 'POST'), undefined);
   assert.equal(await w.request('/assets/app.js', 'cors', 'GET', 'https://external.test'), undefined);
 });
+
+test('páginas públicas não substituem a página inicial e abrem offline no próprio idioma', async () => {
+  const w = worker(); await w.lifecycle('install');
+  for (const path of ['/privacy/', '/support', '/delete-account/index.html', '/terms/']) {
+    assert.equal(await (await w.request(path, 'navigate')).text(), 'online');
+  }
+  assert.equal(await w.store.get('/').clone().text(), 'cached /');
+  await w.request('/unknown', 'navigate');
+  assert.equal(await w.store.get('/').clone().text(), 'cached /');
+  w.offline();
+  for (const path of ['/privacy/', '/support/', '/delete-account/', '/terms/']) {
+    assert.equal(await (await w.request(path, 'navigate')).text(), 'online');
+  }
+  assert.equal(await (await w.request('/', 'navigate')).text(), 'cached /');
+  assert.equal(await (await w.request('/legal.css')).text(), 'cached /legal.css');
+});

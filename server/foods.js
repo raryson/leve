@@ -1,5 +1,6 @@
 import { validateCommunityFood, cleanFoodText } from '../src/communityFood.js';
 import { FoodError } from './foods-db.js';
+import { COMMUNITY_POLICY_VERSION } from '../src/communityPolicy.js';
 
 const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'private, no-store',Vary:'Authorization'}});
@@ -30,7 +31,12 @@ export function createFoodsHandler({authenticate,repository,isModerator}) {
       try {
         if(!body || !['create','update','cancel','review','report','resolve-report'].includes(body.action) || !uuid(body.id)) throw new Error('Ação ou identificador inválido.');
         if(['review','resolve-report'].includes(body.action)&&!moderator) return json({error:'Apenas moderadores podem fazer isso.'},403);
-        if(['create','update'].includes(body.action)) {if(typeof body.share!=='boolean')throw new Error('Escolha se deseja compartilhar.');food=validateCommunityFood(body.food);}
+        if(['create','update'].includes(body.action)) {
+          if(body.policyVersion!==COMMUNITY_POLICY_VERSION)throw new Error('Leia e aceite as regras antes de cadastrar ou editar alimentos.');
+          if(typeof body.share!=='boolean')throw new Error('Escolha se deseja compartilhar.');
+          food=validateCommunityFood(body.food);
+          body.reason=`Accepted community rules ${COMMUNITY_POLICY_VERSION}`;
+        }
         if(['update','cancel','review'].includes(body.action)&&(!Number.isSafeInteger(body.version)||body.version<1))throw new Error('Versão inválida.');
         if(body.action==='review') {
           if(!['published','rejected','hidden'].includes(body.status))throw new Error('Decisão inválida.');

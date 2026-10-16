@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateCommunityFood, nutritionFlags, cleanFoodText, asCatalogFood } from '../src/communityFood.js';
 import { createFoodsHandler } from '../server/foods.js';
+import { COMMUNITY_POLICY_VERSION } from '../src/communityPolicy.js';
 
 const food=()=>({name:'Iogurte natural',brand:'Marca exemplo',preparation:'Pronto para consumo',category:'Laticínios',kcal:60,sourceText:'Rótulo do fabricante: 60 kcal por 100 g.',sourceUrl:'https://example.com/rotulo',portion:{grams:150,calories:90}});
 const id='66666666-6666-4666-8666-666666666666';
-const req=body=>new Request('https://leve.test/api/foods',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+const req=body=>new Request('https://leve.test/api/foods',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({policyVersion:COMMUNITY_POLICY_VERSION,...body})});
 test('valida calorias finitas, porções e conversão sem aceitar strings, infinito ou unidades incompatíveis',()=>{
   assert.equal(validateCommunityFood(food()).kcal,60);
   for(const value of [NaN,Infinity,-1,1001,null,'60',''])assert.throws(()=>validateCommunityFood({...food(),kcal:value}));
@@ -49,4 +50,15 @@ test('limite de corpo vale sem content-length e falhas não expõem SQL ou crede
   const handle=createFoodsHandler({authenticate:async()=>'owner',isModerator:()=>false,repository:{mutate:()=>{called=true;throw new Error('secret-db-url');}}});
   assert.equal((await handle(req({action:'create',id,food:food(),share:true,extra:'x'.repeat(16000)}))).status,413);assert.equal(called,false);
   const r=await handle(req({action:'create',id,food:food(),share:true}));assert.equal(r.status,503);assert.doesNotMatch(await r.text(),/secret-db-url/);
+});
+
+test('API exige a versão atual das regras antes de gravar qualquer alimento',async()=>{
+  let received;
+  const handle=createFoodsHandler({authenticate:async()=>'owner',isModerator:()=>false,repository:{mutate:async(...args)=>{received=args;return {ok:true};}}});
+  for(const policyVersion of [null,'old',true]){
+    assert.equal((await handle(req({action:'create',id,food:food(),share:true,policyVersion}))).status,400);
+    assert.equal(received,undefined);
+  }
+  assert.equal((await handle(req({action:'create',id,food:food(),share:true,reason:'arbitrary'}))).status,200);
+  assert.equal(received[2].reason,`Accepted community rules ${COMMUNITY_POLICY_VERSION}`);
 });

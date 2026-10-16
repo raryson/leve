@@ -3,3 +3,8 @@
 .env*
 tests
 skills-lock.json
+distribution/
+*.keystore
+*.jks
+*.aab
+*.apk

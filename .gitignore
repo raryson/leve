@@ -10,6 +10,13 @@ dist/
 .env.*
 !.env.example
 
+# Android signing material and private packages
+distribution/google-play/private/
+*.keystore
+*.jks
+*.aab
+*.apk
+
 # Logs
 npm-debug.log*
 yarn-debug.log*

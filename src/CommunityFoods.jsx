@@ -2,8 +2,9 @@ import { t } from './i18n.js';
 import React, { useEffect, useState } from 'react';
 import { COMMUNITY_CATEGORIES, validateCommunityFood, asCatalogFood, normalizedText } from './communityFood.js';
 import { FoodArt } from './FoodPicker.jsx';
+import { COMMUNITY_POLICY_VERSION } from './communityPolicy.js';
 
-const blank=()=>({name:'',brand:'',preparation:'',category:'Outros',kcal:'',sourceText:'',sourceUrl:'',share:false,portionMode:false,grams:'',calories:''});
+const blank=()=>({name:'',brand:'',preparation:'',category:'Outros',kcal:'',sourceText:'',sourceUrl:'',share:false,portionMode:false,grams:'',calories:'',acceptedRules:false});
 const statusLabel={private:'Só meu',pending:'Aguardando revisão',published:'Na comunidade',rejected:'Precisa de correção',hidden:'Oculto pela moderação'};
 const uuid=()=>{if(crypto.randomUUID)return crypto.randomUUID();const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;};
 
@@ -41,7 +42,8 @@ export default function CommunityFoods({account,community,onDirty=()=>{},showMod
         const kcal=form.portionMode?portionKcal:form.kcal===''?null:Number(form.kcal);
         const food=validateCommunityFood({name:form.name,brand:form.brand,preparation:form.preparation,category:form.category,kcal,sourceText:form.sourceText,sourceUrl:form.sourceUrl,portion:form.portionMode?{grams:form.grams===''?null:Number(form.grams),calories:form.calories===''?null:Number(form.calories)}:null});
         if(editing?.status==='published'&&!window.confirm(t("Ao salvar a alteração, este alimento sai da lista pública até uma nova aprovação. Os dias já registrados não mudam. Continuar?")))return;
-        await community.mutate({action:editing?'update':'create',id:editing?.id||operation,version:editing?.version,food,share:form.share});
+        if(!form.acceptedRules)throw new Error('Leia e aceite as regras antes de cadastrar ou editar alimentos.');
+        await community.mutate({action:editing?'update':'create',id:editing?.id||operation,version:editing?.version,food,share:form.share,policyVersion:COMMUNITY_POLICY_VERSION});
         const shared=form.share;reset();setMessage(shared?'Sugestão enviada para revisão. Você já pode usar o alimento na sua conta.':'Alimento guardado só na sua conta.');
       }catch(e){setError(e.message);}}}>
         <h4>{editing?t("Editar alimento"):t("Cadastrar alimento")}</h4>
@@ -55,7 +57,8 @@ export default function CommunityFoods({account,community,onDirty=()=>{},showMod
         {field('sourceUrl',t("Link da fonte (opcional)"),{type:'url',maxLength:1000,placeholder:'https://...'})}
         <label className="voice-consent community-wide"><input type="checkbox" checked={form.share} onChange={e=>setForm({...form,share:e.target.checked})}/><span>{t("Compartilhar este alimento com a comunidade após aprovação. Só os dados acima serão publicados.")}</span></label>
         <p className="form-note">{t("Use a parte comestível e o preparo correto. Nome inadequado e valores fora dos limites são recusados; estar entre 0 e 1.000 kcal não confirma a composição. Toda sugestão compartilhada passa por revisão humana.")}</p>
-        <button className="primary" disabled={community.saving}>{community.saving?t("Enviando…"):form.share?t("Salvar e enviar para revisão"):t("Salvar só para mim")}</button><button type="button" className="outline" disabled={community.saving} onClick={reset}>{t("Cancelar cadastro")}</button>
+        <label className="voice-consent community-wide"><input type="checkbox" required checked={form.acceptedRules} onChange={e=>setForm({...form,acceptedRules:e.target.checked})}/><span>{t('Li e aceito as regras de uso e comunidade.')} <a href="/terms/" target="_blank" rel="noreferrer">{t('Regras de uso e comunidade')} ↗</a></span></label>
+        <button className="primary" disabled={community.saving||!form.acceptedRules}>{community.saving?t("Enviando…"):form.share?t("Salvar e enviar para revisão"):t("Salvar só para mim")}</button><button type="button" className="outline" disabled={community.saving} onClick={reset}>{t("Cancelar cadastro")}</button>
         {error&&<p className="error-box community-wide" role="alert">{t(error)}</p>}
       </form>
       <h4>{t("Meus alimentos (")}{community.mine.length})</h4><div className="community-grid">{community.mine.map(record=><article key={record.id} className="community-card"><FoodReference record={record}/><span className="community-status">{t(statusLabel[record.status])}</span>{record.reason&&<p className="local-note">{t("Revisão: ")}{record.reason}</p>}<div className="account-actions"><button type="button" className="outline" disabled={community.saving} onClick={()=>edit(record)}>{t("Editar dados")}</button>{record.status==='pending'&&<button type="button" className="outline" disabled={community.saving} onClick={async()=>{try{await community.mutate({action:'cancel',id:record.id,version:record.version});setMessage('Envio cancelado; o alimento continua particular.');}catch(e){setError(e.message);}}}>{t("Cancelar compartilhamento")}</button>}</div></article>)}</div>
