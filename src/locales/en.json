@@ -1005,5 +1005,17 @@
   "Vários registros no mesmo dia contam uma vez. Tu tem até o fim do dia para continuar a sequência de ontem.": "Multiple entries on the same day count once. You have until the end of today to continue yesterday’s streak.",
   "Pausou? A sequência recomeça, mas os marcos do teu histórico continuam aqui. Não precisa comer menos nem treinar todos os dias para contar.": "Took a break? Your streak starts again, but milestones in your history stay here. You do not need to eat less or work out every day to count.",
   "Registros adicionados no histórico também contam. Editar ou excluir dados recalcula a ofensiva e os marcos.": "Entries added to your history also count. Editing or deleting data recalculates your streak and milestones.",
-  "{0} dias": "{0} days"
+  "{0} dias": "{0} days",
+  "dias com registros": "days logged",
+  "Semana em andamento": "Week in progress",
+  "Alimentação": "Food",
+  "Treinos": "Workouts",
+  "kcal/dia": "kcal/day",
+  "ml/dia": "ml/day",
+  "Dias com treino na semana": "Days with a workout this week",
+  "Variação do peso": "Weight change",
+  "Precisa de duas pesagens no período": "Needs two weigh-ins in this period",
+  "Da primeira à última pesagem": "From the first to the last weigh-in",
+  "Como calculamos o resumo": "How we calculate this recap",
+  "O peso compara a primeira e a última pesagem da semana, sem indicar uma tendência sozinho.": "Weight compares the first and last weigh-in of the week; this alone does not establish a trend."
 }

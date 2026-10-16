@@ -23,17 +23,17 @@ export function RegistrationStreak({state,today,onRegister}){
 export default function WeeklySummary({state,today}){
   const [offset,setOffset]=useState(0),week=weeklySummary(state,today,offset);
   return <section className="weekly-recap" aria-labelledby="weekly-recap-title">
-    <div className="recap-heading"><div><span className="eyebrow">{t('UM OLHAR NA ROTINA')}</span><h3 id="weekly-recap-title">{t('Teu resumo semanal')}</h3></div>
+    <div className="recap-heading"><div><h3 id="weekly-recap-title">{t('Teu resumo semanal')}</h3><p>{t('{0} refeições registradas',[week.meals])}</p></div>
     <div className="recap-navigation"><button className="outline" aria-label={t('Semana anterior')} disabled={offset<=-1200} onClick={()=>setOffset(n=>n-1)}>←</button><span>{label(week.start)} – {label(week.end)}</span><button className="outline" aria-label={t('Próxima semana')} disabled={offset===0} onClick={()=>setOffset(n=>n+1)}>→</button></div></div>
     {offset<0&&<button className="link recap-current" onClick={()=>setOffset(0)}>{t('Voltar à semana atual')}</button>}
-    <div className="recap-days" aria-label={t('Dias com registros na semana')}>{week.calendar.map(day=><div key={day.date} className={`${day.recorded?'recorded':''} ${day.future?'future':''}`}><span>{new Date(`${day.date}T12:00:00`).toLocaleDateString(getLocale(),{weekday:'short'})}</span><b aria-label={t('{0}: {1}',[label(day.date),day.future?t('Dia futuro'):day.recorded?t('Com registro'):t('Sem registro')])}>{day.recorded?'✓':day.date.slice(-2)}</b></div>)}</div>
-    <p className="recap-coverage">{t('{0} de {1} dias com registros',[week.recorded,week.dates.length])}{offset===0?t(' · semana em andamento'):''}</p>
+    <div className="recap-calendar"><div className="recap-days" aria-label={t('Dias com registros na semana')}>{week.calendar.map(day=><div key={day.date} className={`${day.recorded?'recorded':''} ${day.future?'future':''}`}><span>{new Date(`${day.date}T12:00:00`).toLocaleDateString(getLocale(),{weekday:'short'})}</span><b aria-label={t('{0}: {1}',[label(day.date),day.future?t('Dia futuro'):day.recorded?t('Com registro'):t('Sem registro')])}>{day.recorded?'✓':day.date.slice(-2)}</b></div>)}</div>
+    <div className="recap-coverage"><strong>{week.recorded}<small> / {week.dates.length}</small></strong><span>{t('dias com registros')}</span>{offset===0&&<small>{t('Semana em andamento')}</small>}</div></div>
     <div className="recap-stats">
-      <div><span>{t('Alimentação registrada')}</span><strong>{week.consumed===null?'—':number(week.consumed)} <small>kcal</small></strong><p>{t('Média em {0} dias com alimentos',[week.foodDays])}</p></div>
-      <div><span>{t('Água registrada')}</span><strong>{week.water===null?'—':number(week.water)} <small>ml</small></strong><p>{t('Média em {0} dias com água',[week.waterDays])}</p></div>
-      <div><span>{t('Dias de treino')}</span><strong>{week.trainingDays}</strong><p>{t('{0} refeições registradas',[week.meals])}</p></div>
-      <div><span>{t('Variação observada do peso')}</span><strong>{week.weightChange===null?'—':`${week.weightChange>0?'+':''}${week.weightChange.toLocaleString(getLocale(),{maximumFractionDigits:1})}`} <small>kg</small></strong><p>{week.weightChange===null?t('Registre duas pesagens nesta semana'):t('Entre a primeira e a última pesagem da semana')}</p></div>
+      <div><span>{t('Alimentação')}</span><strong>{week.consumed===null?'—':number(week.consumed)} <small>{t('kcal/dia')}</small></strong><p>{t('Média em {0} dias com alimentos',[week.foodDays])}</p></div>
+      <div><span>{t('Água')}</span><strong>{week.water===null?'—':number(week.water)} <small>{t('ml/dia')}</small></strong><p>{t('Média em {0} dias com água',[week.waterDays])}</p></div>
+      <div><span>{t('Treinos')}</span><strong>{week.trainingDays} <small>{week.trainingDays===1?t('dia'):t('dias')}</small></strong><p>{t('Dias com treino na semana')}</p></div>
+      <div><span>{t('Variação do peso')}</span><strong>{week.weightChange===null?'—':`${week.weightChange>0?'+':''}${week.weightChange.toLocaleString(getLocale(),{maximumFractionDigits:1})}`} <small>kg</small></strong><p>{week.weightChange===null?t('Precisa de duas pesagens no período'):t('Da primeira à última pesagem')}</p></div>
     </div>
-    <p className="recap-note">{week.recorded?t('Cada dia registrado ajuda a enxergar tua rotina. Continua no teu ritmo.'):t('Ainda sem registros nesta semana. Tudo bem retomar de onde tu está.')} {t('Dias sem dados ficam de fora das médias; os registros podem estar incompletos.')}</p>
+    <details className="recap-note"><summary>{t('Como calculamos o resumo')}</summary><p>{t('Dias sem dados ficam de fora das médias; os registros podem estar incompletos.')} {t('O peso compara a primeira e a última pesagem da semana, sem indicar uma tendência sozinho.')}</p></details>
   </section>;
 }
