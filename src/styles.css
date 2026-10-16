@@ -1973,8 +1973,9 @@ header h2 { overflow-wrap:anywhere; }
 .support-empty { background:#f5f7f3; padding:12px; border-radius:10px; }
 .support-thanks ul { list-style:none; padding:0; }
 .support-thanks li { display:flex; justify-content:space-between; gap:12px; padding:10px 0; font-size:12px; }
-.support-dialog .support-dismiss { display:flex; flex-direction:row; align-items:flex-start; gap:10px; margin-top:18px; font-size:12px; font-weight:400; line-height:1.6; }
-.support-dismiss input { width:18px; height:18px; margin:1px 0 0; flex-shrink:0; }
+.support-dialog .support-dismiss { display:flex; flex-direction:row; align-items:flex-start; gap:10px; margin-top:18px; padding:10px 0; min-height:44px; font-size:12px; font-weight:400; line-height:1.6; cursor:pointer; }
+.support-dismiss input[type="checkbox"] { width:18px; height:18px; min-height:18px; padding:0; margin:1px 0 0; flex:0 0 18px; accent-color:#1b7658; cursor:pointer; }
+.support-dismiss>span { flex:1; min-width:0; }
 .support-settings { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:20px; background:#fff8ec; border:1px solid #f0d8b4; border-radius:14px; }
 .support-settings h3 { font-size:17px; margin:0 0 6px; }
 .support-settings p { font-size:12px; color:var(--muted); margin:0; line-height:1.6; }
