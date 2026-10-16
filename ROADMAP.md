@@ -258,3 +258,21 @@ Validação: 71 testes, build e revisão mobile em 390 px; copo americano gera 1
 Publicação confirmada: `dpl_4GGpNDri7EiQ8tzv9PdFqDTgnrHf`, alias `https://leve-fawn.vercel.app`; build remoto concluído. Dois Negronis no formulário mostram 180 ml/370 kcal; rascunhos de teste descartados sem gravar registros.
 
 Batata frita adicionada em 16/10/2026 à categoria Refeições prontas: referência TACO 93 (267 kcal/100 g), com atalhos ilustrativos pequena 70 g, média 100 g e grande 150 g, ajustáveis. Peso pronto, já inclui fritura; extras à parte. PT/EN, cálculo local, sem mudar porções de registros anteriores.
+
+## Evolução por semana/mês e refeições esquecidas — 16/10/2026
+
+**Implementado:** Meu peso agora traz quatro gráficos separados (água, consumo, basal/repouso e gasto adicional de exercício), mais gráfico combinado com gasto total estimado. Semana de calendário começa na segunda; mês respeita o calendário. Setas permitem períodos anteriores, botão retorna ao atual; dias futuros não entram nos cálculos. Totais/médias usam apenas valores disponíveis. Legenda interativa liga/desliga séries e tabela acessível permite conferir valores diários. Água usa eixo direito em ml; calorias, esquerdo em kcal, sem comparar unidades como equivalentes.
+
+Basal/rotina são referências recalculadas com o Perfil atual em todas as datas, não snapshots históricos. Extra de treino usa a mesma lógica de `dailyEnergy`, evitando somar basal duas vezes. Dias sem registros permanecem ausentes; treino sem referência não vira zero. Em dias com treinos conhecidos e desconhecidos, gasto conhecido aparece como parcial, marcado com * na tabela. Sem meta de déficit ou nova prescrição. Gráfico original de peso preservado.
+
+**Histórico:** botão ＋ Refeição em cada dia e botão nos detalhes abrem um registro separado com a data preenchida. Se o dia ainda não existir, basta escolher a data no formulário superior. Só o Histórico habilita data passada para nova refeição (incluindo o botão + quando nessa aba); fora dele a data fica restrita a hoje. Ao salvar, acrescenta a refeição ao estado mais recente sem sobrescrever água, notas, treinos ou outras refeições.
+
+Validação: 74 testes, build, navegação semanal/mensal, legenda e tabela, desktop 1280 px e mobile 390 px sem overflow. Diário fictício local: jantar adicionado em 15/10, total passou de 372 para 496 kcal, manteve 1.000 ml de água e treinos; detalhes confirmam Jantar às 19:00. Dados reais não foram usados. Sem migração de banco, serviço pago ou ativação de analytics.
+
+Publicação confirmada: `dpl_DwpwFVYYR3d26psnoWj4TfJh1kc7`, `https://leve-fawn.vercel.app`, HTTP 200 e bundle `index-Bl8CwXhp.js` com gráficos e registro retroativo. Mês anterior vazio mostra valores indisponíveis, sem fabricar zeros de consumo; legenda/tabela verificadas. Refeição fictícia de ontem persistiu após recarregar e atualizou o gráfico de consumo.
+
+### Correção: treinos sem calorias não desaparecem — 16/10/2026
+
+O acompanhamento anterior exibia somente estimativas de gasto; por isso atividades sem referência calórica pareciam ausentes. Agora há gráfico independente de dias com treino, contador e lista por data com atividades/durações disponíveis, incluindo registros antigos com apenas `exercise.performed`. A visão combinada marca dias de treino com ▲ independentemente das kcal, e a tabela inclui presença de treino. Nenhuma caloria antiga foi inventada nem registro alterado. Teste cobre dois dias com atividades sem estimativa, incluindo dia sem detalhes; 75 testes aprovados. Conferido no diário fictício local com 2 dias de treino em 14/10 e 15/10.
+
+Correção publicada: `dpl_JDnzgnPPYBfH8Dr7HmDyEmxkBoiZ`, alias `https://leve-fawn.vercel.app`, HTTP 200 e bundle `index-hlBFW6DI.js` com gráfico/lista independente de treinos.
