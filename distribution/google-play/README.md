@@ -11,7 +11,7 @@ Atualizado em 16/10/2026. Preparação técnica não equivale a aprovação pela
 - Suporte: https://leve-fawn.vercel.app/support/
 - Regras: https://leve-fawn.vercel.app/terms/
 - Ícone 512 PNG: https://leve-fawn.vercel.app/icon-512.png
-- Capturas mobile reais com dados fictícios: `assets/phone-*-pt.jpg` e `assets/phone-*-en.jpg` (415 × 800, JPEG, duas por idioma). Capturas anteriores para divulgação: `public/screenshots/`.
+- Capturas mobile reais com dados fictícios: `assets/phone-*-pt.jpg` e `assets/phone-*-en.jpg` (415 × 772, JPEG, duas por idioma). Capturas anteriores para divulgação: `public/screenshots/`.
 - Artes de destaque 1024 × 500: `distribution/google-play/assets/`.
 
 ## Sequência de lançamento
