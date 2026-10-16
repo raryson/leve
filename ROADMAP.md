@@ -1,6 +1,6 @@
 # Leve — roadmap de evolução
 
-Atualizado em 14/10/2026. Objetivo: um diário rápido e confiável para acompanhar alimentação, peso, água e movimento, funcionando offline e depois sincronizando entre dispositivos.
+Atualizado em 16/10/2026. Objetivo: um diário rápido e confiável para acompanhar alimentação, peso, água e movimento, funcionando offline e depois sincronizando entre dispositivos.
 
 ## Ordem das próximas entregas
 
@@ -12,6 +12,30 @@ Sequência confirmada pelo usuário após a publicação do catálogo:
 4. **Integração preparada, coleta desligada:** Google tag GA4 `G-VF5TNY4EWR`, consentimento explícito com recusa/revogação no Perfil, apenas origem pública e build Production. Ativar `LEVE_GA4_REVIEWED=true` em Production somente após confirmação de Medição otimizada desligada no fluxo GA4. Eventos permitidos: abertura, navegação por identificador fixo de tela e instalação; sem dados do diário. Falta confirmar configuração externa e verificar recebimento real no GA4. Não é contêiner GTM.
 
 O status de cada item acima distingue implementação, validação e configuração externa pendente.
+
+## Próximas features — primeiros passos e novidades
+
+**Status:** planejadas a pedido do usuário em 16/10/2026. Esta entrega documenta o escopo; tutorial, central de novidades e sino ainda não estão implementados. Ordem sugerida: tutorial primeiro, central de novidades em seguida.
+
+### 1. Tutorial de primeiros passos
+
+- Oferecer um guia curto após o primeiro cadastro de perfil, com opção de começar ou pular. Manter **Rever primeiros passos** no Perfil/ajuda; quem já usa o app recebe um convite dispensável, sem abertura forçada.
+- Passos: registrar a primeira refeição pelo botão +, adicionar água, registrar treino e pesagem, consultar Histórico/Meu peso e entender ofensiva/resumo semanal. Explicar também instalação como PWA e login para sincronizar, com seus limites offline.
+- Usar orientações ligadas aos controles reais, com Avançar, Voltar e Sair, progresso visível e linguagem simples. Não cadastrar dados fictícios nem salvar registros automaticamente durante a demonstração; qualquer inclusão real mantém revisão e confirmação normais.
+- Persistir conclusão/dispensa e versão do tutorial, inicialmente por navegador, sem reaparecer a cada abertura ou atualização. Sincronização dessa preferência por conta pode entrar depois; não alterar o diário só para exibir o guia.
+- Português e inglês, teclado/leitor de tela, foco correto, movimento reduzido e layout que acompanhe navegação inferior/mobile e sidebar/desktop. Não cobrir o controle explicado nem prender o usuário em uma etapa impossível; etapa indisponível deve poder ser pulada.
+- Aceite: novo usuário consegue seguir ou pular, fechar e reabrir pelo Perfil; a decisão persiste ao recarregar. Verificar visitante e conta, mobile/desktop e ausência de alterações não confirmadas no diário.
+
+### 2. Central de novidades + sino de notificações
+
+- Criar **Novidades do Leve** com histórico das versões: data, versão, título, resumo do benefício e detalhes opcionais. Sino no cabeçalho abre a central, com contador de não lidas e estado vazio claro; acesso permanente também no Perfil/ajuda.
+- Em cada nova versão publicada, escrever uma entrada sobre as mudanças relevantes para o usuário (features, melhorias e correções). Incluir a nota de versão no checklist de entrega junto com validação, commit e push; publicar o anúncio junto da funcionalidade efetivamente disponível. Não gerar anúncios para cada commit interno ou ajuste sem interesse para o usuário.
+- Primeira implementação sem serviço/custo adicional: catálogo de notas versionado no repositório, com ID estável, versão, data, título/resumo/conteúdo em português e inglês e destino interno opcional para **Ver novidade**. Conteúdo estruturado, sem executar HTML arbitrário e sem incluir dados pessoais ou registros de usuários.
+- Guardar IDs lidos, permitir marcar individualmente e **Marcar todas como lidas**; abrir o sino não marca tudo automaticamente. Persistência inicial separada por visitante/conta no dispositivo, fora do diário; sincronização entre dispositivos pode ser adicionada depois com autorização no servidor.
+- Na primeira visita, oferecer a novidade mais recente como não lida e manter versões anteriores consultáveis, sem acumular um contador de todas as versões antigas. Nas visitas seguintes, somente IDs novos aumentam o contador. Respeitar datas de publicação; anúncios agendados não aparecem antecipadamente.
+- Sino e badge sem deslocar o cabeçalho ou sidebar, nome acessível com quantidade de não lidas, foco/fechamento por Escape e boa leitura em 320 px. Retorno ao app deve atualizar a lista quando houver rede; offline usa a versão já disponível e preserva estado de leitura.
+- São avisos dentro do app. Não pedir permissão do navegador nem enviar push, e-mail ou mensagens externas nesta etapa. Analytics continua desligado conforme decisão existente.
+- Aceite: uma nova versão exibe sua nota e aumenta o contador uma única vez; ler/persistir/recarregar mantém o estado, trocar idioma traduz conteúdo sem tornar a nota nova novamente, versões antigas continuam acessíveis e a troca de conta não mistura preferências de leitura. Conferir atualização da PWA, uso offline, teclado e mobile/desktop.
 
 ## Catálogo comunitário de alimentos
 
