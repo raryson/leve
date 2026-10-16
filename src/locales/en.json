@@ -892,5 +892,9 @@
   "Há treino sem estimativa de calorias; ele continua contando para sua constância.": "A workout has no calorie estimate; it still counts toward your consistency.",
   "{0} dia(s) com treino sem referência calórica. Isso não significa que você não treinou.": "{0} day(s) include workouts without calorie references. This does not mean you did not train.",
   "▲ Dia com treino registrado, mesmo sem calorias estimadas.": "▲ Day with a recorded workout, even without estimated calories.",
-  "Há treinos registrados, mas sem estimativa calórica disponível. Veja os treinos acima.": "Workouts were recorded, but calorie estimates are unavailable. See the workouts above."
+  "Há treinos registrados, mas sem estimativa calórica disponível. Veja os treinos acima.": "Workouts were recorded, but calorie estimates are unavailable. See the workouts above.",
+  "Estimativa retroativa com o Perfil atual: {0}.": "Retrospective estimate using your current Profile: {0}.",
+  "{0} treino(s) antigos receberam estimativa apenas nesta visualização, usando duração registrada, peso atual e a intensidade de referência indicada na lista. Os registros originais permanecem intactos.": "{0} older workout(s) have display-only estimates using recorded duration, current weight and the reference intensity listed above. Original records remain intact.",
+  "{0} treino(s) sem tipo ou duração suficientes não entram nesta estimativa. Os registros originais não foram alterados.": "{0} workout(s) lack sufficient type or duration information and are excluded from this estimate. Original records were not changed.",
+  "Treinos novos guardam o peso e o gasto estimado ao salvar. Treinos antigos reconhecidos podem receber uma estimativa visual com peso atual, duração registrada e intensidade de referência indicada. O extra desconta a rotina atual; os registros originais não são alterados.": "New workouts store weight and estimated expenditure when saved. Recognized older workouts can receive display-only estimates using current weight, recorded duration and the indicated reference intensity. Extra expenditure subtracts the current routine; original records are not changed."
 }

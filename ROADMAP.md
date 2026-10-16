@@ -276,3 +276,11 @@ Publicação confirmada: `dpl_DwpwFVYYR3d26psnoWj4TfJh1kc7`, `https://leve-fawn.
 O acompanhamento anterior exibia somente estimativas de gasto; por isso atividades sem referência calórica pareciam ausentes. Agora há gráfico independente de dias com treino, contador e lista por data com atividades/durações disponíveis, incluindo registros antigos com apenas `exercise.performed`. A visão combinada marca dias de treino com ▲ independentemente das kcal, e a tabela inclui presença de treino. Nenhuma caloria antiga foi inventada nem registro alterado. Teste cobre dois dias com atividades sem estimativa, incluindo dia sem detalhes; 75 testes aprovados. Conferido no diário fictício local com 2 dias de treino em 14/10 e 15/10.
 
 Correção publicada: `dpl_JDnzgnPPYBfH8Dr7HmDyEmxkBoiZ`, alias `https://leve-fawn.vercel.app`, HTTP 200 e bundle `index-hlBFW6DI.js` com gráfico/lista independente de treinos.
+
+### Extra dos treinos antigos — 16/10/2026
+
+A correção de presença não preenchia o gráfico de kcal, pois o diário antigo não salvava `energyEstimate`. Agora `displayWorkoutEstimate` aplica uma estimativa somente visual para tipos reconhecidos com duração válida: Academia/Gym (musculação moderada como suposição explícita), musculação, caminhada e elíptico; intensidade vigorosa/rápida é usada quando declarada. Peso do Perfil atual e rotina atual; referências e natureza retroativa ficam visíveis. Registros com snapshot usam o snapshot original. Atividade desconhecida, duração ausente/zero ou escolha explícita de sem estimativa (`referenceId: ''`) continuam sem valor inventado. O fallback não grava nem altera histórico, backup ou dados da conta.
+
+`dailyEnergy` e os gráficos agora compartilham o fallback; mistura de referências estimáveis/desconhecidas continua marcada parcial. 77 testes cobrem estimativa de Academia/Caminhada legadas, limites, preservação de registros/snapshots e recusa de atividade insuficiente.
+
+Publicado: `dpl_An1sX8XzhDgXbDv7H6yNBv2d8U8o`, alias público HTTP 200, bundle `index-Dj4KPTgs.js`. Prévia local conferida: dois dias com extra disponível (366 kcal adicionais no total do diário fictício), antes com um dia ausente. Nenhum registro foi editado para a verificação.

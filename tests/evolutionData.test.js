@@ -15,7 +15,7 @@ test('semana começa segunda; meses respeitam ano bissexto e não incluem futuro
 });
 test('dias ausentes e treino antigo desconhecido não viram zero nem déficit inventado',()=>{
   const day=appendFood({...newDay('2026-10-14'),waterMl:500},'Jantar',{food:'Arroz',calories:128});
-  const unknown=appendActivity(newDay('2026-10-15'),{type:'Caminhada antiga',durationMinutes:20,caloriesBurned:0});
+  const unknown=appendActivity(newDay('2026-10-15'),{type:'Atividade sem tipo',durationMinutes:20,caloriesBurned:0});
   const state=normalizeState({profile,weights:[90],days:[day,unknown]});
   const before=JSON.stringify(state),rows=evolutionRows(state,['2026-10-13','2026-10-14','2026-10-15']);
   assert.equal(rows[0].water,null);assert.equal(rows[0].consumed,null);assert.equal(rows[0].exercise,null);assert.ok(rows[0].resting>0);
@@ -36,12 +36,19 @@ test('gasto combina rotina e extra sem somar basal duas vezes; perfil atual é s
 
 test('dois dias de treino continuam visíveis sem referência de calorias ou detalhes antigos',()=>{
   const legacy={...newDay('2026-10-14'),exercise:{performed:true,activities:[],totalCaloriesBurned:0}};
-  const workout=appendActivity(newDay('2026-10-15'),{type:'Academia',durationMinutes:45,caloriesBurned:0});
+  const workout=appendActivity(newDay('2026-10-15'),{type:'Atividade sem tipo',durationMinutes:45,caloriesBurned:0});
   const state=normalizeState({profile,weights:[90],days:[legacy,workout]}),before=JSON.stringify(state);
   const rows=evolutionRows(state,['2026-10-13','2026-10-14','2026-10-15','2026-10-16']);
   assert.equal(rows.filter(r=>r.trained).length,2);
   assert.deepEqual(rows.map(r=>r.training),[null,1,1,null]);
   assert.equal(rows[1].minutes,null);assert.equal(rows[2].minutes,45);
   assert.equal(rows[1].exercise,null);assert.equal(rows[2].exercise,null);
-  assert.equal(rows[2].activities[0].type,'Academia');assert.equal(JSON.stringify(state),before);
+  assert.equal(rows[2].activities[0].type,'Atividade sem tipo');assert.equal(JSON.stringify(state),before);
+});
+
+test('Academia e Caminhada antigas preenchem extra no gráfico com suposições declaradas',()=>{
+  const days=[appendActivity(newDay('2026-10-14'),{type:'Academia',durationMinutes:45,caloriesBurned:0}),appendActivity(newDay('2026-10-15'),{type:'Caminhada',durationMinutes:30,caloriesBurned:0})];
+  const state=normalizeState({profile,weights:[90],days}),before=JSON.stringify(state),rows=evolutionRows(state,['2026-10-14','2026-10-15']);
+  for(const row of rows){assert.ok(row.exercise>0);assert.ok(row.expenditure>row.resting);assert.equal(row.retroactive.length,1);assert.equal(row.unknownExercise,false);}
+  assert.equal(JSON.stringify(state),before);
 });

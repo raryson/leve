@@ -1,11 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {restingEnergy,routineEnergy,workoutEstimate,dailyEnergy,createWorkout} from '../src/energy.js';
+import {restingEnergy,routineEnergy,workoutEstimate,dailyEnergy,createWorkout,displayWorkoutEstimate} from '../src/energy.js';
 import {normalizeState,newDay,appendActivity} from '../src/domain.js';
 import {applyEntry} from '../src/entries.js';
 import {createJournalHandler} from '../server/journal.js';
 const profile={name:'Teste',age:30,height:175,weight:90,sex:'male',activityFactor:1.4};
 const initial=()=>normalizeState({profile,weights:[90],days:[]});
+
+test('treinos legados reconhecidos estimam extra sem regravar histórico ou sobrescrever escolhas explícitas',()=>{
+  const day=appendActivity(newDay('2026-10-15'),{type:'Academia',durationMinutes:45,caloriesBurned:0});
+  const before=JSON.stringify(day),energy=dailyEnergy(profile,day);
+  assert.equal(energy.exercise,167);assert.equal(energy.unestimated,0);assert.equal(energy.retroactive.length,1);
+  assert.equal(JSON.stringify(day),before);assert.equal(day.exercise.totalCaloriesBurned,0);
+  const walk={type:'Caminhada',durationMinutes:30,caloriesBurned:0};
+  assert.equal(displayWorkoutEstimate(walk,profile).estimate.referenceId,'walk-38');
+  for(const patch of [{type:'Outra atividade'},{durationMinutes:0},{durationMinutes:''},{referenceId:''}])assert.equal(displayWorkoutEstimate({...walk,...patch},profile).estimate,null);
+  const saved=createWorkout({referenceId:'walk-48',durationMinutes:30},profile);
+  assert.equal(displayWorkoutEstimate(saved,{...profile,weight:80}).retroactive,false);
+  assert.deepEqual(displayWorkoutEstimate(saved,{...profile,weight:80}).estimate,saved.energyEstimate);
+});
 test('repouso considera peso, altura, idade e coeficiente; rotina inclui repouso uma vez',()=>{
   assert.equal(restingEnergy(profile),1849);assert.equal(restingEnergy({...profile,sex:'female'}),1683);assert.equal(routineEnergy(profile),2589);
   assert.equal(restingEnergy({...profile,weight:80}),1749);assert.equal(routineEnergy({...profile,activityFactor:1.6}),2958);

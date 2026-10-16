@@ -42,7 +42,24 @@ export function createWorkout(activity,profile){
 }
 export function dailyEnergy(profile,day){
   const resting=restingEnergy(profile),routine=routineEnergy(profile);
-  const estimated=day.exercise.activities.filter(a=>a.energyEstimate?.method==='met-baseline-v1');
-  const exercise=estimated.reduce((sum,a)=>{const estimate=validateWorkoutEstimate(a.energyEstimate,a.durationMinutes);return sum+Math.max(0,Math.round(estimate.gross-routine/1440*a.durationMinutes));},0);
-  return {resting,routine,exercise,total:routine+exercise,consumed:day.totalCalories,balance:day.totalCalories-routine-exercise,unestimated:day.exercise.activities.length-estimated.length};
+  const estimated=day.exercise.activities.map(a=>({activity:a,...displayWorkoutEstimate(a,profile)})).filter(a=>a.estimate);
+  const exercise=estimated.reduce((sum,{activity,estimate})=>sum+Math.max(0,Math.round(estimate.gross-routine/1440*activity.durationMinutes)),0);
+  const retroactive=estimated.filter(a=>a.retroactive).map(a=>({type:a.activity.type,reference:exerciseReferences.find(r=>r.id===a.estimate.referenceId).label}));
+  return {resting,routine,exercise,total:routine+exercise,consumed:day.totalCalories,balance:day.totalCalories-routine-exercise,estimated:estimated.length,retroactive,unestimated:day.exercise.activities.length-estimated.length};
+}
+
+// Display-only fallback for the pre-MET journal format. Never write inferred
+// references to old records, override saved estimates, or override a user's
+// explicit choice of "other activity — no estimate" (referenceId === '').
+export function displayWorkoutEstimate(activity,profile){
+  if(activity.energyEstimate)return {estimate:validateWorkoutEstimate(activity.energyEstimate,activity.durationMinutes),retroactive:false};
+  if(activity.referenceId==='')return {estimate:null,retroactive:false};
+  const name=String(activity.type||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  let reference=exerciseReferences.find(r=>r.id===activity.referenceId||r.label===activity.type);
+  if(!reference){
+    const referenceId=/^(academia|gym)$|^(musculacao|treino de forca|strength training)(\s|$)/.test(name)?(/vigoros|vigorous/.test(name)?'strength-60':'strength-35'):/^(caminhada|walking|walk)(\s|$)/.test(name)?(/rapida|brisk/.test(name)?'walk-48':'walk-38'):/^(eliptico|elliptical)(\s|$)/.test(name)?'elliptical-50':null;
+    reference=exerciseReferences.find(r=>r.id===referenceId);
+  }
+  if(!reference)return {estimate:null,retroactive:false};
+  try{return {estimate:workoutEstimate(reference.id,activity.durationMinutes,profile),retroactive:true};}catch{return {estimate:null,retroactive:false};}
 }

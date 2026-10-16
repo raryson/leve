@@ -23,13 +23,13 @@ export function evolutionRows(state,dates){
     const day=byDate.get(date);let energy=null;
     try{energy=dailyEnergy(state.profile,day||newDay(date));}catch{/* Incomplete profile must not fabricate a baseline. */}
     const unknownExercise=Boolean(day?.exercise.performed&&!day.exercise.activities.length)||Boolean(energy?.unestimated);
-    const partialExercise=unknownExercise&&Boolean(day?.exercise.activities.some(a=>a.energyEstimate?.method==='met-baseline-v1'));
+    const partialExercise=unknownExercise&&Boolean(energy?.estimated);
     const exerciseAvailable=day&&energy&&(!unknownExercise||partialExercise);
     const trained=Boolean(day?.exercise.performed||day?.exercise.activities.length);
     const minutes=trained?day.exercise.activities.reduce((sum,a)=>sum+(Number(a.durationMinutes)||0),0):0;
     return {date,trained,training:day?Number(trained):null,minutes:trained&&minutes===0?null:day?minutes:null,activities:day?.exercise.activities||[],water:day?day.waterMl:null,consumed:day&&(day.meals.length||day.totalCalories>0)?day.totalCalories:null,
       resting:energy?.resting??null,exercise:exerciseAvailable?energy.exercise:null,
-      expenditure:exerciseAvailable?energy.total:null,unknownExercise,partialExercise,
+      expenditure:exerciseAvailable?energy.total:null,unknownExercise,partialExercise,retroactive:energy?.retroactive||[],
       recorded:Boolean(day)};
   });
 }
