@@ -9,7 +9,7 @@ Sequência confirmada pelo usuário após a publicação do catálogo:
 1. **Implementado:** corrigir a sobreposição entre data e botão Registrar dia no histórico mobile. Conferido em 320, 360, 390 e 430 px.
 2. **Implementado:** orientação dispensável da PWA na tela Hoje e ajuda permanente no Perfil, com instruções por plataforma. Instalação real em Android/iOS ainda precisa de dispositivo.
 3. **Revisão inicial concluída:** histórico/detalhes, formulários e navegação responsiva. Corrigida perda de preenchimentos de alimento/treino ao salvar o dia sem adicionar; agora exige adicionar ou descartar. Cadastro comunitário pede confirmação ao trocar de aba com alterações não salvas. Regressões de persistência/sincronização cobertas pelos testes existentes; validação completa offline em dois dispositivos continua pendente.
-4. **Integração preparada, coleta desligada:** Google tag GA4 `G-VF5TNY4EWR`, consentimento explícito com recusa/revogação no Perfil, apenas origem pública e build Production. Ativar `LEVE_GA4_REVIEWED=true` em Production somente após confirmação de Medição otimizada desligada no fluxo GA4. Eventos permitidos: abertura, navegação por identificador fixo de tela e instalação; sem dados do diário. Falta confirmar configuração externa e verificar recebimento real no GA4. Não é contêiner GTM.
+4. **Ativado em Production em 16/10/2026, após confirmação do usuário de Medição otimizada desligada:** Google tag GA4 `G-VF5TNY4EWR`, consentimento explícito com recusa/revogação no Perfil, apenas origem pública e build Production. `LEVE_GA4_REVIEWED=true` configurado somente em Production; cada usuário ainda escolhe permitir ou recusar. Eventos permitidos: abertura, navegação por identificador fixo de tela e instalação; sem dados do diário. Configuração externa confirmada pelo usuário; falta verificar recebimento real no painel GA4. Não é contêiner GTM.
 
 O status de cada item acima distingue implementação, validação e configuração externa pendente.
 
@@ -52,7 +52,7 @@ O status de cada item acima distingue implementação, validação e configuraç
 
 ## Apoio voluntário por Pix e agradecimentos
 
-**Status:** proposta registrada em 16/10/2026. Planejada; ainda sem chave/QR Code ou lista de apoiadores publicados.
+**Status:** primeira versão implementada em 16/10/2026, com dados Pix autorizados pelo titular; ver validação ao final. Agradecimentos por cadastro manual no repositório, ainda sem nomes publicados. Requisitos abaixo preservados como referência; painel administrativo e confirmação bancária automática ficam para etapa futura.
 
 - Após salvar com sucesso uma nova pesagem menor que a pesagem cronologicamente anterior, oferecer um modal de apoio voluntário para manter o Leve. Não abrir ao carregar/importar/sincronizar o diário, editar perfil, salvar a mesma pesagem novamente ou quando o peso ficar igual/subir. Definir comparação para registros retroativos e datas iguais antes de implementar; variação de uma pesagem não deve ser apresentada como diagnóstico ou prova de perda de gordura.
 - Convite curto e respeitoso, com **Agora não** e **Não mostrar novamente**. Fechar por Escape/toque fora; nunca bloquear a gravação, esconder recursos ou associar doação a mérito pessoal. Manter acesso manual no Perfil para apoiar a qualquer momento. Considerar limite de frequência, com decisão do usuário antes de alterar o gatilho solicitado de cada queda de peso.
@@ -127,7 +127,7 @@ Referências consultadas: [Microsoft — publicar uma PWA](https://learn.microso
 
 ## Pendências adicionais — histórico mobile, aviso PWA e analytics
 
-**Status:** histórico mobile e orientação PWA implementados em 14/10/2026. Analytics implementado com coleta desligada por escolha do usuário; ver status detalhado acima. Os critérios abaixo continuam como referência, incluindo testes reais de dispositivo ainda pendentes.
+**Status:** histórico mobile e orientação PWA implementados em 14/10/2026. Analytics ativado em Production em 16/10/2026 após confirmação do usuário; coleta individual depende de consentimento, ver status detalhado acima. Os critérios abaixo continuam como referência, incluindo testes reais de dispositivo ainda pendentes.
 
 ### Corrigir sobreposição no histórico mobile
 
@@ -400,3 +400,9 @@ Refino completo do resumo semanal — 16/10/2026: cabeçalho enxuto com total de
 Validação: 84 testes aprovados, build concluído (aviso de bundle existente), navegador com diário fictício em 320/390/900/1280 px, incluindo português/inglês, semana sem registros, navegação entre semanas e metodologia expansível. Sem rolagem horizontal. Nenhum registro real alterado.
 
 GA4 — ativação autorizada em 16/10/2026: usuário confirmou Medição otimizada desligada no fluxo G-VF5TNY4EWR e solicitou concluir a configuração. Configurado LEVE_GA4_REVIEWED=true somente em Production no projeto rarysonrosts-projects/leve; desenvolvimento e prévias continuam sem coleta. Consentimento individual, recusa/revogação, eventos permitidos e proteção contra envio do diário permanecem iguais. 84 testes aprovados antes da publicação. Verificação real de tag/eventos e do painel GA4 será registrada separadamente, sem confundir build habilitado com recebimento confirmado.
+
+Apoio por Pix — primeira versão implementada em 16/10/2026: titular forneceu chave aleatória, nome e cidade e autorizou a exibição. Modal com QR local, Copia e Cola, valor livre, dispensa e acesso manual no Perfil. Gatilho após salvar pesagem de hoje menor que o último registro datado; pesagens retroativas/importações/sincronizações não disparam. Nenhum evento de apoio/peso enviado ao analytics. Agradecimentos dos últimos cinco apoiadores são cadastrados pelo responsável no repositório, somente após verificação e consentimento; lista começa vazia, sem integração bancária ou painel administrativo nesta etapa. Instruções no README.
+
+Validação: 87 testes aprovados, incluindo CRC Pix, campos de recebedor/valor livre, decodificação do SVG para o payload exato, critérios de disparo, isolamento da preferência e filtro de apoiadores autorizados/verificados. Navegador com diário fictício: 89,4→89,3 abriu convite após salvar; Copia e Cola funcionou; dispensa impediu novo convite em 89,2; acesso manual pelo Perfil disponível, português/inglês e modal mobile/desktop conferidos. Nenhuma transferência feita ou pesagem de conta real alterada.
+
+GA4 — verificação em produção em 16/10/2026: ambiente habilitado confirmado no Perfil; preferência anterior de recusa respeitada, sem tag Google no DOM. Ao permitir, foi inserido o script oficial gtag.js com G-VF5TNY4EWR. Recusa original restaurada após teste. Recebimento de eventos no painel Tempo Real do GA4 ainda não confirmado; carregamento da tag não é tratado como prova de ingestão. Publicação dpl_51hv5gHZZJB7835RmV3csBLtFAAD.

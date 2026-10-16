@@ -1,5 +1,7 @@
 import EvolutionCharts from './EvolutionCharts.jsx';
 import WeeklySummary, {RegistrationStreak} from './RoutineSummary.jsx';
+import SupportModal from './SupportModal.jsx';
+import {supportPreferenceKey,shouldOfferSupport} from './support.js';
 import BeveragePortions from './BeveragePortions.jsx';
 import { t, getLocale } from './i18n.js';
 import React, { useEffect, useRef, useState } from 'react';
@@ -53,6 +55,23 @@ function App({ account, accountControls }) {
   const { state: s, loaded, loadError, error: storageError, commit } = journal;
   const [toast, setToast] = useState('');
   const [today, setToday] = useState(localDate);
+  const [support,setSupport]=useState(null);
+  const supportDismissed=useRef(new Set());
+  const supportOwner=account?.userId||'guest';
+  function offerSupport(decreased){
+    if(!decreased||supportDismissed.current.has(supportOwner))return;
+    try{if(localStorage.getItem(supportPreferenceKey(supportOwner))==='hidden')return;}catch{/* Storage failure must not block a saved weighing. */}
+    setSupport({owner:supportOwner,fromWeight:true});
+  }
+  function closeSupport(hide){
+    if(hide){supportDismissed.current.add(supportOwner);try{localStorage.setItem(supportPreferenceKey(supportOwner),'hidden');}catch{setToast('A preferência de apoio vale só nesta sessão.');}}
+    setSupport(null);
+  }
+  function saveWeight(value,date){
+    const payload={type:'weight',id:id(),date,value};let decreased=false;
+    const saved=commit(x=>{decreased=shouldOfferSupport(x.weights,payload,today);return applyEntry(x,payload);});
+    if(saved){setToast('Pesagem salva.');offerSupport(decreased);}return saved;
+  }
   const [recoveryError, setRecoveryError] = useState('');
   useEffect(() => {
     const update = () => setToday(localDate());
@@ -91,16 +110,17 @@ function App({ account, accountControls }) {
       <InstallBanner mode={tab==='home'?'notice':'hidden'}/>{tab!=='profile'&&<PrivacyControls settings={false} screen={tab}/>}
       {tab === 'home' && <Home s={s} day={day} today={today} onMeal={()=>openEntry('meal')} onWorkout={()=>openEntry('workout')} onEdit={() => setEditor(today)} onWeight={() => openEntry('weight')} onWater={delta => { if (commit(x => { const d = x.days.find(d => d.date === today) || newDay(today); return upsertDay(x, { ...d, waterMl: Math.max(0, d.waterMl + delta) }); })) setToast('Água atualizada.'); }}/>}
       {tab === 'days' && <History s={s} today={today} onAdd={date=>openEntry('meal',date,true)} onEdit={setEditor} onImport={() => setImporting(true)} onDelete={date => { if (window.confirm(t("Excluir o registro de {0}?",[dateLabel(date)]))) commit(x => ({ ...x, days: x.days.filter(d => d.date !== date) })); }}/>}
-      {tab === 'evo' && <Evolution s={s} today={today} onSave={(value, date) => { let saved = false; saved = commit(x => { const records = [...x.weights, { id: id(), date, value }].sort((a, b) => (a.date || '').localeCompare(b.date || '')); return { ...x, weights: records, profile: { ...x.profile, weight: records.at(-1).value } }; }); if (saved) setToast('Pesagem salva.'); return saved; }}/>}
+      {tab === 'evo' && <Evolution s={s} today={today} onSave={saveWeight}/>}
       {tab === 'foods' && <CommunityFoods account={account} community={community} onDirty={setCatalogPageDirty}/>}
-      {tab === 'profile' && <div className="settings-stack"><div className="intro"><div><small>{t("SEU PERFIL")}</small><h3>{t("Do seu jeito.")}</h3><p>{t("Ajuste suas referências e proteja seus registros.")}</p></div></div>{syncPanel}<section className="language-settings" aria-labelledby="language-settings-title"><div><h3 id="language-settings-title">{t('Idioma / Language')}</h3><p>{t('Escolha o idioma do app neste dispositivo.')}</p></div><LanguageSwitcher/></section><section className="formbox"><ProfileForm key={JSON.stringify(s.profile)} initial={s.profile} onSave={p => { if (commit(x => ({ ...x, profile: p }))) setToast('Perfil salvo.'); }}/></section><InstallBanner mode="help"/><PrivacyControls settings screen={tab}/><section className="data-transfer"><h3>{t("Seus dados com você")}</h3><p>{t("Use o backup para guardar uma cópia. Com login, o diário sincroniza por conta; conflitos pedem sua revisão.")}</p><button className="primary" onClick={backup}>{t("Exportar backup")}</button><BackupInput onImport={restore}/></section></div>}
+      {tab === 'profile' && <div className="settings-stack"><div className="intro"><div><small>{t("SEU PERFIL")}</small><h3>{t("Do seu jeito.")}</h3><p>{t("Ajuste suas referências e proteja seus registros.")}</p></div></div>{syncPanel}<section className="language-settings" aria-labelledby="language-settings-title"><div><h3 id="language-settings-title">{t('Idioma / Language')}</h3><p>{t('Escolha o idioma do app neste dispositivo.')}</p></div><LanguageSwitcher/></section><section className="formbox"><ProfileForm key={JSON.stringify(s.profile)} initial={s.profile} onSave={p => { if (commit(x => ({ ...x, profile: p }))) setToast('Perfil salvo.'); }}/></section><section className="support-settings"><div><h3>{t('Apoie o Leve')}</h3><p>{t('Ajude a manter o projeto independente, se puder.')}</p></div><button type="button" className="outline" onClick={()=>setSupport({owner:supportOwner,fromWeight:false})}>{t('Apoiar por Pix')}</button></section><InstallBanner mode="help"/><PrivacyControls settings screen={tab}/><section className="data-transfer"><h3>{t("Seus dados com você")}</h3><p>{t("Use o backup para guardar uma cópia. Com login, o diário sincroniza por conta; conflitos pedem sua revisão.")}</p><button className="primary" onClick={backup}>{t("Exportar backup")}</button><BackupInput onImport={restore}/></section></div>}
     </main>
     <QuickAdd Icon={Icon} onSelect={mode=>openEntry(mode,today,tab==='days'&&mode==='meal')}/>
-    {entry&&<EntryModal key={entry} mode={entry} today={today} initialDate={entryDate} allowPast={entryHistory} library={s} catalog={catalog} Modal={Modal} FoodForm={FoodForm} ExerciseForm={ExerciseForm} onFavorite={foodId=>commit(x=>({...x,favoriteFoods:x.favoriteFoods.includes(foodId)?x.favoriteFoods.filter(id=>id!==foodId):[...x.favoriteFoods,foodId]}))} onSaveMeal={saveMeal} close={()=>setEntry(null)} onSave={payload=>{const saved=commit(x=>{const next=applyEntry(x,payload);return payload.type==='meal'?{...next,recentFoods:trackRecentFoods(next,next.days.find(d=>d.date===payload.date)||newDay(payload.date))}:next;});if(saved){setEntry(null);setToast('Registro salvo.');}return saved;}}/>}
+    {entry&&<EntryModal key={entry} mode={entry} today={today} initialDate={entryDate} allowPast={entryHistory} library={s} catalog={catalog} Modal={Modal} FoodForm={FoodForm} ExerciseForm={ExerciseForm} onFavorite={foodId=>commit(x=>({...x,favoriteFoods:x.favoriteFoods.includes(foodId)?x.favoriteFoods.filter(id=>id!==foodId):[...x.favoriteFoods,foodId]}))} onSaveMeal={saveMeal} close={()=>setEntry(null)} onSave={payload=>{let decreased=false;const saved=commit(x=>{decreased=shouldOfferSupport(x.weights,payload,today);const next=applyEntry(x,payload);return payload.type==='meal'?{...next,recentFoods:trackRecentFoods(next,next.days.find(d=>d.date===payload.date)||newDay(payload.date))}:next;});if(saved){setEntry(null);setToast('Registro salvo.');offerSupport(decreased);}return saved;}}/>}
     {editor && <DayEditor key={editor} account={account} community={community} catalog={catalog} library={s} onFavorite={foodId => commit(x => ({...x, favoriteFoods: x.favoriteFoods.includes(foodId) ? x.favoriteFoods.filter(id=>id!==foodId) : [...x.favoriteFoods,foodId]}))} onSaveMeal={saveMeal} onDeleteMeal={meal=>{if(window.confirm(t("Excluir a combinação “{0}”? Os dias já registrados serão preservados.",[meal.name]))) commit(x=>({...x,savedMeals:x.savedMeals.filter(m=>m.id!==meal.id)}));}} day={s.days.find(d => d.date === editor) || newDay(editor)} close={() => setEditor(null)} onSave={d => { const saved = commit(x => ({...upsertDay(x, d),recentFoods:trackRecentFoods(x,d)})); if (saved) { setEditor(null); setToast('Dia salvo.'); } return saved; }}/>}
     {importing && <ImportDay close={() => setImporting(false)} onImport={d => { const existing = s.days.find(x => x.date === d.date); if (existing && !window.confirm(t("Este dia já existe. Substituir refeições e exercícios? Água registrada será preservada."))) return; if (commit(x => upsertDay(x, { ...d, waterMl: existing?.waterMl ?? d.waterMl }))) { setImporting(false); setToast('Dia importado e totais recalculados.'); } }}/>}
     {navigationTarget&&<Modal title={t("Cadastro não salvo")} close={()=>setNavigationTarget(null)}><p>{t("Este alimento ainda não foi salvo. Continue editando ou descarte o preenchimento para trocar de aba.")}</p><div className="account-actions"><button type="button" className="primary" onClick={()=>setNavigationTarget(null)}>{t("Continuar editando")}</button><button type="button" className="outline" onClick={()=>{setCatalogPageDirty(false);setTab(navigationTarget);setNavigationTarget(null);}}>{t("Descartar e trocar de aba")}</button></div></Modal>}
     {toast && <div className="toast" role="status">{t(toast)}</div>}
+    {support?.owner===supportOwner&&<SupportModal key={supportOwner} fromWeight={support.fromWeight} close={closeSupport}/>}
   </div>;
 }
 

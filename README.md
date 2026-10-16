@@ -177,3 +177,11 @@ Histórico ganhou ação explícita por cartão e no modal de detalhes para acre
 `src/vegetables.js` adiciona 21 preparos de vegetais e azeite em gramas. Referências simples TACO (IDs originais), grelhados TBCA BRC0263B e BRC0156B, assados BRC0718B (ratatouille, com óleo). Mix grelhado sem óleo = 50% abobrinha grelhada + 50% berinjela grelhada por peso pronto; com azeite = 95% mix + 5% azeite TACO 884 kcal/100 g. São receitas ilustrativas, não valores universais de restaurante. TBCA consultada: abobrinha grelhada 27 kcal/100 g na página de medidas, berinjela 23; outros resultados indexados da abobrinha exibem 24, por isso a referência utilizada está explícita no mix e pode diferir de versões da tabela. Atualizar dados futuros exige cuidado com calorias já persistidas.
 
 Óleo incluído é declarado para mix com azeite, ratatouille e couve refogada. Itens sem óleo orientam registrar extras separadamente; azeite foi adicionado com porção inicial de 5 g. Presets de 100/150/200 g continuam usando o fluxo existente de gramas/modelos/sincronização. IDs conferidos sem duplicatas, tradução e testes existentes aprovados, nenhum diário modificado durante a revisão visual.
+
+## Apoio por Pix
+
+O recebedor autorizou a publicação da chave aleatória, nome e cidade usados em `src/support.js`. A imagem QR é gerada localmente por `npm run assets:support`; após mudar os dados, regenere e rode `npm test`. O teste decodifica a imagem SVG e compara o resultado com o Pix Copia e Cola, sem realizar pagamentos.
+
+A lista pública de agradecimentos é mantida manualmente em `supporters`, no mesmo arquivo. Adicione somente um apelido/nome de exibição autorizado, depois de conferir o recebimento fora do app. Cada entrada usa `id`, `displayName`, `date` (YYYY-MM-DD), `verified: true` e `consent: true`. Não inclua dados bancários, comprovantes, CPF, valor ou contato. Os últimos cinco registros autorizados aparecem no modal; remova a entrada e publique novamente se a pessoa retirar a autorização. Não há integração com banco nem confirmação automática de Pix.
+
+O convite automático acompanha apenas uma pesagem de hoje, salva com sucesso e menor que o último registro datado até hoje. Registros retroativos, importação/sincronização e perfil não abrem o convite. A dispensa fica separada por visitante/conta neste navegador e o apoio manual continua disponível no Perfil.

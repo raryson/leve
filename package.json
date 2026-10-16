@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "test": "node --test",
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
-    "assets:brand": "node scripts/build-brand.mjs"
+    "assets:brand": "node scripts/build-brand.mjs",
+    "assets:support": "node scripts/build-support-qr.mjs"
   },
   "dependencies": {
     "@clerk/backend": "^3.23.2",
@@ -23,6 +24,8 @@
     "vite": "latest"
   },
   "devDependencies": {
-    "@resvg/resvg-js": "^2.6.2"
+    "@resvg/resvg-js": "^2.6.2",
+    "jsqr": "1.4.0",
+    "qrcode": "1.5.4"
   }
 }
