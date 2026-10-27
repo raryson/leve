@@ -37,7 +37,7 @@ function Pose({id,stage}){
       <circle cx={p.head[0]} cy={p.head[1]} r="10" fill="#d5eac5" strokeWidth="3"/>
       <polyline points={points([p.shoulder,p.hip,p.knee,p.foot])}/>
       <polyline points={points([p.shoulder,p.elbow,p.hand])}/>
-      <path d={`M${p.foot[0]} ${p.foot[1]}l12 2`}/>
+      <path d={id==='calf-raise'&&stage?`M${p.foot[0]} ${p.foot[1]}L80 143`:`M${p.foot[0]} ${p.foot[1]}l12 2`}/>
       {id==='db-row'&&<polyline points="86,49 108,66 114,83" stroke="#718f7e" strokeWidth="5"/>}
       {id==='hip-extension'&&<polyline points={stage?'65,85 40,107 20,132':'65,85 56,113 56,140'} stroke="#718f7e" strokeWidth="5"/>}
     </g>

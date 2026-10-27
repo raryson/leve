@@ -451,3 +451,4 @@ Google Play — pacote gerado e verificado em 16/10/2026: PWABuilder produziu Le
 - Repetições destacadas por exercício (séries × 8–12 e por lado quando aplicável), campos de repetições maiores e controles dos modais padronizados.
 - Diagramas SVG originais de início/movimento dos oito exercícios, disponíveis offline, com descrição, retorno e links de referência NHS/Mayo Clinic/ACE. Links externos abrem só por escolha; nenhum player/rastreamento de vídeo carregado. Diagramas são esquemáticos e não substituem correção individual de técnica.
 - Validação: 101 testes e build aprovados; objetivo e referência de cardio preservados no backup, sem gerar treino fictício.
+- Conferência em produção (desktop, visitante com dados fictícios): guia de sentar/levantar e remada na estação abrem no modal; mudança para cinco dias e cardio de 15 min salva e aparece em ambas as fichas. Revisão visual em celular e sincronização real entre dispositivos continuam pendentes.
