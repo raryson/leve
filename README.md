@@ -196,3 +196,12 @@ Para renovar o diário de demonstração: `node scripts/build-store-demo.mjs YYY
 ## Distribuição Android e páginas públicas
 
 Plano e materiais: [Google Play](distribution/google-play/README.md). Gerar páginas com `node scripts/build-public-pages.mjs` (também executado em `npm run build`) e artes com `node scripts/build-play-assets.mjs`. Privacidade, suporte, regras e solicitação de exclusão funcionam sem conta em `/privacy/`, `/support/`, `/terms/` e `/delete-account/`. Atendimento manual precisa ser efetivamente acompanhado pelo responsável; ver runbook de exclusão. Nenhuma exclusão real foi executada nos testes.
+
+## Academia do condomínio — entregue em 27/10/2026
+
+- Nova tela Treinos, com configuração de esteira, bicicleta, halteres, banco e estação; sugestões educativas A/B, alternativas por equipamento e referências de execução. Início padrão: dois dias de força e uma série, ajustáveis pelo usuário.
+- Registro de séries efetivamente realizadas, repetições, carga opcional e minutos de musculação/cardio. Histórico com últimos registros por exercício e alternância A/B pela última sessão de força. Sem prescrição individual ou aumento automático de carga.
+- Sessões entram no diário, constância e gráficos existentes. Força moderada (3,5 MET) só é estimada por opção explícita; cardio permanece sem calorias sem intensidade informada. Não somar força e cardio duas vezes.
+- Formato do diário v7 preserva dados anteriores e inclui plano/sessões no backup e na sincronização existente. Abas antigas devem ser recarregadas. Sem migração SQL, serviço pago ou novos eventos de analytics.
+- Validação automatizada: 100 testes passando, incluindo migração, persistência, API autenticada com repositório simulado, idempotência e exclusão agrupada. Build aprovado. Sincronização real em dois dispositivos permanece como validação manual pendente.
+

@@ -41,7 +41,7 @@ test('modelos mistos, repetição e backup preservam unidades e recalculam apena
 test('migração v5 mantém gramas, calorias históricas e modelos antigos sem inferir fatias',()=>{
   const old={food:'Pão integral',foodId:'taco-52',grams:50,kcalPer100:253,calories:120,quantity:'50 g'};
   const s=normalizeState({...state(),version:5,days:[{date:'2026-10-13',meals:[{name:'Lanche',items:[old]}]}],savedMeals:[{id:'old',name:'Antigo',items:[old]}]});
-  assert.equal(s.version,6);assert.equal(s.days[0].totalCalories,120);assert.equal(s.days[0].meals[0].items[0].quantity,'50 g');assert.equal(s.savedMeals[0].items[0].grams,50);assert.equal(s.savedMeals[0].items[0].servingUnit,undefined);
+  assert.equal(s.version,7);assert.equal(s.days[0].totalCalories,120);assert.equal(s.days[0].meals[0].items[0].quantity,'50 g');assert.equal(s.savedMeals[0].items[0].grams,50);assert.equal(s.savedMeals[0].items[0].servingUnit,undefined);
 });
 
 test('relato reconhece fatias de pão em português/inglês e não atribui massa às bebidas',()=>{

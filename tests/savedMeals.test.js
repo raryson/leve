@@ -11,7 +11,7 @@ const template = () => ({ id:'lunch-home', name:'Almoço de casa', items:[
 const state = () => normalizeState({ version:4, profile:{name:'Teste',age:30,height:175,weight:90},weights:[90],days:[] });
 
 test('migração preserva diário antigo e inicia biblioteca vazia; backup mantém biblioteca e preferências',()=>{
-  const s=state();assert.equal(s.version,6);assert.deepEqual(s.savedMeals,[]);assert.deepEqual(s.favoriteFoods,[]);
+  const s=state();assert.equal(s.version,7);assert.deepEqual(s.savedMeals,[]);assert.deepEqual(s.favoriteFoods,[]);
   const next=normalizeState({...s,savedMeals:[template()],favoriteFoods:['taco-3'],recentFoods:['taco-567']});
   const data=new Map();const storage={getItem:k=>data.get(k)||null,setItem:(k,v)=>data.set(k,v)};
   saveState(storage,next);assert.deepEqual(readState(storage).state,next);assert.ok(data.has(KEY));

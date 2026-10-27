@@ -1,7 +1,8 @@
 import {validateWorkoutEstimate,routineLevels} from './energy.js';
+import {normalizeGymPlan,normalizeGymSession} from './gym.js';
 export const KEY = 'leve-state-v3';
-export const VERSION = 6;
-export const emptyState = () => ({ version: VERSION, profile: null, days: [], weights: [], savedMeals: [], favoriteFoods: [], recentFoods: [] });
+export const VERSION = 7;
+export const emptyState = () => ({ version: VERSION, profile: null, days: [], weights: [], savedMeals: [], favoriteFoods: [], recentFoods: [], gymPlan:null });
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const number = value => Number(typeof value === 'string' ? value.replace(',', '.') : value);
 export function numeric(value, min, max, label) {
@@ -54,7 +55,9 @@ export function normalizeDay(d) {
   const activities = array(d.exercise?.activities, 'Atividades').map(a => {
     if (!a || typeof a !== 'object') throw new Error('Atividade inválida.');
     const energyEstimate=a.energyEstimate?validateWorkoutEstimate(a.energyEstimate,a.durationMinutes):null;
-    return { ...a, ...(energyEstimate?{energyEstimate,caloriesBurned:energyEstimate.additional}:{}), type: text(a.type, 'Atividade'), durationMinutes: numeric(a.durationMinutes ?? 0, 0, 1440, 'Duração'), caloriesBurned: energyEstimate?energyEstimate.additional:kcal(a.caloriesBurned) };
+    const gymSession=a.gymSession?normalizeGymSession(a.gymSession):null;
+    if(gymSession&&(Number(a.durationMinutes)!==(gymSession.strengthMinutes||gymSession.cardioMinutes)||Boolean(energyEstimate)!==gymSession.estimateStrength||(energyEstimate&&energyEstimate.referenceId!=='strength-35')))throw new Error('Confira os dados do treino da academia.');
+    return { ...a, ...(gymSession?{gymSession}:{}), ...(energyEstimate?{energyEstimate,caloriesBurned:energyEstimate.additional}:{}), type: text(a.type, 'Atividade'), durationMinutes: numeric(a.durationMinutes ?? 0, 0, 1440, 'Duração'), caloriesBurned: energyEstimate?energyEstimate.additional:kcal(a.caloriesBurned) };
   });
   const totalCalories = meals.reduce((sum, m) => sum + m.calories, 0);
   const totalCaloriesBurned = activities.length ? activities.reduce((sum, a) => sum + a.caloriesBurned, 0) : kcal(d.exercise?.totalCaloriesBurned);
@@ -93,7 +96,9 @@ export function normalizeState(raw) {
     if (list.length > limit || list.some(id => typeof id !== 'string' || !id || id.length > 100)) throw new Error('Preferências de alimentos inválidas.');
     return [...new Set(list)];
   };
-  return { ...data, version: VERSION, profile, days, weights, savedMeals, favoriteFoods: foodIds(data.favoriteFoods, 200), recentFoods: foodIds(data.recentFoods, 12) };
+  const gymIds=days.flatMap(day=>day.exercise.activities.filter(activity=>activity.gymSession).map(activity=>activity.gymSession.id));
+  if(new Set(gymIds).size!==gymIds.length)throw new Error('Há sessões da academia duplicadas no diário.');
+  return { ...data, version: VERSION, profile, days, weights, savedMeals, favoriteFoods: foodIds(data.favoriteFoods, 200), recentFoods: foodIds(data.recentFoods, 12),gymPlan:normalizeGymPlan(data.gymPlan) };
 }
 
 export function normalizeSavedMeal(meal) {
