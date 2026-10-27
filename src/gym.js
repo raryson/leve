@@ -17,7 +17,7 @@ const fail=()=>{throw new Error('Confira os dados do treino da academia.');};
 function bounded(value,min,max){if(value==null||value===''||!Number.isFinite(Number(value))||Number(value)<min||Number(value)>max)fail();return Number(value);}
 export function normalizeGymPlan(plan){
   if(plan==null)return null;
-  if(!Array.isArray(plan.equipment)||plan.equipment.length>5||plan.equipment.some(id=>!gymEquipment.some(e=>e.id===id))||![2,3].includes(plan.daysPerWeek)||![1,2,3].includes(plan.sets))fail();
+  if(!Array.isArray(plan.equipment)||plan.equipment.length>5||plan.equipment.some(id=>!gymEquipment.some(e=>e.id===id))||![2,3,4,5].includes(plan.daysPerWeek)||![1,2,3].includes(plan.sets))fail();
   return {equipment:[...new Set(plan.equipment)],daysPerWeek:plan.daysPerWeek,sets:plan.sets};
 }
 export function gymOptions(group,plan){return gymExercises.filter(ex=>ex.group===group&&ex.requires.every(id=>plan.equipment.includes(id)));}

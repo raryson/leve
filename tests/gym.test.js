@@ -15,6 +15,7 @@ test('migração v6 preserva dados e plano respeita apenas os equipamentos selec
   const state=initial();assert.equal(state.version,7);assert.equal(state.gymPlan,null);assert.equal(state.days[0].waterMl,750);
   assert.throws(()=>normalizeGymPlan({...plan,equipment:['invented']}));
   assert.throws(()=>normalizeGymPlan({...plan,daysPerWeek:7}));
+  for(const daysPerWeek of [2,3,4,5])assert.equal(normalizeState({...state,gymPlan:{...plan,daysPerWeek}}).gymPlan.daysPerWeek,daysPerWeek);
   for(const template of ['A','B']){
     const bodyOnly=suggestedGymExercises({...plan,equipment:[]},template);assert.ok(bodyOnly.length>=3);assert.ok(bodyOnly.every(ex=>ex.requires.length===0));
     assert.ok(suggestedGymExercises(plan,template).some(ex=>ex.id==='db-row'));
