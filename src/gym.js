@@ -7,10 +7,10 @@ export const gymExercises=[
   {id:'mini-squat',group:'legs',name:'Agachamento curto com apoio',requires:[],cue:'Use um apoio fixo para equilíbrio. Dobre um pouco joelhos e quadris e retorne com controle, sem forçar a amplitude.',source:GYM_SOURCES.strength},
   {id:'wall-push',group:'push',name:'Flexão na parede',requires:[],cue:'Apoie as mãos na parede à altura do peito. Aproxime o corpo e empurre devagar, mantendo o tronco alinhado.',source:GYM_SOURCES.strength},
   {id:'db-row',group:'pull',name:'Remada com halter apoiada',requires:['dumbbells','bench'],weighted:true,unilateral:true,cue:'Apoie-se em banco firme e mantenha a coluna alinhada. Puxe o halter ao lado do tronco sem girar o corpo. Faça os dois lados.',source:GYM_SOURCES.row},
-  {id:'station-row',group:'pull',name:'Remada baixa na estação',requires:['station'],weighted:true,cue:'Use esta opção apenas se houver remada baixa e você conhecer o ajuste. Sente com apoio estável e puxe sem dar impulso. Confira a execução com um profissional.'},
+  {id:'station-row',source:'https://www.acefitness.org/resources/everyone/exercise-library/168/seated-row/',group:'pull',name:'Remada baixa na estação',requires:['station'],weighted:true,cue:'Use esta opção apenas se houver remada baixa e você conhecer o ajuste. Sente com apoio estável e puxe sem dar impulso. Confira a execução com um profissional.'},
   {id:'hip-extension',group:'hips',name:'Extensão de quadril em pé com apoio',requires:[],unilateral:true,cue:'Segure um apoio fixo. Leve uma perna um pouco para trás sem arquear a lombar. Volte devagar e faça os dois lados.',source:GYM_SOURCES.strength},
   {id:'calf-raise',group:'calves',name:'Elevação de panturrilhas com apoio',requires:[],cue:'Segure um apoio fixo, suba os calcanhares lentamente e desça com controle. Evite balançar o corpo.',source:GYM_SOURCES.strength},
-  {id:'db-curl',group:'arms',name:'Rosca com halteres',requires:['dumbbells'],weighted:true,cue:'Mantenha os cotovelos ao lado do corpo. Dobre e estenda os braços sem embalo, com uma carga confortável.'},
+  {id:'db-curl',source:'https://www.mayoclinic.org/healthy-lifestyle/fitness/multimedia/biceps-curl/vid-20084675',group:'arms',name:'Rosca com halteres',requires:['dumbbells'],weighted:true,cue:'Mantenha os cotovelos ao lado do corpo. Dobre e estenda os braços sem embalo, com uma carga confortável.'},
 ];
 const groups={A:['legs','push','pull','hips','calves'],B:['legs','pull','push','hips','arms']};
 const fail=()=>{throw new Error('Confira os dados do treino da academia.');};
@@ -18,8 +18,11 @@ function bounded(value,min,max){if(value==null||value===''||!Number.isFinite(Num
 export function normalizeGymPlan(plan){
   if(plan==null)return null;
   if(!Array.isArray(plan.equipment)||plan.equipment.length>5||plan.equipment.some(id=>!gymEquipment.some(e=>e.id===id))||![2,3,4,5].includes(plan.daysPerWeek)||![1,2,3].includes(plan.sets))fail();
-  return {equipment:[...new Set(plan.equipment)],daysPerWeek:plan.daysPerWeek,sets:plan.sets};
+  if(plan.goal!=null&&!['weight-loss','fitness'].includes(plan.goal))fail();
+  const cardioMinutes=plan.cardioMinutes??10;if(![5,10,15,20,30].includes(cardioMinutes))fail();
+  return {equipment:[...new Set(plan.equipment)],daysPerWeek:plan.daysPerWeek,sets:plan.sets,goal:plan.goal??'weight-loss',cardioMinutes};
 }
+export function suggestedGymCardio(plan){const valid=normalizeGymPlan(plan);if(!valid)fail();return {included:valid.goal==='weight-loss',minutes:valid.cardioMinutes,mode:valid.equipment.includes('treadmill')?'treadmill':valid.equipment.includes('bike')?'bike':'walk'};}
 export function gymOptions(group,plan){return gymExercises.filter(ex=>ex.group===group&&ex.requires.every(id=>plan.equipment.includes(id)));}
 export function suggestedGymExercises(plan,template){
   const valid=normalizeGymPlan(plan);if(!valid||!groups[template])fail();

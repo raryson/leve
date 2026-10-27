@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeGymPlan,normalizeGymSession,suggestedGymExercises,nextGymTemplate,gymHistory} from '../src/gym.js';
+import {normalizeGymPlan,normalizeGymSession,suggestedGymExercises,nextGymTemplate,gymHistory,suggestedGymCardio} from '../src/gym.js';
 import {saveGymSession,removeGymActivity} from '../src/gymEntries.js';
 import {normalizeState,newDay,normalizeDay,trainingDays} from '../src/domain.js';
 import {dailyEnergy} from '../src/energy.js';
 import {createJournalHandler} from '../server/journal.js';
 
 const today='2026-10-27';
-const plan={equipment:['dumbbells','bench','treadmill','bike','station'],daysPerWeek:2,sets:1};
+const plan={equipment:['dumbbells','bench','treadmill','bike','station'],daysPerWeek:2,sets:1,goal:'weight-loss',cardioMinutes:10};
 const initial=()=>normalizeState({version:6,profile:{name:'Teste',age:30,height:175,weight:90,sex:'male'},weights:[90],days:[{...newDay(today),waterMl:750,notes:'Preservar',meals:[{name:'Almoço',items:[{food:'Arroz',calories:200}]}]}]});
 const session=(id='gym-1')=>({id,template:'A',exercises:[{exerciseId:'sit-stand',sets:[{reps:10,weightKg:null}]},{exerciseId:'db-row',sets:[{reps:8,weightKg:5},{reps:9,weightKg:5}]}],strengthMinutes:20,cardioMinutes:10,cardioMode:'treadmill',estimateStrength:true});
 
@@ -61,4 +61,13 @@ test('alternância considera a última sessão de força mesmo no mesmo dia',()=
  const second=saveGymSession(first,today,{...session('second'),template:'B'});
  assert.equal(gymHistory(second.days,today)[0].session.id,'second');
  assert.equal(nextGymTemplate(second.days,today),'A');
+});
+
+test('plano com foco em peso inclui cardio por equipamento sem registrar atividade fictícia',()=>{
+ const migrated=normalizeGymPlan({equipment:[],daysPerWeek:5,sets:1});
+ assert.equal(migrated.goal,'weight-loss');assert.equal(suggestedGymCardio(migrated).mode,'walk');
+ for(const equipment of [[],['bike'],['bike','treadmill']]){const value={...plan,equipment,cardioMinutes:15};const cardio=suggestedGymCardio(value);assert.equal(cardio.included,true);assert.equal(cardio.minutes,15);assert.equal(cardio.mode,equipment.includes('treadmill')?'treadmill':equipment.includes('bike')?'bike':'walk');}
+ assert.equal(suggestedGymCardio({...plan,goal:'fitness'}).included,false);
+ assert.throws(()=>normalizeGymPlan({...plan,cardioMinutes:Infinity}));assert.throws(()=>normalizeGymPlan({...plan,goal:'unknown'}));
+ const state=normalizeState({...initial(),gymPlan:plan});assert.equal(state.days[0].exercise.activities.length,0);assert.deepEqual(normalizeState(JSON.parse(JSON.stringify(state))),state);
 });
