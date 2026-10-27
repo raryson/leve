@@ -71,3 +71,11 @@ test('plano com foco em peso inclui cardio por equipamento sem registrar ativida
  assert.throws(()=>normalizeGymPlan({...plan,cardioMinutes:Infinity}));assert.throws(()=>normalizeGymPlan({...plan,goal:'unknown'}));
  const state=normalizeState({...initial(),gymPlan:plan});assert.equal(state.days[0].exercise.activities.length,0);assert.deepEqual(normalizeState(JSON.parse(JSON.stringify(state))),state);
 });
+
+test('rotas de treino validam fichas e exigem configurar a academia antes de abrir sessão',async()=>{
+ const {gymRoute,gymView}=await import('../src/gymNavigation.js');
+ for(const view of ['overview','settings','A','B'])assert.equal(gymView(gymRoute(view),true),view);
+ assert.equal(gymView('#/treinos/sessao/A',false),'settings');
+ assert.equal(gymView('#/treinos/sessao/C',true),'overview');
+ assert.equal(gymView('#/treinos/sessao/A/extra',true),'overview');
+});

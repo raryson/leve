@@ -1,7 +1,8 @@
-import React,{useEffect,useState} from 'react';
+import React,{useEffect,useRef,useState} from 'react';
 import {t,getLocale} from './i18n.js';
 import {weekStart} from './domain.js';
 import {GYM_SOURCES,gymEquipment,gymExercises,gymOptions,suggestedGymExercises,normalizeGymPlan,gymHistory,nextGymTemplate,suggestedGymCardio} from './gym.js';
+import {gymRoute,gymView} from './gymNavigation.js';
 import GymMovement from './GymMovement.jsx';
 import {saveGymSession} from './gymEntries.js';
 
@@ -9,30 +10,46 @@ const sessionId=()=>crypto.randomUUID?.()||Array.from(crypto.getRandomValues(new
 const dateLabel=date=>new Date(`${date}T12:00:00`).toLocaleDateString(getLocale());
 const defaultPlan=()=>({equipment:gymEquipment.map(item=>item.id),daysPerWeek:2,sets:1,goal:'weight-loss',cardioMinutes:10});
 
-export default function GymPlanner({state,today,commit,Modal,onDirty}){
-  const [editing,setEditing]=useState(false),[session,setSession]=useState(null),[message,setMessage]=useState('');
+export default function GymPlanner({state,today,commit,onDirty,onUnsaved}){
+  const initialView=gymView(window.location.hash,Boolean(state.gymPlan));
+  const [editing,setEditing]=useState(initialView==='settings'),[session,setSession]=useState(()=>['A','B'].includes(initialView)?{template:initialView,id:sessionId()}:null),[message,setMessage]=useState('');
+  const currentView=editing?'settings':session?.template||'overview';
+  const heading=useRef(null);
+  const [hasChanges,setHasChanges]=useState(false);
+  useEffect(()=>{onUnsaved(hasChanges);return()=>onUnsaved(false);},[hasChanges,onUnsaved]);
+  function openView(view,replace=false){setHasChanges(false);window.history[replace?'replaceState':'pushState'](null,'',gymRoute(view));setEditing(view==='settings');setSession(['A','B'].includes(view)?{template:view,id:sessionId()}:null);}
+  useEffect(()=>{window.scrollTo(0,0);heading.current?.focus();},[currentView]);
+  useEffect(()=>{window.history.replaceState(null,'',gymRoute(currentView));},[]);
+  useEffect(()=>{
+    function leave(event){if(!hasChanges)return;event.preventDefault();event.returnValue='';}
+    function pop(){const next=gymView(window.location.hash,Boolean(state.gymPlan));if(next===currentView)return;if(hasChanges&&!window.confirm(t('Descartar alterações e sair desta página?'))){window.history.pushState(null,'',gymRoute(currentView));return;}setHasChanges(false);setEditing(next==='settings');setSession(['A','B'].includes(next)?{template:next,id:sessionId()}:null);}
+    window.addEventListener('popstate',pop);window.addEventListener('beforeunload',leave);return()=>{window.removeEventListener('popstate',pop);window.removeEventListener('beforeunload',leave);};
+  },[currentView,state.gymPlan,hasChanges]);
   const plan=normalizeGymPlan(state.gymPlan),history=gymHistory(state.days,today),next=nextGymTemplate(state.days,today);
   const days=new Set(history.filter(item=>item.date>=weekStart(today)).map(item=>item.date)).size;
   useEffect(()=>{onDirty(Boolean(editing||session));return()=>onDirty(false);},[editing,session,onDirty]);
-  return <div className="gym-page">
+  if(editing)return <PlanEditor onUnsaved={setHasChanges} initial={plan||defaultPlan()} close={()=>openView('overview',true)} onSave={value=>{if(commit(current=>({...current,gymPlan:normalizeGymPlan(value)}))){openView('overview',true);setMessage('Plano da academia salvo.');return true;}return false;}}/>;
+  if(session)return <GymSession onUnsaved={setHasChanges} key={session.id} plan={plan} session={session} history={history} close={()=>openView('overview',true)} onSave={value=>{if(commit(current=>saveGymSession(current,today,value))){openView('overview',true);setMessage('Treino salvo no diário. Boa por ter registrado o que você fez!');return true;}return false;}}/>;
+  return <div className="gym-page" ref={heading} tabIndex={-1}>
     <section className="gym-hero"><div><small>{t('ACADEMIA DO CONDOMÍNIO')}</small><h3>{t('Um treino que cabe na tua rotina.')}</h3><p>{t('Força, cardio e constância. Sugestões gerais para começar ou retomar, com os equipamentos que você tem.')}</p></div><span className="gym-hero-mark" aria-hidden="true">↗</span></section>
     <div className="gym-overview"><section><span>{t('Dias na academia nesta semana')}</span><strong>{days}<small> / {plan?.daysPerWeek??'—'}</small></strong></section><section><span>{t('Próxima sugestão de força')}</span><strong>{t('Treino {0}',[next])}</strong></section><section><span>{t('Sessões registradas')}</span><strong>{history.length}</strong></section></div>
-    <section className="gym-plan-panel"><div className="gym-section-heading"><div><h3>{plan?t('Tua base de treino'):t('Vamos conhecer tua academia')}</h3><p>{plan?t('Alterne A e B, deixando um dia de descanso entre treinos de força.'):t('Confira os equipamentos e escolha uma frequência confortável. Nenhuma carga é definida automaticamente.')}</p></div><button type="button" className={plan?'outline':'primary'} onClick={()=>setEditing(true)}>{plan?t('Ajustar plano'):t('Configurar academia')}</button></div>
+    <section className="gym-plan-panel"><div className="gym-section-heading"><div><h3>{plan?t('Tua base de treino'):t('Vamos conhecer tua academia')}</h3><p>{plan?t('Alterne A e B, deixando um dia de descanso entre treinos de força.'):t('Confira os equipamentos e escolha uma frequência confortável. Nenhuma carga é definida automaticamente.')}</p></div><button type="button" className={plan?'outline':'primary'} onClick={()=>openView('settings')}>{plan?t('Ajustar plano'):t('Configurar academia')}</button></div>
       {plan&&<><div className="gym-equipment-tags">{gymEquipment.filter(item=>plan.equipment.includes(item.id)).map(item=><span key={item.id}>{t(item.name)}</span>)}<span>{t('{0} série(s) por exercício',[plan.sets])}</span></div>
       <p className="gym-tip">{t('Comece com movimentos confortáveis, sem chegar à falha. Faça menos quando precisar. A frequência escolhida é uma intenção, não uma obrigação diária.')}</p>
-      <div className="gym-routines">{['A','B'].map(template=><article className="gym-routine" key={template}><div className="gym-routine-title"><span>{template}</span><div><h4>{t('Treino {0}',[template])}</h4><p>{t('Corpo inteiro · 8–12 repetições como referência')}</p></div></div><ol>{suggestedGymExercises(plan,template).map(exercise=><li key={exercise.id}><span>{t(exercise.name)}</span><strong className="gym-rep-badge">{t('{0} × 8–12 reps',[plan.sets])}{exercise.unilateral&&<small>{t('por lado')}</small>}</strong></li>)}</ol>{!suggestedGymExercises(plan,template).some(ex=>ex.group==='pull')&&<p className="local-note">{t('Para incluir remada, confira os halteres e o banco ou uma estação com remada baixa.')}</p>}<CardioPlan plan={plan}/><button type="button" className={template===next?'primary':'outline'} onClick={()=>setSession({template,id:sessionId()})}>{t('Começar treino {0}',[template])}</button></article>)}</div></>}
+      <div className="gym-routines">{['A','B'].map(template=><article className="gym-routine" key={template}><div className="gym-routine-title"><span>{template}</span><div><h4>{t('Treino {0}',[template])}</h4><p>{t('Corpo inteiro · 8–12 repetições como referência')}</p></div></div><ol>{suggestedGymExercises(plan,template).map(exercise=><li key={exercise.id}><span>{t(exercise.name)}</span><strong className="gym-rep-badge">{t('{0} × 8–12 reps',[plan.sets])}{exercise.unilateral&&<small>{t('por lado')}</small>}</strong></li>)}</ol>{!suggestedGymExercises(plan,template).some(ex=>ex.group==='pull')&&<p className="local-note">{t('Para incluir remada, confira os halteres e o banco ou uma estação com remada baixa.')}</p>}<CardioPlan plan={plan}/><button type="button" className={template===next?'primary':'outline'} onClick={()=>openView(template)}>{t('Começar treino {0}',[template])}</button></article>)}</div></>}
     </section>
     <section className="gym-guidance"><h3>{t('Como usar estas sugestões')}</h3><ul><li>{t('Descanse cerca de 60–90 segundos entre séries, ou mais até se sentir pronto. Aprenda a técnica antes de aumentar carga.')}</li><li>{t('Se a execução estiver confortável por algumas sessões, avance aos poucos em repetições ou séries. Não há aumento automático de peso.')}</li><li>{t('Na esteira ou bicicleta, escolha um ritmo em que consiga conversar. Não precisa começar com corrida ou treino intenso.')}</li><li>{t('Treinar ajuda a saúde e o controle do peso, mas não garante emagrecimento. Calorias gastas não são uma meta nem compensação por alimentos.')}</li></ul><p>{t('Se houver dor, tontura, mal-estar ou alguma restrição conhecida, interrompa e procure orientação adequada. Um profissional de educação física pode ajustar a técnica e o treino para você.')}</p><details><summary>{t('Referências e limites')}</summary><p>{t('As diretrizes para adultos combinam atividade aeróbica e fortalecimento em pelo menos dois dias por semana. Comece com pouco e aumente gradualmente; 150 minutos semanais de atividade moderada são uma referência de saúde, não uma exigência para a primeira semana.')}</p><a href={GYM_SOURCES.activity} target="_blank" rel="noreferrer">NIDDK ↗</a> · <a href={GYM_SOURCES.strength} target="_blank" rel="noreferrer">NHS ↗</a><p>{t('Sugestões educativas para adultos, sem avaliação física individual. Confirme a existência e o ajuste de cada acessório da estação antes de usar.')}</p></details></section>
     <section className="gym-history"><h3>{t('Teus últimos treinos na academia')}</h3>{!history.length?<p className="empty-day">{t('Ao finalizar uma sessão, ela aparece aqui, no Histórico e nos gráficos de movimento.')}</p>:history.slice(0,12).map(({date,session:item})=><details key={item.id}><summary><span>{dateLabel(date)} · {t('Treino {0}',[item.template])}</span><span>{item.strengthMinutes+item.cardioMinutes} min · {t('{0} séries feitas',[item.exercises.reduce((sum,ex)=>sum+ex.sets.length,0)])}</span></summary><p>{t('Musculação: {0} min · Cardio: {1} min',[item.strengthMinutes,item.cardioMinutes])}</p>{item.exercises.map(ex=><p key={ex.exerciseId}><b>{t(gymExercises.find(e=>e.id===ex.exerciseId).name)}</b><br/>{ex.sets.map(set=>`${set.reps} ${t('reps')}${set.weightKg==null?'':` · ${set.weightKg} kg`}`).join(' / ')}</p>)}<small>{t('Para corrigir ou remover um registro, abra o dia no Histórico e use Editar.')}</small></details>)}</section>
     {message&&<p className="gym-feedback" role="status">{t(message)}</p>}
-    {editing&&<PlanEditor initial={plan||defaultPlan()} Modal={Modal} close={()=>setEditing(false)} onSave={value=>{if(commit(current=>({...current,gymPlan:normalizeGymPlan(value)}))){setEditing(false);setMessage('Plano da academia salvo.');return true;}return false;}}/>}
-    {session&&<GymSession key={session.id} plan={plan} session={session} history={history} Modal={Modal} close={()=>setSession(null)} onSave={value=>{if(commit(current=>saveGymSession(current,today,value))){setSession(null);setMessage('Treino salvo no diário. Boa por ter registrado o que você fez!');return true;}return false;}}/>}
+
   </div>;
 }
 
-function PlanEditor({initial,Modal,close,onSave}){
+function PlanEditor({initial,close,onSave,onUnsaved}){
   const [draft,setDraft]=useState(initial),[error,setError]=useState('');
-  return <Modal title={t('Minha academia')} close={()=>{if(JSON.stringify(draft)===JSON.stringify(initial)||window.confirm(t('Descartar alterações do plano?')))close();}}><form className="gym-form" onSubmit={event=>{event.preventDefault();try{if(!onSave(draft))setError('Não foi possível salvar. Tente novamente.');}catch(e){setError(e.message);}}}>
+  const dirty=JSON.stringify(draft)!==JSON.stringify(initial);
+  useEffect(()=>{onUnsaved(dirty);},[dirty,onUnsaved]);
+  return <GymScreen title={t('Minha academia')} close={()=>{if(!dirty||window.confirm(t('Descartar alterações do plano?')))close();}}><form className="gym-form" onSubmit={event=>{event.preventDefault();try{if(!onSave(draft))setError('Não foi possível salvar. Tente novamente.');}catch(e){setError(e.message);}}}>
     <fieldset className="gym-equipment"><legend>{t('Equipamentos disponíveis')}</legend>{gymEquipment.map(item=><label key={item.id}><input type="checkbox" checked={draft.equipment.includes(item.id)} onChange={event=>setDraft({...draft,equipment:event.target.checked?[...draft.equipment,item.id]:draft.equipment.filter(id=>id!==item.id)})}/><span>{t(item.name)}</span></label>)}</fieldset>
     <label>{t('Objetivo do plano')}<select value={draft.goal} onChange={event=>setDraft({...draft,goal:event.target.value})}><option value="weight-loss">{t('Perder peso')}</option><option value="fitness">{t('Condicionamento geral')}</option></select></label>
     <label>{t('Cardio de referência por sessão')}<select value={draft.cardioMinutes} onChange={event=>setDraft({...draft,cardioMinutes:Number(event.target.value)})}>{[5,10,15,20,30].map(minutes=><option key={minutes} value={minutes}>{t('{0} minutos',[minutes])}</option>)}</select></label>
@@ -41,17 +58,20 @@ function PlanEditor({initial,Modal,close,onSave}){
     <p className="form-note">{t('Nos planos de 4 ou 5 dias, intercale dias de força com dias de cardio. Mantenha um dia de descanso entre as fichas de corpo inteiro.')}</p>
     <p className="form-note">{t('Este plano não altera tua meta geral de treinos no Perfil. As sugestões não consideram lesões ou limitações individuais; ajuste com um profissional quando necessário.')}</p>
     {error&&<p className="error-box" role="alert">{t(error)}</p>}<button className="primary">{t('Salvar plano da academia')}</button>
-  </form></Modal>;
+  </form></GymScreen>;
 }
 
-function GymSession({plan,session,history,Modal,close,onSave}){
+function GymSession({plan,session,history,close,onSave,onUnsaved}){
   const [rows,setRows]=useState(()=>suggestedGymExercises(plan,session.template).map(ex=>({exerciseId:ex.id,sets:Array.from({length:plan.sets},()=>({done:false,reps:'10',weightKg:''}))})));
   const [strengthMinutes,setStrengthMinutes]=useState(''),[cardioMinutes,setCardioMinutes]=useState(''),[cardioMode,setCardioMode]=useState(plan.equipment.includes('treadmill')?'treadmill':plan.equipment.includes('bike')?'bike':'walk');
   const [estimateStrength,setEstimateStrength]=useState(false),[error,setError]=useState('');
+  const initialRows=useRef(JSON.stringify(rows));
+  const dirty=JSON.stringify(rows)!==initialRows.current||strengthMinutes!==''||cardioMinutes!==''||estimateStrength||cardioMode!==suggestedGymCardio(plan).mode;
+  useEffect(()=>{onUnsaved(dirty);},[dirty,onUnsaved]);
   const done=rows.reduce((sum,row)=>sum+row.sets.filter(set=>set.done).length,0);
   function changeSet(rowIndex,setIndex,key,value){setRows(current=>current.map((row,i)=>i===rowIndex?{...row,sets:row.sets.map((set,j)=>j===setIndex?{...set,[key]:value}:set)}:row));}
   function finish(event){event.preventDefault();if(done&&!Number(strengthMinutes)){setError('Informe os minutos de musculação para as séries realizadas.');return;}if(!done&&Number(strengthMinutes)){setError('Marque as séries feitas ou zere os minutos de musculação.');return;}if(!done&&!Number(cardioMinutes)){setError('Marque uma série ou informe o cardio realizado.');return;}try{const exercises=rows.filter(row=>row.sets.some(set=>set.done)).map(row=>({exerciseId:row.exerciseId,sets:row.sets.filter(set=>set.done).map(set=>({reps:set.reps,weightKg:set.weightKg||null}))}));if(!onSave({...session,exercises,strengthMinutes:strengthMinutes===''?0:Number(strengthMinutes),cardioMinutes:cardioMinutes===''?0:Number(cardioMinutes),cardioMode,estimateStrength}))setError('Não foi possível salvar. Tente novamente.');}catch(e){setError(e.message);}}
-  return <Modal title={t('Treino {0} · registrar sessão',[session.template])} close={()=>{if(window.confirm(t('Descartar esta sessão ainda não salva?')))close();}}><form className="gym-form" onSubmit={finish}>
+  return <Modal title={t('Treino {0} · registrar sessão',[session.template])} close={()=>{if(!dirty||window.confirm(t('Descartar esta sessão ainda não salva?')))close();}}><form className="gym-form" onSubmit={finish}>
     <p className="gym-tip">{t('Marque apenas as séries que fez. Ajuste as repetições realizadas e, se quiser, informe a carga. Repetições de exercícios unilaterais são por lado.')}</p>
     <p className="gym-session-progress" aria-live="polite">{t('{0} séries feitas',[done])}</p>
     {rows.map((row,index)=>{const ex=gymExercises.find(e=>e.id===row.exerciseId),previous=history.flatMap(item=>item.session.exercises).find(item=>item.exerciseId===ex.id);return <section className="gym-exercise" key={index}><div className="gym-exercise-heading"><span>{index+1}</span><label>{t('Exercício {0}',[index+1])}<select value={ex.id} onChange={event=>setRows(current=>current.map((item,i)=>i===index?{exerciseId:event.target.value,sets:item.sets.map(()=>({done:false,reps:'10',weightKg:''}))}:item))}>{gymOptions(ex.group,plan).map(option=><option value={option.id} key={option.id}>{t(option.name)}</option>)}</select></label></div><div className="gym-rep-target"><strong>8–12</strong><span>{t('repetições por série')}{ex.unilateral&&<small>{t('por lado')}</small>}</span><small>{t('Referência ajustável: registre abaixo quantas fez.')}</small></div><GymMovement exercise={ex}/>{previous&&<small className="gym-previous">{t('Último registro neste exercício:')} {previous.sets.map(set=>`${set.reps} ${t('reps')}${set.weightKg==null?'':` · ${set.weightKg} kg`}`).join(' / ')}</small>}
@@ -62,3 +82,5 @@ function GymSession({plan,session,history,Modal,close,onSave}){
 }
 
 function CardioPlan({plan}){const cardio=suggestedGymCardio(plan);return <div className="gym-cardio-plan"><small>{cardio.included?t('CARDIO NO PLANO'):t('CARDIO SUGERIDO')}</small><strong>{t('{0} min de cardio',[cardio.minutes])}</strong><span>{cardio.mode==='treadmill'?t('Caminhada na esteira'):cardio.mode==='bike'?t('Bicicleta ergométrica'):t('Caminhada')}</span><p>{t('Aqueça por cerca de 5 minutos em ritmo leve. Para o cardio, comece com pouco e aumente aos poucos, em um ritmo em que consiga conversar.')}</p><small>{t('A sugestão não vira registro automático. Informe só os minutos realizados; pode registrar zero se não fez cardio.')}</small></div>;}
+
+function GymScreen({title,close,children}){const heading=useRef(null);useEffect(()=>{window.scrollTo(0,0);heading.current?.focus();},[]);return <section className="gym-screen"><div className="gym-screen-header"><button type="button" className="outline" onClick={close}>← {t('Voltar aos treinos')}</button><div><small>{t('MINHA ACADEMIA')}</small><h3 ref={heading} tabIndex={-1}>{title}</h3><p>{t('Preencha no seu ritmo e salve ao terminar.')}</p></div></div>{children}</section>;}

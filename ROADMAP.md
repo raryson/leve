@@ -452,3 +452,9 @@ Google Play — pacote gerado e verificado em 16/10/2026: PWABuilder produziu Le
 - Diagramas SVG originais de início/movimento dos oito exercícios, disponíveis offline, com descrição, retorno e links de referência NHS/Mayo Clinic/ACE. Links externos abrem só por escolha; nenhum player/rastreamento de vídeo carregado. Diagramas são esquemáticos e não substituem correção individual de técnica.
 - Validação: 101 testes e build aprovados; objetivo e referência de cardio preservados no backup, sem gerar treino fictício.
 - Conferência em produção (desktop, visitante com dados fictícios): guia de sentar/levantar e remada na estação abrem no modal; mudança para cinco dias e cardio de 15 min salva e aparece em ambas as fichas. Revisão visual em celular e sincronização real entre dispositivos continuam pendentes.
+
+### Treinos em páginas próprias — 27/10/2026
+
+- Sessão A/B e configuração da academia substituem os modais por páginas dedicadas dentro da navegação Treinos. Uma única rolagem, cabeçalho com voltar e foco ao abrir, progresso de séries visível durante a rolagem.
+- Rotas locais por hash para plano/sessões, acesso direto com perfil existente e retorno pelo navegador. Sem plano cadastrado, a sessão direciona à configuração. Alterações pedem confirmação ao sair/voltar; recarregar ou fechar a aba usa o aviso nativo do navegador. Rascunhos ainda não são persistidos após recarregar.
+- Modais curtos de outras áreas continuam existentes. Persistência do diário, cálculos e sincronização seguem o fluxo anterior.
