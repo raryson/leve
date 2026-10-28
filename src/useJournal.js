@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {createRefreshGate} from './refreshPolicy.js';
 import { KEY, normalizeState, readState, saveState } from './domain.js';
 import { accountKey, cloudCache, normalizeCache, normalizeRemote, writeAccountCache, acknowledge, operationId } from './cloud.js';
 
@@ -23,6 +24,7 @@ export default function useJournal(account, editing) {
   const editingRef = useRef(editing); editingRef.current = editing;
   const authRef = useRef(account); authRef.current = account;
   const busy = useRef(false);
+  const refreshGate = useRef(createRefreshGate());
   const alive = useRef(true);
   const controller = useRef(null);
   const serialized = useRef(loaded.raw || null);
@@ -32,8 +34,9 @@ export default function useJournal(account, editing) {
     cacheRef.current = cache; setState(cache.state);
   }, [key]);
 
-  const synchronize = useCallback(async () => {
+  const synchronize = useCallback(async (options={}) => {
     if (!authRef.current || busy.current || loadErrorRef.current || editingRef.current) return;
+    if(!refreshGate.current.allow({automatic:options.automatic===true,dirty:cacheRef.current.dirty,visible:!document.hidden,online:navigator.onLine!==false}))return;
     busy.current = true;
     setSync(current => ({ ...current, phase: 'syncing', message: 'Sincronizando…' }));
     const abort = new AbortController(); controller.current = abort;
@@ -76,11 +79,11 @@ export default function useJournal(account, editing) {
 
   useEffect(() => {
     alive.current = true;
-    if (account) synchronize();
-    const refresh = () => { if (!document.hidden) synchronize(); };
+    if (account) synchronize({automatic:true});
+    const refresh = () => synchronize({automatic:true});
     window.addEventListener('online', refresh); window.addEventListener('focus', refresh);
-    const timer = setInterval(refresh, 60000);
-    return () => { alive.current = false; controller.current?.abort(); clearInterval(timer); window.removeEventListener('online', refresh); window.removeEventListener('focus', refresh); };
+    document.addEventListener('visibilitychange',refresh);
+    return () => { alive.current = false; controller.current?.abort(); document.removeEventListener('visibilitychange',refresh); window.removeEventListener('online', refresh); window.removeEventListener('focus', refresh); };
   }, [Boolean(account), synchronize]);
   useEffect(() => {
     if (!account || !cacheRef.current.dirty || editing || sync.phase === 'conflict' || sync.phase === 'error') return;

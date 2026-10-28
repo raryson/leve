@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {createRefreshGate} from './refreshPolicy.js';
 import { asCatalogFood, validateCommunityFood } from './communityFood.js';
 
 const PUBLIC_KEY='leve-community-public-v1';
@@ -14,6 +15,8 @@ export default function useCommunityFoods(account) {
   const privateKey=account?`leve-community-private-v1:${account.userId}`:null;
   const [data,setData]=useState(()=>({publicFoods:cached(PUBLIC_KEY,true),mine:privateKey?cached(privateKey):[],moderation:[],reports:[],moderator:false,nextOffset:null,moderationNextOffset:null}));
   const [error,setError]=useState(''),[loading,setLoading]=useState(false),[saving,setSaving]=useState(false);
+  const refreshGate=useRef(createRefreshGate());
+  const refreshing=useRef(null);
   const auth=useRef(account);auth.current=account;
   const generation=useRef(0),sequence=useRef(0),pending=useRef(false),dataRef=useRef(data);dataRef.current=data;
   const request=useCallback(async(path,body)=>{
@@ -24,7 +27,9 @@ export default function useCommunityFoods(account) {
     if(!response.ok)throw new Error(result.error||'O catálogo está indisponível agora.');
     return result;
   },[]);
-  const refresh=useCallback(async(offset=0,moderationOffset=0)=>{
+  const refresh=useCallback(async(offset=0,moderationOffset=0,automatic=false)=>{
+    if((automatic&&refreshing.current===generation.current)||!refreshGate.current.allow({automatic,visible:!document.hidden,online:navigator.onLine!==false}))return;
+    refreshing.current=generation.current;
     const gen=generation.current,seq=++sequence.current;setLoading(true);
     try {
       const result=await request(`/api/foods?offset=${offset}&moderationOffset=${moderationOffset}`);
@@ -35,14 +40,16 @@ export default function useCommunityFoods(account) {
       setData({...result,publicFoods:merged,mine,moderation:validRows(result.moderation),reports:Array.isArray(result.reports)?result.reports:[]});
       setError('');
     }catch(e){if(gen===generation.current&&seq===sequence.current)setError(e.message||'Sem conexão com o catálogo. A lista salva continua disponível.');}
-    finally{if(gen===generation.current&&seq===sequence.current)setLoading(false);}
+    finally{if(gen===generation.current&&seq===sequence.current){refreshing.current=null;setLoading(false);}}
   },[request,privateKey]);
   useEffect(()=>{
     generation.current++;
     setData({publicFoods:cached(PUBLIC_KEY,true),mine:privateKey?cached(privateKey):[],moderation:[],reports:[],moderator:false,nextOffset:null,moderationNextOffset:null});
-    refresh();const update=()=>refresh();const timer=setInterval(update,60000);
+    refreshGate.current=createRefreshGate();
+    refresh(0,0,true);const update=()=>refresh(0,0,true);
+    document.addEventListener('visibilitychange',update);
     window.addEventListener('online',update);window.addEventListener('focus',update);
-    return ()=>{generation.current++;clearInterval(timer);window.removeEventListener('online',update);window.removeEventListener('focus',update);};
+    return ()=>{generation.current++;document.removeEventListener('visibilitychange',update);window.removeEventListener('online',update);window.removeEventListener('focus',update);};
   },[refresh,privateKey]);
   const mutate=async body=>{
     if(!auth.current)throw new Error('Entre na conta para cadastrar ou compartilhar.');
