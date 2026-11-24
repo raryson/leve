@@ -206,3 +206,9 @@ Plano e materiais: [Google Play](distribution/google-play/README.md). Gerar pág
 - Validação automatizada: 100 testes passando, incluindo migração, persistência, API autenticada com repositório simulado, idempotência e exclusão agrupada. Build aprovado. Sincronização real em dois dispositivos permanece como validação manual pendente.
 - Conferência publicada: visitante com dados fictícios configurou o plano e salvou duas séries (20 min de força + 10 min de cardio), com carga opcional de 5 kg; recarregamento preservou a sessão, próxima ficha B e presença no Histórico. Textos PT/EN conferidos no desktop (1280 px, sem rolagem horizontal). O navegador de teste não aplicou o redimensionamento solicitado: validação visual em celular e sincronização entre contas/dispositivos continuam pendentes. Deploy de produção confirmado Ready em leve-fawn.vercel.app.
 
+
+## Plano alimentar pessoal
+
+Abra Alimentação → Plano alimentar, ou o cartão na tela Hoje. Cole um plano com refeições e opções numeradas ou importe um JSON gerado para essa área, revise os horários e salve. O plano fica particular, junto do diário v8, no backup e na sincronização existente. Textos pessoais não são traduzidos nem publicados no catálogo.
+
+O relógio local destaca a refeição de referência; é possível consultar qualquer horário. Escolher e registrar abre uma página de revisão com o texto da opção e o catálogo: confirme preparo, porção e alimentos realmente consumidos antes de salvar. Repetir almoço no jantar mantém o registro como Jantar. A importação não cria consumo, não estima porções abertas nem modifica as metas do Perfil. Metas nutricionais e de peso importadas são referências pessoais, sem validação ou prescrição automática.
