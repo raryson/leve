@@ -12,7 +12,7 @@ const initial=()=>normalizeState({version:6,profile:{name:'Teste',age:30,height:
 const session=(id='gym-1')=>({id,template:'A',exercises:[{exerciseId:'sit-stand',sets:[{reps:10,weightKg:null}]},{exerciseId:'db-row',sets:[{reps:8,weightKg:5},{reps:9,weightKg:5}]}],strengthMinutes:20,cardioMinutes:10,cardioMode:'treadmill',estimateStrength:true});
 
 test('migração v6 preserva dados e plano respeita apenas os equipamentos selecionados',()=>{
-  const state=initial();assert.equal(state.version,7);assert.equal(state.gymPlan,null);assert.equal(state.days[0].waterMl,750);
+  const state=initial();assert.equal(state.version,8);assert.equal(state.gymPlan,null);assert.equal(state.days[0].waterMl,750);
   assert.throws(()=>normalizeGymPlan({...plan,equipment:['invented']}));
   assert.throws(()=>normalizeGymPlan({...plan,daysPerWeek:7}));
   for(const daysPerWeek of [2,3,4,5])assert.equal(normalizeState({...state,gymPlan:{...plan,daysPerWeek}}).gymPlan.daysPerWeek,daysPerWeek);

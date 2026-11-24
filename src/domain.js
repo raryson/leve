@@ -1,8 +1,9 @@
+import {normalizeMealPlan} from './mealPlan.js';
 import {validateWorkoutEstimate,routineLevels} from './energy.js';
 import {normalizeGymPlan,normalizeGymSession} from './gym.js';
 export const KEY = 'leve-state-v3';
-export const VERSION = 7;
-export const emptyState = () => ({ version: VERSION, profile: null, days: [], weights: [], savedMeals: [], favoriteFoods: [], recentFoods: [], gymPlan:null });
+export const VERSION = 8;
+export const emptyState = () => ({ version: VERSION, profile: null, days: [], weights: [], savedMeals: [], favoriteFoods: [], recentFoods: [], gymPlan:null, mealPlan:null });
 export const localDate = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 export const number = value => Number(typeof value === 'string' ? value.replace(',', '.') : value);
 export function numeric(value, min, max, label) {
@@ -98,7 +99,7 @@ export function normalizeState(raw) {
   };
   const gymIds=days.flatMap(day=>day.exercise.activities.filter(activity=>activity.gymSession).map(activity=>activity.gymSession.id));
   if(new Set(gymIds).size!==gymIds.length)throw new Error('Há sessões da academia duplicadas no diário.');
-  return { ...data, version: VERSION, profile, days, weights, savedMeals, favoriteFoods: foodIds(data.favoriteFoods, 200), recentFoods: foodIds(data.recentFoods, 12),gymPlan:normalizeGymPlan(data.gymPlan) };
+  return { ...data, version: VERSION, profile, days, weights, savedMeals, favoriteFoods: foodIds(data.favoriteFoods, 200), recentFoods: foodIds(data.recentFoods, 12),gymPlan:normalizeGymPlan(data.gymPlan),mealPlan:normalizeMealPlan(data.mealPlan) };
 }
 
 export function normalizeSavedMeal(meal) {
