@@ -7,6 +7,19 @@ import {createJournalHandler} from '../server/journal.js';
 const profile={name:'Teste',age:30,height:175,weight:90,sex:'male',activityFactor:1.4};
 const initial=()=>normalizeState({profile,weights:[90],days:[]});
 
+test('natação distingue ritmo, preserva a referência no backup e não estima registros genéricos antigos',()=>{
+  const slow=workoutEstimate('swim-free-58',45,profile),fast=workoutEstimate('swim-free-98',45,profile);
+  assert.equal(slow.gross,411);assert.equal(slow.met,5.8);assert.equal(slow.code,'18240');
+  assert.ok(fast.gross>slow.gross);assert.ok(slow.additional<slow.gross);
+  assert.equal(slow.source,'https://pacompendium.com/water-activities/');
+  const next=applyEntry(initial(),{type:'workout',date:'2026-11-24',activity:{type:'Natação — livre, ritmo lento/recreativo',referenceId:'swim-free-58',durationMinutes:45}});
+  const restored=normalizeState(JSON.parse(JSON.stringify(next)));
+  assert.equal(restored.days[0].exercise.activities[0].energyEstimate.gross,411);
+  assert.equal(dailyEnergy(profile,restored.days[0]).exercise,slow.additional);
+  assert.equal(displayWorkoutEstimate({type:'Natação',durationMinutes:45},profile).estimate,null);
+  assert.equal(displayWorkoutEstimate({type:'Natação',referenceId:'',durationMinutes:45},profile).estimate,null);
+});
+
 test('treinos legados reconhecidos estimam extra sem regravar histórico ou sobrescrever escolhas explícitas',()=>{
   const day=appendActivity(newDay('2026-10-15'),{type:'Academia',durationMinutes:45,caloriesBurned:0});
   const before=JSON.stringify(day),energy=dailyEnergy(profile,day);

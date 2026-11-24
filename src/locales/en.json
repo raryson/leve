@@ -1241,5 +1241,9 @@
   "Não foi possível ler o arquivo.": "Unable to read the file.",
   "Este plano ou refeição ainda não foi salvo. Continue editando ou descarte para trocar de aba.": "This plan or meal has not been saved. Keep editing or discard it to switch tabs.",
   "Remover opção": "Remove option",
-  "1 opção": "1 option"
+  "1 opção": "1 option",
+  "Natação — livre, ritmo lento/recreativo": "Swimming — freestyle, slow/recreational pace",
+  "Natação — livre, ritmo rápido/vigoroso": "Swimming — freestyle, fast/vigorous pace",
+  "Natação — recreativa, sem voltas contínuas": "Swimming — recreational, not continuous laps",
+  "Na natação, informe o tempo efetivamente nadando e escolha o ritmo correspondente. Pausas fora da água ou na borda não devem contar como nado contínuo.": "For swimming, enter your active swimming time and choose the matching pace. Breaks out of the water or at the pool edge should not count as continuous swimming."
 }

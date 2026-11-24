@@ -477,3 +477,9 @@ Google Play — pacote gerado e verificado em 16/10/2026: PWABuilder produziu Le
 - Testes: 108 aprovados, incluindo parsing, porções ambíguas, horários, validação de dados, backup e gravação autenticada com repositório simulado. Verificação de interface e sincronização real entre dispositivos devem ser registradas conforme executadas.
 - Conferência publicada em modo visitante com dados fictícios: importação por texto e JSON colado, edição/revisão, plano preservado ao recarregar, almoço escolhido como jantar e registro de 200 g de arroz integral (248 kcal) após confirmação. Versão de teste com as 24 opções mostrou 12 alternativas de almoço em 390 px, sem rolagem horizontal. Dados da conta real não foram alterados.
 - Seletor de arquivos da automação travou; o parser JSON e a colagem foram validados, mas o seletor nativo continua sem validação automatizada. Sincronização real em dois dispositivos permanece pendente.
+
+### Natação no registro de treino — 24/11/2026
+
+- Adicionadas referências explícitas de natação livre lenta/recreativa (5,8 MET, código 18240), livre rápida/vigorosa (9,8 MET, 18230) e recreativa sem voltas contínuas (6 MET, 18310), com fonte do Adult Compendium 2024: https://pacompendium.com/water-activities/.
+- Duração escolhida pelo usuário, nota sobre tempo efetivamente nadado e pausas, cálculo de gasto bruto/extra sem duplicar a rotina. Snapshots preservam peso e referência do registro. Treinos genéricos antigos de natação não recebem intensidade inferida.
+- Opções PT/EN no formulário de treino existente. Sem criar sessões futuras ou marcar natação como realizada automaticamente.

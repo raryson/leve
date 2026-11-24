@@ -7,6 +7,9 @@ export const exerciseReferences=[
   {id:'strength-60',label:'Musculação — esforço vigoroso',met:6,code:'02050'},
   {id:'walk-38',label:'Caminhada — 4,5 a 5,5 km/h, terreno plano',met:3.8,code:'17190'},
   {id:'walk-48',label:'Caminhada rápida — 5,6 a 6,3 km/h, terreno plano',met:4.8,code:'17200'},
+  {id:'swim-free-58',label:'Natação — livre, ritmo lento/recreativo',met:5.8,code:'18240',sourceUrl:'https://pacompendium.com/water-activities/'},
+  {id:'swim-free-98',label:'Natação — livre, ritmo rápido/vigoroso',met:9.8,code:'18230',sourceUrl:'https://pacompendium.com/water-activities/'},
+  {id:'swim-general-60',label:'Natação — recreativa, sem voltas contínuas',met:6,code:'18310',sourceUrl:'https://pacompendium.com/water-activities/'},
   {id:'elliptical-50',label:'Elíptico — esforço moderado',met:5,code:'02048'},
 ];
 function valid(value,min,max){const n=Number(value);if(value==null||value===''||!Number.isFinite(n)||n<min||n>max)throw new Error('Dados insuficientes para estimar calorias.');return n;}
@@ -24,7 +27,7 @@ export function workoutEstimate(referenceId,minutes,profile){
   const gross=Math.round(reference.met*3.5*weightKg/200*duration);
   // Replace the baseline expenditure for these minutes instead of adding it twice.
   const additional=Math.max(0,Math.round(gross-baselineDaily/1440*duration));
-  return {method:'met-baseline-v1',referenceId,met:reference.met,weightKg,durationMinutes:duration,baselineDaily,gross,additional,source:EXERCISE_SOURCE,code:reference.code};
+  return {method:'met-baseline-v1',referenceId,met:reference.met,weightKg,durationMinutes:duration,baselineDaily,gross,additional,source:reference.sourceUrl||EXERCISE_SOURCE,code:reference.code};
 }
 export function validateWorkoutEstimate(estimate,duration){
   if(!estimate||estimate.method!=='met-baseline-v1')throw new Error('Estimativa de exercício inválida.');
