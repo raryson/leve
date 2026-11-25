@@ -17,6 +17,7 @@ const servings={
 };
 export function beverageServings(food){
   if(food?.unit!=='ml')return [];
+  if(food.beverageKind==='capsule')return [1,2].map(count=>({id:'prepared-cup-'+count,label:count===1?'1 xícara preparada':'2 xícaras preparadas',ml:food.defaultAmount*count,icon:'cup'}));
   // Mixed drinks scale the recipe, never the capacity of a glass full of ice.
   if(food.beverageKind==='cocktail')return [1,2].map(count=>({id:'drink-'+count,label:count===1?'1 drink':'2 drinks',ml:food.defaultAmount*count,icon:food.drinkIcon||'rocks'}));
   const keys=food.beverageKind==='beer'?['americano','beer','pint','can','longneck','bottle']:food.beverageKind==='wine'?['wine','halfWine']:food.beverageKind==='spirit'?['smallShot','shot','vermouth']:food.id==='nespresso-espresso'?['espresso','coffee','americano','mug']:['americano','mug','tall'];

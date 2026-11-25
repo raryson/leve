@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {foods} from '../src/foods.js';
 import {sliceGrams,portionCalories,normalizeSavedMeal,normalizeState,newDay,useSavedMeal,saveState,readState,KEY} from '../src/domain.js';
 import {parseMealText,reviewedItems} from '../src/mealText.js';
+import {beverageServings} from '../src/beverageServings.js';
+import {searchFoods} from '../src/foodLibrary.js';
 import {createJournalHandler} from '../server/journal.js';
 
 const food=id=>foods.find(f=>f.id===id);
@@ -59,4 +61,28 @@ test('API sincroniza modelos e diário com fatias e ml, vinculados ao dono auten
   const value={...state(),savedMeals:[model()],days:[useSavedMeal(newDay('2026-10-14'),'Lanche',model())]};
   const response=await handler(new Request('https://leve.test/api/journal',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({baseRevision:0,operationId:'measurement-operation-12345',state:value})}));
   assert.equal(response.status,200);assert.equal(stored.days[0].totalCalories,212);assert.equal(stored.savedMeals[0].items[0].gramsPerSlice,25);assert.equal(stored.days[0].meals[0].items[1].milliliters,200);
+});
+
+
+test('Dolce Gusto conta preparos completos, incluindo as duas cápsulas, e preserva ml nos modelos',()=>{
+  for(const [id,query,volume,calories] of [
+    ['dolce-gusto-salted-caramel','dolce gusto caramelo salgado',120,78],
+    ['dolce-gusto-latte-macchiato','dolce gusto latte',220,78],
+    ['dolce-gusto-chococino','dolce gusto chocolate chococino',210,128],
+    ['dolce-gusto-nescau','dolce gusto chocolate nescau',120,67],
+  ]){
+    const reference=food(id);
+    assert.equal(searchFoods(query,'Bebidas')[0].id,id);
+    assert.equal(reference.defaultAmount,volume);
+    const cups=beverageServings(reference);
+    assert.equal(cups.length,2);
+    cups.forEach((cup,index)=>{
+      const count=index+1;
+      assert.equal(cup.ml,volume*count);
+      const item=normalizeSavedMeal({...model(),items:[drink(id,cup.ml)]}).items[0];
+      assert.equal(item.calories,calories*count);
+      assert.equal(item.milliliters,volume*count);
+      assert.equal(item.grams,null);
+    });
+  }
 });
