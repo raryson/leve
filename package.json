@@ -16,6 +16,7 @@
     "@clerk/backend": "^3.23.2",
     "@clerk/localizations": "^4.23.0",
     "@clerk/react": "^6.17.8",
+    "@mlc-ai/web-llm": "^0.2.89",
     "@vercel/functions": "^3.10.1",
     "@vitejs/plugin-react": "latest",
     "pg": "^8.23.1",

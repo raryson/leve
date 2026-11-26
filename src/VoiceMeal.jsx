@@ -1,12 +1,20 @@
 import {foodName,foodNote} from './foodLabels.js';
 import { t, getLocale, getLanguage } from './i18n.js';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { foods } from './foods.js';
 import { parseMealText, reviewedItems, resolveGrams } from './mealText.js';
 import { createDictation } from './speech.js';
 import { portionCalories } from './domain.js';
 
-export default function VoiceMeal({ onAdd, onDirty, fixedMeal }) {
+const LocalMealAssistant=lazy(()=>import('./LocalMealAssistant.jsx'));
+class LocalAssistantBoundary extends React.Component {
+  state={failed:false};
+  static getDerivedStateFromError(){return {failed:true};}
+  render(){return this.state.failed?<p className="voice-help" role="alert">{t('Não foi possível abrir o assistente local. Reabra o app com internet para tentar novamente. O registro manual e o relato por regras continuam disponíveis.')}</p>:this.props.children;}
+}
+
+export default function VoiceMeal({ onAdd, onDirty, fixedMeal, catalog=foods }) {
+  const [localMounted,setLocalMounted]=useState(false),[localDirty,setLocalDirty]=useState(false);
   const [transcript, setTranscript] = useState('');
   const [interim, setInterim] = useState('');
   const [mode, setMode] = useState('browser');
@@ -22,7 +30,7 @@ export default function VoiceMeal({ onAdd, onDirty, fixedMeal }) {
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const secure = window.isSecureContext;
   const active = status !== 'idle';
-  useEffect(() => { onDirty(Boolean(transcript.trim() || active)); }, [transcript, active, onDirty]);
+  useEffect(() => { onDirty(Boolean(transcript.trim() || active || localDirty)); }, [transcript, active, localDirty, onDirty]);
 
   useEffect(() => {
     function stopWhenHidden() {
@@ -105,6 +113,7 @@ export default function VoiceMeal({ onAdd, onDirty, fixedMeal }) {
     try { total = reviewedItems(rows).reduce((sum, item) => sum + item.calories, 0); ready = true; } catch { /* Missing selections stay visible for review. */ }
   }
   return <section className="voice-meal" aria-label={t("Registro por voz ou relato")}>
+    <details className="local-ai-disclosure" onToggle={e=>{if(e.currentTarget.open)setLocalMounted(true);}}><summary>{t('Assistente com IA local · PC')}<span>{t('Texto livre, sem API paga')}</span></summary>{localMounted&&<LocalAssistantBoundary><Suspense fallback={<p role="status">{t('Abrindo assistente local…')}</p>}><LocalMealAssistant fixedMeal={fixedMeal} catalog={catalog} onDirty={setLocalDirty} onAdd={onAdd}/></Suspense></LocalAssistantBoundary>}</details>
     <h4>{t("🎙 Conte sua refeição")}</h4>
     <p>{t("Fale ou digite: “No almoço comi 150 gramas de arroz branco e 100 gramas de feijão preto”.")}</p>
     {!secure ? <p className="voice-help">{t("O microfone precisa de HTTPS ou localhost. Nesta prévia por IP, digite o relato ou use o microfone do teclado do celular.")}</p> : !Recognition ? <p className="voice-help">{t("Este navegador não oferece ditado para o app. Você pode usar o microfone do teclado do celular neste campo.")}</p> : <>

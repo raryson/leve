@@ -1,6 +1,14 @@
 # Leve — roadmap de evolução
 
-Atualizado em 27/10/2026. Objetivo: um diário rápido e confiável para acompanhar alimentação, peso, água e movimento, funcionando offline e depois sincronizando entre dispositivos.
+Atualizado em 25/11/2026. Objetivo: um diário rápido e confiável para acompanhar alimentação, peso, água e movimento, funcionando offline e depois sincronizando entre dispositivos.
+
+## Assistente de refeições local no PC — primeira versão experimental
+
+- Implementado: texto livre PT/EN com WebLLM/Qwen no navegador, download explícito, processamento em worker, revisão de cada item, unidades g/ml, porções de referência e cálculo pelo catálogo. Sem API paga de IA, migrações ou consultas periódicas ao banco.
+- Implementado: compatibilidade WebGPU, progresso, cancelamento, liberação de memória, remoção do cache do modelo, preservação do formulário manual e bloqueio de inclusão de itens incompletos ou não confirmados.
+- Validado na prévia publicada: download/carregamento via WebGPU, extração de três itens, correspondência local, revisão manual de bebida ambígua, confirmação, cálculo de 318 kcal e persistência do registro após recarregar, usando somente perfil fictício de visitante.
+- Pendente: relatos longos/correções, outros equipamentos, cache totalmente offline e celulares. O teste direto no Chrome do usuário falhou por problema do helper; a validação real foi feita no navegador interno, sem alegar compatibilidade universal.
+- Próximas iterações: ampliar referências para pratos fora do catálogo, melhorar correspondência/porções com exemplos reais revisados e só depois avaliar suporte a celulares. Evitar estimativas silenciosas de peso ou calorias inventadas pelo modelo.
 
 ## Academia do condomínio — entregue em 27/10/2026
 
