@@ -10,6 +10,32 @@ const item=(patch={})=>({description:'Arroz branco',foodId:'taco-3',quantity:150
 const parse=items=>parseLocalMeal(JSON.stringify({items}),foods);
 const breakfast='cafe da manha, ta sendo duas fatias de pao integral, uma colher de pasta de amendoim, um pouquiinho de geleia de figo e dois pessegos';
 
+test('relato real de arroz e peito assado mantém 200 g e 190 g com unidade abreviada',()=>{
+  const text='200 gramas de arroz, 190 de peito de frango asado e salada de tomate e alface';
+  const result=groundLocalMeal(text,foods);assert.equal(result.complete,true);
+  assert.deepEqual(result.rows.map(r=>[r.foodId,r.amount]),[['taco-3',200],['usda-05064',190],['taco-157',15],['taco-77',15]]);
+  assert.match(result.rows[0].assumption,/arroz branco cozido/);assert.match(result.rows[1].assumption,/gramas.*anterior/);assert.match(result.rows[1].assumption,/sem pele/);
+  const lost=JSON.stringify({items:[item({description:'Arroz',quantity:null,unit:'unknown'}),item({description:'Peito de frango assado',quantity:null,unit:'unknown'})]});
+  const recovered=parseLocalMeal(lost,foods,text);assert.deepEqual(recovered.map(r=>r.amount),[200,190,15,15]);
+  const saved=localMealItems(recovered.map(r=>({...r,confirmed:true})),foods);assert.equal(saved[0].calories,256);assert.equal(saved[1].calories,314);
+});
+
+test('tipo do arroz e pele/preparo do peito explícitos prevalecem sobre padrões',()=>{
+  for(const [text,foodId] of [['200 g de arroz integral','taco-1'],['190 g de peito de frango assado com pele','taco-406'],['190 g de peito de frango assado sem pele','usda-05064'],['190 g de peito de frango cozido','taco-408'],['190 g de peito de frango grelhado','taco-410']]){
+    const result=groundLocalMeal(text,foods);assert.equal(result.complete,true,text);assert.equal(result.rows[0].foodId,foodId,text);assert.ok(result.rows[0].amount>=190);
+  }
+  assert.equal(groundLocalMeal('200 g de arroz cru',foods).complete,false);
+  assert.equal(groundLocalMeal('190 g de peito de frango frito',foods).complete,false);
+});
+
+test('unidade implícita não atravessa bebidas e não transforma frutas ou fatias em gramas',()=>{
+  const liquid=groundLocalMeal('200 ml de café com leite e 190 de peito de frango assado',foods);assert.equal(liquid.rows[1].amount,'');
+  const fruit=groundLocalMeal('200 g de arroz e 2 de banana prata',foods);assert.equal(fruit.rows[1].amount,80);assert.equal(fruit.rows[1].unit,'unit');
+  const bread=groundLocalMeal('200 g de arroz e 2 de pão integral',foods);assert.equal(bread.rows[1].amount,'');
+  const mixed=groundLocalMeal('200 g de arroz e 2 bananas prata e 190 de peito de frango assado',foods);assert.equal(mixed.rows[2].amount,'');
+  const plain=groundLocalMeal('Arroz e peito de frango assado',foods);assert.ok(plain.rows.every(r=>r.foodId&&r.amount===''));
+});
+
 test('relato real mantém pão, colher, geleia e pêssegos com quantidades de cada trecho',()=>{
   const result=groundLocalMeal(breakfast,foods);
   assert.equal(result.complete,true);

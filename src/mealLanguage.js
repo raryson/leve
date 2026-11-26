@@ -4,6 +4,7 @@ export function normalizeMealLanguage(text,language='pt'){
   if(language!=='pt')return text;
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
     .replace(/\bcafe\s+(?:com|c\/)\s+liete\b/g,'cafe com leite')
+    .replace(/\b(frango|peito)\s+asado\b/g,'$1 assado')
     .replace(/\bsalade\s+de\b/g,'salada de')
     .replace(/\b(?:e\s+)?acompanhad[oa]\s+de\s+/g,', ')
     .replace(/\b(?:no|de|do|durante o)\s+(?:almoco|jantar|lanche)\b/g,'')

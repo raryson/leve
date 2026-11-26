@@ -17,6 +17,7 @@ function aliasesFor(food,language){
 export function sourceMealClauses(text,catalog,language='pt'){
   const context=mealSourceText(text,language);
   const parsed=parseMealText(context.text,language);
+  let previousUnit=null;
   return parsed.rows.filter(source=>!(/\bnao\s+(?:comi|tomei|bebi|consumi|como)\b|\b(?:did not|didn't)\s+(?:eat|drink|have)\b/.test(source.text))).map((source,index)=>{
     const clause=clean(source.text),haystack=` ${clause} `;
     const ranked=catalog.map(food=>{
@@ -24,7 +25,7 @@ export function sourceMealClauses(text,catalog,language='pt'){
       return {food,alias:hits[0],score:hits[0]?.split(' ').length||0};
     });
     const best=Math.max(...ranked.map(r=>r.score),0),top=ranked.filter(r=>r.score===best&&best>0);
-    const defaults=top.length>1&&top.every(r=>['taco-328','taco-371','sbd-beef-stew-average'].includes(r.food.id))?top.find(r=>r.food.id==='sbd-beef-stew-average'):top.length>1&&top.every(r=>['coffee-milk-half','dolce-gusto-latte-macchiato'].includes(r.food.id))?top.find(r=>r.food.id==='coffee-milk-half'):null;
+    const defaults=top.length>1&&top.every(r=>['taco-1','taco-3'].includes(r.food.id))?top.find(r=>r.food.id==='taco-3'):top.length>1&&top.every(r=>['usda-05064','taco-406'].includes(r.food.id))?top.find(r=>r.food.id==='usda-05064'):top.length>1&&top.every(r=>['taco-328','taco-371','sbd-beef-stew-average'].includes(r.food.id))?top.find(r=>r.food.id==='sbd-beef-stew-average'):top.length>1&&top.every(r=>['coffee-milk-half','dolce-gusto-latte-macchiato'].includes(r.food.id))?top.find(r=>r.food.id==='coffee-milk-half'):null;
     const selected=source.foodId?top.find(r=>r.food.id===source.foodId)||ranked.find(r=>r.food.id===source.foodId):top.length===1?top[0]:defaults;
     const food=selected?.food;
     let rest=haystack;
@@ -37,14 +38,20 @@ export function sourceMealClauses(text,catalog,language='pt'){
     let quantity=source.amount,unit=source.measure==='grams'?'g':source.measure==='slice'?'slice':source.measure==='spoon'?'tablespoon':'unknown';
     const volume=source.text.match(/\b(\d+(?:[.,]\d+)?)\s*(ml|mililitros?|milliliters?|l|litros?|liters?)\b/);
     if(volume){quantity=Number(volume[1].replace(',','.'))*(/^l/.test(volume[2])?1000:1);unit='ml';}
-    // Numbers without a measure mean counted foods, never grams.
+    const shorthand=source.text.match(/^\s*(\d+(?:[.,]\d+)?)\s+(?:de|of)\s+/);
+    const inherited=previousUnit==='g'&&source.measure==='unknown'&&!volume&&shorthand&&food?.unit!=='ml'&&food&&!food.slice&&food.category!=='Frutas'&&!/^1 (?:banana|pêssego|ameixa)/.test(food.portion?.label||'');
+    if(inherited){quantity=Number(shorthand[1].replace(',','.'));unit='g';}
+    previousUnit=source.measure==='grams'||inherited?'g':null;
+    // Outside the explicit shorthand above, bare numbers mean counts, not grams.
     if(unit==='unknown'&&!isVague){const count=numbers(source.text,language).match(/\b(\d+(?:[.,]\d+)?)\s+(?!(?:g|gramas?|ml|kg)\b)/);if(count){quantity=Number(count[1].replace(',','.'));unit='unit';}}
-    if(isVague&&!volume&&source.measure==='unknown'){quantity=null;unit='unknown';}
-    let assumption='';
+    if(isVague&&!volume&&!inherited&&source.measure==='unknown'){quantity=null;unit='unknown';}
+    let assumption=inherited?'A unidade em gramas foi mantida do item anterior. Confira a quantidade.':'';
+    if(grounded&&food?.id==='taco-3'&&!/\bbranco\b|\bwhite\b/.test(clause))assumption=[assumption,'Tipo não informado: usei arroz branco cozido como referência. Troque se foi integral ou outro preparo.'].filter(Boolean).join(' ');
+    if(grounded&&food?.id==='usda-05064'&&!/sem pele|skinless/.test(clause))assumption=[assumption,'Pele não informada: usei peito assado sem pele. Troque para com pele se também consumiu a pele.'].filter(Boolean).join(' ');
     const cup=source.text.match(/\b(\d+(?:[.,]\d+)?)\s*xicaras?\b/);
     if(!volume&&food?.id==='coffee-milk-half'&&(cup||context.sandwich&&(quantity==null||unit==='unit'))){quantity=(cup?Number(cup[1].replace(',','.')):unit==='unit'?quantity:1)*200;unit='ml';assumption=language==='en'?'Cup estimated at 200 ml, half coffee and half whole milk, without sugar. Adjust if different.':'Xícara estimada em 200 ml, metade café e metade leite integral, sem açúcar. Ajuste se foi diferente.';}
     if(context.breadInferred&&food?.slice&&source.measure==='slice')assumption='Sanduíche estimado com duas fatias por unidade. Ajuste o número ou peso se foi diferente.';
-    if(context.sandwich&&food&&source.measure==='unknown'&&!cup&&quantity==null){const grams={'taco-77':15,'taco-157':15,'sbd-pickled-cucumber':15}[food.id];if(grams){quantity=grams*context.count;unit='g';assumption='Estimativa de 15 g por ingrediente da salada em cada sanduíche, não pesada. Ajuste se necessário.';}}
+    if((context.sandwich||context.salad)&&food&&source.measure==='unknown'&&!cup&&quantity==null){const grams={'taco-77':15,'taco-157':15,'sbd-pickled-cucumber':15}[food.id];if(grams){quantity=grams*(context.count||1);unit='g';assumption=context.sandwich?'Estimativa de 15 g por ingrediente da salada em cada sanduíche, não pesada. Ajuste se necessário.':'Salada sem peso informado: referência inicial de 15 g por ingrediente. Ajuste se necessário.';}}
     if(food?.id==='sbd-beef-stew-average')assumption=language==='en'?'Average cooked beef reference; cut and sauce were not specified. A tablespoon is estimated at 30 g.':'Referência média de carne bovina cozida; corte e molho não informados. Colher de sopa estimada em 30 g.';
     let question='';
     if(isVague&&unit==='unknown')question=language==='en'?'How much did you have? Choose a reference portion or enter grams.':'Quanto foi esse pouquinho? Escolha uma porção de referência ou informe os gramas.';

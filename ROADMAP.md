@@ -513,3 +513,9 @@ Google Play — pacote gerado e verificado em 16/10/2026: PWABuilder produziu Le
 - Estimativa editável de 15 g por ingrediente da salada em sanduíches, mesmo sem pão especificado; pão desconhecido fica pendente. Preservar pesos explícitos e mostrar atalhos de porção disponíveis fora dos detalhes.
 - Migração para busca oficial Search-a-licious após reproduzir HTTP 503 no endpoint legado. Alternativa legada em erro transitório, cache anterior identificado, limite conservador e respeito a 429. Privacidade e documentação atualizadas.
 - 134 testes e build aprovados; prévia conferida com relato original, seis itens no relato completo, busca real, importação e salvamento no diário fictício.
+
+### Reconhecimento de arroz e peito de frango — 26/11/2026
+
+- Preservar unidades elípticas como “200 gramas de arroz, 190 de peito de frango asado”; correção restrita de “asado”, gramagem herdada com limites e referências locais de peito assado/cozido/grelhado com fontes USDA/TACO.
+- Padrões explícitos e editáveis para arroz branco cozido e peito assado sem pele; atalhos de integral/com pele preservam os pesos. Salada nomeada sem peso usa 15 g por ingrediente como referência ajustável.
+- 137 testes e build aprovados; prévia validada com o relato exato, troca de referências sem perder peso e salvamento dos quatro itens no visitante fictício.

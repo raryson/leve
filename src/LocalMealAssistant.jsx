@@ -9,6 +9,9 @@ import {mealRuntime} from './localMealRuntime.js';
 import {AIStatus,useMealRuntime} from './LocalAISettings.jsx';
 import MealDictation from './MealDictation.jsx';
 
+const riceChoices=[['taco-3','Arroz branco'],['taco-1','Arroz integral']];
+const breastChoices=[['usda-05064','Sem pele'],['taco-406','Com pele']];
+
 export default function LocalMealAssistant({catalog:baseCatalog=foods,onAdd,onDirty,onDraft,fixedMeal,onImportFood}){
   const runtime=useMealRuntime();
   const [imported,setImported]=useState([]);
@@ -55,11 +58,13 @@ export default function LocalMealAssistant({catalog:baseCatalog=foods,onAdd,onDi
       <p className="meal-review-hint">{t('Confere os itens abaixo. Medidas caseiras são estimativas editáveis; só falta salvar no final.')}</p>
       {!fixedMeal&&<label>{t('Refeição')}<select value={meal} onChange={e=>setMeal(e.target.value)}>{['Café da manhã','Almoço','Lanche','Jantar','Ceia'].map(name=><option key={name} value={name}>{t(name)}</option>)}</select></label>}
       {rows.map((row,index)=>{
+        const choices=['taco-3','taco-1'].includes(row.foodId)?riceChoices:['usda-05064','taco-406'].includes(row.foodId)?breastChoices:[];
         const food=catalog.find(f=>f.id===row.foodId),unit=food?.unit==='ml'?'ml':'g';let calories=null;try{calories=food?portionCalories(row.amount,food.kcal):null;}catch{/* Missing quantity stays pending. */}
         const selector=<label>{t('Referência para este alimento')}<select value={row.foodId} onChange={e=>{const next=catalog.find(f=>f.id===e.target.value);update(index,{foodId:e.target.value,amount:portionFor(row,next),estimated:!['g','ml'].includes(row.unit)});}}><option value="">{t('Selecione um alimento')}</option>{catalog.map(f=><option key={f.id} value={f.id}>{foodName(f)}</option>)}</select></label>;
         return <article className={'meal-result-item'+(!food||calories===null?' needs-portion':'')} key={row.id}>
           <div className="meal-item-top"><div><strong>{food?foodName(food):row.description}</strong><span className="meal-item-meta">{!food?t('Escolha o alimento'):calories===null?t('Falta a quantidade'):row.estimated?t('Porção estimada'):t('Quantidade informada')}</span></div><button type="button" className="outline meal-remove" aria-label={t('Remover item {0}',[index+1])} onClick={()=>setRows(previous=>previous.filter((_,i)=>i!==index))}>×</button></div>
           {row.assumption&&<p className="meal-estimate-note">{t(row.assumption)}</p>}{!food&&<>{selector}<OnlineFoodSearch description={row.description} onImport={onImportFood} onUse={reference=>{setImported(previous=>[...previous.filter(f=>f.id!==reference.id),reference]);update(index,{foodId:reference.id,amount:portionFor(row,reference),estimated:!['g','ml'].includes(row.unit)});}}/></>}
+          {choices.length>0&&<div className="meal-portion-shortcuts" aria-label={t('Trocar referência do alimento')}>{choices.filter(([id])=>catalog.some(f=>f.id===id)).map(([id,label])=><button type="button" key={id} className={row.foodId===id?'primary':'outline'} aria-pressed={row.foodId===id} onClick={()=>update(index,{foodId:id,amount:row.amount===''?portionFor(row,catalog.find(f=>f.id===id)):row.amount})}>{t(label)}</button>)}</div>}
           {row.question&&(!food||calories===null)&&<p className="voice-help">{row.question}</p>}
           <div className="meal-item-quantity"><label>{unit==='ml'?t('Volume (ml)'):t('Peso (g)')}<input type="number" min="0.1" max="10000" step="0.1" value={row.amount} onChange={e=>update(index,{amount:e.target.value})}/></label><strong>{calories===null?'—':calories.toLocaleString(getLocale())} kcal</strong></div>
           {food&&calories===null&&!/geleia/i.test(food.name)&&(food.portion||food.slice||food.defaultAmount)&&<button type="button" className="outline" onClick={()=>update(index,{amount:food.portion?.grams||food.slice?.grams||food.defaultAmount,estimated:true})}>{t('Usar porção de referência: {0} {1}',[food.portion?.grams||food.slice?.grams||food.defaultAmount,unit])}</button>}
