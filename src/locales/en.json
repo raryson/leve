@@ -1418,5 +1418,9 @@
   "Xícara estimada em 200 ml, metade café e metade leite integral, sem açúcar. Ajuste se foi diferente.": "Cup estimated at 200 ml, half coffee and half whole milk, without sugar. Adjust if different.",
   "Não foi possível guardar a referência. Tente novamente antes de usar.": "Could not save the reference. Try again before using it.",
   "Rótulo externo por 100 g, produto como vendido. Confira marca, preparo e embalagem. Open Food Facts é colaborativo; o resultado não é uma validação nutricional.": "External label per 100 g, product as sold. Check brand, preparation and package. Open Food Facts is collaborative; the result is not a nutritional validation.",
-  "Rótulo externo por 100 ml, produto como vendido. Confira marca, preparo e embalagem. Open Food Facts é colaborativo; o resultado não é uma validação nutricional.": "External label per 100 ml, product as sold. Check brand, preparation and package. Open Food Facts is collaborative; the result is not a nutritional validation."
+  "Rótulo externo por 100 ml, produto como vendido. Confira marca, preparo e embalagem. Open Food Facts é colaborativo; o resultado não é uma validação nutricional.": "External label per 100 ml, product as sold. Check brand, preparation and package. Open Food Facts is collaborative; the result is not a nutritional validation.",
+  "Estimativa de 15 g por ingrediente da salada em cada sanduíche, não pesada. Ajuste se necessário.": "Estimated 15 g of each salad ingredient per sandwich, not weighed. Adjust as needed.",
+  "O Open Food Facts está temporariamente indisponível. Tente novamente em instantes; as referências locais continuam disponíveis.": "Open Food Facts is temporarily unavailable. Try again shortly; local references remain available.",
+  "A base online está fora do ar. Mostrando referências salvas de uma busca anterior; confira a embalagem.": "The online source is unavailable. Showing saved references from an earlier search; check the label.",
+  "Usar porção de referência: {0} {1}": "Use reference portion: {0} {1}"
 }

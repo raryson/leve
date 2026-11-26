@@ -506,3 +506,10 @@ Google Play — pacote gerado e verificado em 16/10/2026: PWABuilder produziu Le
 - Sanduíche de pão de forma decomposto com estimativas explícitas e editáveis; pão branco, referência de carne cozida e picles adicionados com fonte SBD. Quantidades explícitas não são substituídas.
 - 130 testes e build; busca real, importação, consumo e reutilização após reload validados na prévia com dados fictícios. Conferir sincronização real em dois dispositivos.
 - Próxima expansão possível: mais tabelas de alimentos preparados, preferencialmente dados oficiais com licença/API adequada; não usar páginas aleatórias nem estimativas do modelo como referência nutricional.
+
+### Correções de salada, café e busca externa — 26/11/2026
+
+- Resolvido “salada de alface”/“salade de alface” e “café com liete de almoço”, com normalização de conectivos e reconhecimento consistente também na saída neural.
+- Estimativa editável de 15 g por ingrediente da salada em sanduíches, mesmo sem pão especificado; pão desconhecido fica pendente. Preservar pesos explícitos e mostrar atalhos de porção disponíveis fora dos detalhes.
+- Migração para busca oficial Search-a-licious após reproduzir HTTP 503 no endpoint legado. Alternativa legada em erro transitório, cache anterior identificado, limite conservador e respeito a 429. Privacidade e documentação atualizadas.
+- 134 testes e build aprovados; prévia conferida com relato original, seis itens no relato completo, busca real, importação e salvamento no diário fictício.

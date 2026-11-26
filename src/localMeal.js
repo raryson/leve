@@ -34,7 +34,8 @@ export function parseLocalMeal(content,catalog,sourceText='',language='pt'){
   const extracted=data.items.map((item,index)=>{
     if(!item||typeof item.description!=='string'||!item.description.trim()||item.description.length>300||!units.has(item.unit)||(item.quantity!==null&&(typeof item.quantity!=='number'||!Number.isFinite(item.quantity)||item.quantity<=0||item.quantity>10000)))throw Error('A IA não retornou uma refeição válida. Tente descrever menos itens por vez.');
     const candidates=searchFoods(item.description.trim(),'Todos',[],[],catalog);
-    const food=candidates.length===1?candidates[0]:null;
+    let food=candidates.length===1?candidates[0]:null;
+    try{const named=groundLocalMeal(item.description,catalog,language);if(named.clauses.length===1&&named.clauses[0].grounded)food=catalog.find(f=>f.id===named.rows[0].foodId)||food;}catch{/* A description may contain only an unknown name; keep it pending. */}
     const row={id:index,description:item.description.trim(),foodId:food?.id||'',quantity:item.quantity,unit:item.unit,question:typeof item.question==='string'?item.question.slice(0,400):'',estimated:!['g','ml'].includes(item.unit),confirmed:false};
     const amount=portionFor(row,food);
     return {...row,amount:amount!==''&&amount<=10000?amount:''};
