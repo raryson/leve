@@ -1,4 +1,5 @@
-// The heavy runtime is imported only inside a worker created after an explicit click.
+// Heavy inference stays in the worker. Startup checks cache; only an explicit
+// first download or a cached-model warmup loads the model into GPU memory.
 export function createLocalMealEngine(makeWorker=()=>new Worker(new URL('./localMeal.worker.js',import.meta.url),{type:'module'})){
   let worker=null,pending=null,sequence=0;
   function stop(){
@@ -24,5 +25,5 @@ export function createLocalMealEngine(makeWorker=()=>new Worker(new URL('./local
       worker.postMessage({id,type,...payload});
     });
   }
-  return {load:onProgress=>request('load',{},onProgress),generate:messages=>request('generate',{messages}),clear:()=>request('clear'),stop:()=>{if(pending)clearTimeout(pending.timeout);stop();}};
+  return {status:()=>request('status'),load:onProgress=>request('load',{},onProgress),generate:messages=>request('generate',{messages}),clear:()=>request('clear'),stop:()=>{if(pending)clearTimeout(pending.timeout);stop();}};
 }

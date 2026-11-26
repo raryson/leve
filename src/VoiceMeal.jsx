@@ -1,12 +1,12 @@
 import {foodName,foodNote} from './foodLabels.js';
 import { t, getLocale, getLanguage } from './i18n.js';
-import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import LocalMealAssistant from './LocalMealAssistant.jsx';
 import { foods } from './foods.js';
 import { parseMealText, reviewedItems, resolveGrams } from './mealText.js';
 import { createDictation } from './speech.js';
 import { portionCalories } from './domain.js';
 
-const LocalMealAssistant=lazy(()=>import('./LocalMealAssistant.jsx'));
 class LocalAssistantBoundary extends React.Component {
   state={failed:false};
   static getDerivedStateFromError(){return {failed:true};}
@@ -113,7 +113,7 @@ export default function VoiceMeal({ onAdd, onDirty, fixedMeal, catalog=foods }) 
     try { total = reviewedItems(rows).reduce((sum, item) => sum + item.calories, 0); ready = true; } catch { /* Missing selections stay visible for review. */ }
   }
   return <section className="voice-meal" aria-label={t("Registro por voz ou relato")}>
-    <details className="local-ai-disclosure" onToggle={e=>{if(e.currentTarget.open)setLocalMounted(true);}}><summary>{t('Assistente com IA local · PC')}<span>{t('Texto livre, sem API paga')}</span></summary>{localMounted&&<LocalAssistantBoundary><Suspense fallback={<p role="status">{t('Abrindo assistente local…')}</p>}><LocalMealAssistant fixedMeal={fixedMeal} catalog={catalog} onDirty={setLocalDirty} onAdd={onAdd}/></Suspense></LocalAssistantBoundary>}</details>
+    <details className="local-ai-disclosure" onToggle={e=>{if(e.currentTarget.open)setLocalMounted(true);}}><summary>{t('Assistente com IA local · PC')}<span>{t('Texto livre, sem API paga')}</span></summary>{localMounted&&<LocalAssistantBoundary><LocalMealAssistant fixedMeal={fixedMeal} catalog={catalog} onDirty={setLocalDirty} onAdd={onAdd}/></LocalAssistantBoundary>}</details>
     <h4>{t("🎙 Conte sua refeição")}</h4>
     <p>{t("Fale ou digite: “No almoço comi 150 gramas de arroz branco e 100 gramas de feijão preto”.")}</p>
     {!secure ? <p className="voice-help">{t("O microfone precisa de HTTPS ou localhost. Nesta prévia por IP, digite o relato ou use o microfone do teclado do celular.")}</p> : !Recognition ? <p className="voice-help">{t("Este navegador não oferece ditado para o app. Você pode usar o microfone do teclado do celular neste campo.")}</p> : <>

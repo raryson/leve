@@ -2054,3 +2054,48 @@ header h2 { overflow-wrap:anywhere; }
 .local-ai-check span{min-width:0;flex:1}
 .local-ai-save{border-top:1px solid #d4dfd6;padding-top:18px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 @media(max-width:520px){.local-ai{padding:0 12px 16px;gap:16px}.local-ai-disclosure>summary{padding:16px 12px}.local-ai-device{display:none}.local-ai-setup,.local-ai-item{padding:12px}.local-ai-actions>button,.local-ai-save>button{flex:1 1 100%}.local-ai-measure{gap:10px}}
+.meal-compose-page{min-height:100dvh;background:#f3f6f1;padding:0 24px 130px;margin:0;width:100%;max-width:none}
+.meal-compose-page [hidden]{display:none!important}
+.meal-compose-header{max-width:880px;margin:0 auto;padding:30px 0 24px;display:flex;align-items:center;gap:22px;border-bottom:1px solid #dbe5dc}
+.meal-compose-header h1{font-size:27px;letter-spacing:-.8px;margin:5px 0 0;outline:none}
+.meal-compose-step{margin-left:auto;font-size:12px;color:#64756d}
+.meal-compose-body{max-width:760px;margin:26px auto 0;display:grid;gap:24px}
+.meal-compose-context{display:flex;align-items:end;flex-wrap:wrap;gap:16px}
+.meal-compose-context label{min-width:130px;flex:1;font-size:12px;font-weight:650;display:grid;gap:7px}
+.meal-compose-page input,.meal-compose-page select,.meal-compose-page textarea{margin:0;width:100%;min-width:0;border:1px solid #cbd9cd;border-radius:11px;background:white;color:#24392c;padding:12px;font:inherit}
+.meal-compose-page input,.meal-compose-page select{min-height:44px}
+.meal-today{font-size:12px;color:#64756d;padding:14px 0;white-space:nowrap}
+.meal-compose-tabs{display:flex;gap:8px;padding:5px;border:1px solid #dce6dc;background:#eaf0e8;border-radius:14px}
+.meal-compose-tabs button{flex:1;box-shadow:none;border-color:transparent}
+.meal-assistant,.meal-manual-panel{background:white;padding:26px;border:1px solid #dce6dc;border-radius:20px;display:grid;gap:18px;min-width:0}
+.meal-assistant-heading{display:flex;gap:12px;justify-content:space-between;align-items:start}
+.meal-assistant-heading h3{margin-top:8px;font-size:23px;line-height:1.35;max-width:340px}
+.assistant-status{display:inline-flex;align-items:center;border-radius:99px;font-size:10px;padding:8px 11px;background:#edf1ec;color:#61705f;white-space:nowrap}
+.assistant-status.is-ready{background:#e0f1e2;color:#22643b}
+.meal-assistant-copy,.meal-review-hint{font-size:13px;color:#687567;line-height:1.6}
+.meal-description{display:grid;gap:9px;font-size:12px;font-weight:650}
+.meal-description textarea{line-height:1.7;font-size:15px;resize:vertical;min-height:132px;background:#fafcf9}
+.meal-input-actions{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.meal-dictation{max-width:100%;display:flex;flex-wrap:wrap;align-items:center;gap:10px;flex:1}
+.meal-dictation>details{font-size:11px;color:#657461}.meal-dictation label{display:grid;gap:8px;margin-top:12px}
+.meal-dictation>small,.meal-dictation>p,.voice-permission{flex-basis:100%;font-size:12px;color:#657461}
+.voice-permission{padding:14px;border:1px solid #d8e6d9;border-radius:12px;background:#f6faf4;display:flex;gap:12px;flex-wrap:wrap}.voice-permission p{flex-basis:100%}
+.recording{box-shadow:0 0 0 4px #19755224!important}
+.assistant-first-use{border-top:1px solid #e0e8df;padding-top:16px;font-size:12px;color:#657461}.assistant-first-use summary{cursor:pointer;font-weight:650}.assistant-first-use p{margin:12px 0}
+.assistant-background{font-size:12px;color:#53714f;padding:10px 12px;border-radius:10px;background:#edf6e9}
+.meal-result{display:grid;gap:14px;border-top:1px solid #dfe7dc;padding-top:22px}
+.meal-result-heading{display:flex;align-items:center;justify-content:space-between;gap:14px}.meal-result-heading h4{font-size:18px}
+.meal-result-item{padding:18px;border:1px solid #dce5d9;border-radius:14px;background:#fcfdfa;display:grid;gap:14px;min-width:0}
+.meal-result-item.needs-portion{border-color:#dbbf73;background:#fffcf3}
+.meal-item-top{display:flex;align-items:center;justify-content:space-between;gap:14px}.meal-item-top>div{min-width:0}.meal-item-top strong{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.meal-item-meta{display:block;font-size:10px;color:#76816d;margin-top:4px}.meal-remove{min-width:36px;min-height:36px!important;padding:5px!important;flex-shrink:0}
+.meal-item-quantity{display:flex;align-items:end;gap:18px;justify-content:space-between}.meal-item-quantity label{display:grid;gap:6px;font-size:11px;color:#64735f;max-width:160px;flex:1}.meal-item-quantity strong{font-size:16px;padding-bottom:13px;white-space:nowrap}
+.meal-item-details{border-top:1px solid #e1e7dd;padding-top:12px;font-size:11px;color:#657461}.meal-item-details summary{cursor:pointer;font-weight:600}.meal-item-details label{display:grid;gap:7px;margin-top:14px}.meal-item-details small,.meal-item-details p{display:block;line-height:1.6;margin-top:12px}.meal-item-details>button{margin-top:12px}
+.meal-portion-shortcuts{display:flex;gap:8px;flex-wrap:wrap}.meal-portion-shortcuts button{font-size:11px;flex:1}
+.assistant-checkbox,.meal-item-details .assistant-checkbox{display:flex;flex-direction:row;gap:10px;align-items:flex-start;font-size:12px;line-height:1.6;margin-top:14px}.assistant-checkbox input,.meal-compose-page .assistant-checkbox input{min-height:18px;height:18px;width:18px;flex:0 0 18px;padding:0;margin-top:2px;accent-color:#197552}
+.meal-pending{font-size:12px;color:#85610d;background:#fff7dd;padding:11px 13px;border-radius:10px}
+.meal-compose-footer{position:fixed;bottom:0;left:0;right:0;background:#fffffff5;border-top:1px solid #d5e1d5;padding:18px max(24px,calc((100% - 760px)/2));display:flex;justify-content:space-between;align-items:center;gap:20px;z-index:20;backdrop-filter:blur(12px)}
+.meal-compose-footer>div{display:grid;gap:3px}.meal-compose-footer strong{font-size:24px}.meal-compose-footer strong small{font-size:12px;font-weight:500}.meal-compose-footer span{font-size:11px;color:#6e7e65}.meal-compose-footer button{min-width:180px;min-height:48px}
+.meal-save-template{font-size:12px;color:#60725b}.meal-save-template summary{cursor:pointer}.meal-added-items{padding:22px;background:white;border:1px solid #dce6dc;border-radius:16px;display:grid;gap:12px}
+.assistant-settings{padding:24px;border:1px solid var(--line);border-radius:18px;background:white;display:grid;gap:16px}.assistant-settings>div:first-child{display:flex;align-items:center;gap:16px;justify-content:space-between}.assistant-settings p{font-size:13px;color:var(--muted)}.assistant-settings progress{width:100%;accent-color:#197552}
+@media(max-width:600px){.meal-compose-page{padding:0 14px 120px}.meal-compose-header{gap:14px;padding:18px 0}.meal-compose-header h1{font-size:22px}.meal-compose-header .eyebrow{font-size:9px}.meal-compose-step{display:none}.meal-compose-body{margin-top:18px;gap:18px}.meal-compose-context{gap:10px}.meal-compose-context label{min-width:100px}.meal-today{flex-basis:100%;padding:0}.meal-assistant,.meal-manual-panel{padding:18px;border-radius:16px}.meal-assistant-heading{display:grid;gap:12px}.meal-assistant-heading h3{font-size:22px}.assistant-status{justify-self:start}.meal-input-actions{gap:10px}.meal-input-actions>.primary{min-width:100%;order:2}.meal-dictation{justify-content:space-between}.meal-result-item{padding:14px}.meal-portion-shortcuts button{flex:1 1 100%}.meal-compose-footer{padding:14px 18px calc(14px + env(safe-area-inset-bottom));gap:14px}.meal-compose-footer button{min-width:155px}.assistant-settings{padding:18px}.assistant-settings>div:first-child{align-items:flex-start;flex-direction:column}}

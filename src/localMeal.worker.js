@@ -1,11 +1,13 @@
-import {MLCEngine,deleteModelAllInfoInCache} from '@mlc-ai/web-llm';
+import {MLCEngine,deleteModelAllInfoInCache,hasModelInCache} from '@mlc-ai/web-llm';
 import {LOCAL_MEAL_MODEL,LOCAL_MEAL_SCHEMA} from './localMeal.js';
 
 let engine;
 self.onmessage=async({data})=>{
   const {id,type,messages}=data;
   try{
-    if(type==='load'){
+    if(type==='status'){
+      self.postMessage({id,type:'result',result:await hasModelInCache(LOCAL_MEAL_MODEL)});
+    }else if(type==='load'){
       engine=new MLCEngine({logLevel:'SILENT',initProgressCallback:report=>self.postMessage({id,type:'progress',progress:Math.min(1,Math.max(0,report.progress||0))})});
       await engine.reload(LOCAL_MEAL_MODEL,{context_window_size:4096});
       self.postMessage({id,type:'result',result:true});

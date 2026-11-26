@@ -491,3 +491,10 @@ Google Play — pacote gerado e verificado em 16/10/2026: PWABuilder produziu Le
 - Adicionadas referências explícitas de natação livre lenta/recreativa (5,8 MET, código 18240), livre rápida/vigorosa (9,8 MET, 18230) e recreativa sem voltas contínuas (6 MET, 18310), com fonte do Adult Compendium 2024: https://pacompendium.com/water-activities/.
 - Duração escolhida pelo usuário, nota sobre tempo efetivamente nadado e pausas, cálculo de gasto bruto/extra sem duplicar a rotina. Snapshots preservam peso e referência do registro. Treinos genéricos antigos de natação não recebem intensidade inferida.
 - Opções PT/EN no formulário de treino existente. Sem criar sessões futuras ou marcar natação como realizada automaticamente.
+
+### Refeições por texto e voz como padrão — 26/11/2026
+
+- Página dedicada substitui o modal da refeição. Texto/voz primeiro; abas Manual e Salvas preservam o rascunho e somam itens à mesma refeição. Revisão compacta, campos pendentes destacados e uma única ação final de salvar.
+- Runtime local compartilhado; preparação automática do modelo já baixado ao abrir o app, com preferência no Perfil. Primeiro download explícito, sem API paga. Conhecidos continuam funcionando durante o carregamento e sem WebGPU.
+- Ditado integrado ao assistente e interpretação ao terminar. Aviso de serviço de voz lembrado após escolha explícita; microfone só por toque, sem fallback online automático.
+- 123 testes e build; prévia conferida em desktop e 390 px com dados fictícios. Download/inferência, autoload após reload, reutilização entre refeições, pendências, total e salvamento único verificados. Microfone físico, outros dispositivos e offline completo ainda precisam de validação.
