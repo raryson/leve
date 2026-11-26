@@ -24,6 +24,6 @@ export function searchFoods(query, category, favorites = [], recent = [], catalo
   }).sort((a, b) => category === 'Recentes' ? recent.indexOf(a.id) - recent.indexOf(b.id) : Number(favorites.includes(b.id)) - Number(favorites.includes(a.id)));
 }
 export function trackRecentFoods(state, day) {
-  const ids = day.meals.flatMap(meal => meal.items.map(item => item.foodId || foods.find(food => food.name === item.food)?.id)).filter(id => typeof id==='string' && (id.startsWith('community:') || foods.some(food => food.id === id)));
+  const ids = day.meals.flatMap(meal => meal.items.map(item => item.foodId || foods.find(food => food.name === item.food)?.id)).filter(id => typeof id==='string' && (id.startsWith('community:') || (state.externalFoods||[]).some(food=>food.id===id) || foods.some(food => food.id === id)));
   return [...new Set([...ids.reverse(), ...(state.recentFoods || [])])].slice(0, 12);
 }

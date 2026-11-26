@@ -498,3 +498,11 @@ Google Play — pacote gerado e verificado em 16/10/2026: PWABuilder produziu Le
 - Runtime local compartilhado; preparação automática do modelo já baixado ao abrir o app, com preferência no Perfil. Primeiro download explícito, sem API paga. Conhecidos continuam funcionando durante o carregamento e sem WebGPU.
 - Ditado integrado ao assistente e interpretação ao terminar. Aviso de serviço de voz lembrado após escolha explícita; microfone só por toque, sem fallback online automático.
 - 123 testes e build; prévia conferida em desktop e 390 px com dados fictícios. Download/inferência, autoload após reload, reutilização entre refeições, pendências, total e salvamento único verificados. Microfone físico, outros dispositivos e offline completo ainda precisam de validação.
+
+### Referências externas e refeições compostas — 26/11/2026
+
+- Entregue busca online gratuita no Open Food Facts para item ausente, escolha com fonte/marca/unidade e cadastro particular reutilizável no diário, backup e sincronização. Camada local TACO/SBD continua prioritária. Sem publicação automática nem API de IA paga.
+- Cache e limite de consultas sem polling do Neon, filtragem de unidades e energia; fotos não são importadas. Busca de produtos não equivale a identificar receita caseira.
+- Sanduíche de pão de forma decomposto com estimativas explícitas e editáveis; pão branco, referência de carne cozida e picles adicionados com fonte SBD. Quantidades explícitas não são substituídas.
+- 130 testes e build; busca real, importação, consumo e reutilização após reload validados na prévia com dados fictícios. Conferir sincronização real em dois dispositivos.
+- Próxima expansão possível: mais tabelas de alimentos preparados, preferencialmente dados oficiais com licença/API adequada; não usar páginas aleatórias nem estimativas do modelo como referência nutricional.

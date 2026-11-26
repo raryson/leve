@@ -18,7 +18,7 @@ export const vegetables=[
     ['taco-142','Pepino cru',10,raw],['taco-157','Tomate cru',15,raw],
     ['taco-77','Alface americana crua',9,raw],['taco-144','Pimentão verde cru',21,raw],
     ['taco-116','Couve-manteiga refogada',90,'Referência TACO de couve refogada, que já inclui óleo e temperos do preparo de referência. Pese pronta. Não some o mesmo óleo novamente; receitas com outra quantidade de gordura podem diferir.'],
-  ].map(([id,name,kcal,note])=>({...common,id,name,kcal,note})),
+  ].map(([id,name,kcal,note])=>({...common,id,name,kcal,note,searchAliases:({'taco-77':['alface','lettuce'],'taco-157':['tomate','tomato']})[id]||[]})),
   {...common,id:'tbca-zucchini-grilled',name:'Abobrinha grelhada sem óleo',kcal:27,sourceLabel:'TBCA — BRC0263B',sourceUrl:zucchini,note:grilled},
   {...common,id:'tbca-eggplant-grilled',name:'Berinjela grelhada sem óleo',kcal:23,sourceLabel:'TBCA — BRC0156B',sourceUrl:eggplant,note:grilled},
   {...common,id:'mix-vegetables-grilled',name:'Legumes grelhados — mix sem óleo (estimativa)',kcal:(27+23)/2,defaultAmount:150,presets:portions,sourceLabel:'Receita de referência — abobrinha e berinjela TBCA',sourceUrl:zucchini,extraSources:[{label:'TBCA — berinjela grelhada',url:eggplant}],note:'Mix ilustrativo em partes iguais, pelo peso pronto, de abobrinha e berinjela grelhadas sem óleo. Usa 27 e 23 kcal por 100 g, respectivamente, das referências TBCA consultadas. Outros legumes e proporções mudam o total. Registre óleo e molhos à parte.'},

@@ -1,3 +1,4 @@
+import {addExternalFood} from './externalFoods.js';
 import MealPlan,{MealPlanToday} from './MealPlan.jsx';
 import GymPlanner from './GymPlanner.jsx';
 import {removeGymActivity} from './gymEntries.js';
@@ -55,7 +56,6 @@ function App({ account, accountControls }) {
   function navigate(next){if(next===tab)return;if(catalogPageDirty||gymDraftDirty||mealPlanDirty){setNavigationTarget(next);return;}switchTab(next);}
   useEffect(()=>{window.scrollTo(0,0);},[tab]);
   const community = useCommunityFoods(account);
-  const catalog = [...foods,...community.catalog];
   const [editor, setEditor] = useState(null);
   const [entry,setEntry]=useState(null);
   const [entryDate,setEntryDate]=useState(localDate);
@@ -64,6 +64,7 @@ function App({ account, accountControls }) {
   const [importing, setImporting] = useState(false);
   const journal = useJournal(account, Boolean(editor || entry || importing || gymBusy || mealPlanBusy));
   const { state: s, loaded, loadError, error: storageError, commit } = journal;
+  const catalog = [...foods,...community.catalog,...(s.externalFoods||[])];
   const [toast, setToast] = useState('');
   const [today, setToday] = useState(localDate);
   const [support,setSupport]=useState(null);
@@ -113,7 +114,7 @@ function App({ account, accountControls }) {
   const day = s.days.find(d => d.date === today) || newDay(today);
   const nav = [['home', 'home', 'Hoje'], ['days', 'history', 'Histórico'], ['evo', 'trend', 'Meu peso'], ['gym', 'move', 'Treinos'], ['foods', 'food', 'Alimentação'], ['profile', 'user', 'Perfil']];
   const syncLabel = !account ? 'Salvo neste dispositivo' : journal.sync.phase === 'synced' ? 'Salvo na sua conta' : journal.sync.phase === 'syncing' ? 'Sincronizando…' : journal.sync.phase === 'error' ? 'Revisar sincronização' : journal.sync.phase === 'conflict' ? 'Revisar conflito' : 'Sincronização pendente';
-  if(entry==='meal')return <MealEntryPage key={entry} today={today} initialDate={entryDate} allowPast={entryHistory} library={s} catalog={catalog} FoodForm={FoodForm} onFavorite={foodId=>commit(x=>({...x,favoriteFoods:x.favoriteFoods.includes(foodId)?x.favoriteFoods.filter(id=>id!==foodId):[...x.favoriteFoods,foodId]}))} onSaveMeal={saveMeal} close={()=>setEntry(null)} onSave={saveEntry}/>;
+  if(entry==='meal')return <MealEntryPage onImportFood={food=>commit(x=>addExternalFood(x,food))} key={entry} today={today} initialDate={entryDate} allowPast={entryHistory} library={s} catalog={catalog} FoodForm={FoodForm} onFavorite={foodId=>commit(x=>({...x,favoriteFoods:x.favoriteFoods.includes(foodId)?x.favoriteFoods.filter(id=>id!==foodId):[...x.favoriteFoods,foodId]}))} onSaveMeal={saveMeal} close={()=>setEntry(null)} onSave={saveEntry}/>;
   return <div className="shell">
     <aside><a className="brand" href="#" onClick={e => { e.preventDefault(); navigate('home'); }}><img className="brand-mark" src="/icon.svg" alt=""/>{t(" leve")}<span className="brand-dot">.</span></a><p className="sidebar-caption">{t("Um pouco melhor, todo dia.")}</p><nav aria-label={t("Navegação principal")}>{nav.map(([key, icon, label]) => <button key={key} className={tab === key || (tab==='plan'&&key==='foods') ? 'active' : ''} aria-current={tab === key || (tab==='plan'&&key==='foods') ? 'page' : undefined} onClick={() => navigate(key==='foods'?'plan':key)}><Icon name={icon}/><span>{t(label)}</span></button>)}</nav><div className="sidebar-note"><span>✳</span><b>{t("Feito é melhor que perfeito.")}</b><p>{t("Um copo d’água, uma caminhada, uma refeição registrada. Tudo conta.")}</p></div><footer><span className="avatar">{s.profile.name.slice(0, 1).toUpperCase()}</span><div><b>{s.profile.name}</b><small>{t("Sua rotina no Leve")}</small></div></footer></aside>
     <main><header><div><p className="eyebrow">{dateLabel(today)}</p><h2>{tab === 'home' ? t("Oi, {0}!",[s.profile.name]) : tab==='plan'?t('Plano alimentar'):t(nav.find(n => n[0] === tab)[2])}</h2></div><div className="header-account"><button className={`sync-status ${account && ['error', 'conflict'].includes(journal.sync.phase) ? 'needs-attention' : ''}`} onClick={() => navigate('profile')}><span/>{t(syncLabel)}</button>{accountControls}</div></header>

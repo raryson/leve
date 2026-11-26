@@ -1,3 +1,4 @@
+import {normalizeExternalFoods} from './externalFoods.js';
 import {normalizeMealPlan} from './mealPlan.js';
 import {validateWorkoutEstimate,routineLevels} from './energy.js';
 import {normalizeGymPlan,normalizeGymSession} from './gym.js';
@@ -99,7 +100,7 @@ export function normalizeState(raw) {
   };
   const gymIds=days.flatMap(day=>day.exercise.activities.filter(activity=>activity.gymSession).map(activity=>activity.gymSession.id));
   if(new Set(gymIds).size!==gymIds.length)throw new Error('Há sessões da academia duplicadas no diário.');
-  return { ...data, version: VERSION, profile, days, weights, savedMeals, favoriteFoods: foodIds(data.favoriteFoods, 200), recentFoods: foodIds(data.recentFoods, 12),gymPlan:normalizeGymPlan(data.gymPlan),mealPlan:normalizeMealPlan(data.mealPlan) };
+  return { ...data, version: VERSION, profile, days, weights, savedMeals, externalFoods:normalizeExternalFoods(data.externalFoods), favoriteFoods: foodIds(data.favoriteFoods, 200), recentFoods: foodIds(data.recentFoods, 12),gymPlan:normalizeGymPlan(data.gymPlan),mealPlan:normalizeMealPlan(data.mealPlan) };
 }
 
 export function normalizeSavedMeal(meal) {

@@ -1,3 +1,4 @@
+import OnlineFoodSearch from './OnlineFoodSearch.jsx';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {t,getLanguage,getLocale} from './i18n.js';
 import {foods} from './foods.js';
@@ -8,8 +9,10 @@ import {mealRuntime} from './localMealRuntime.js';
 import {AIStatus,useMealRuntime} from './LocalAISettings.jsx';
 import MealDictation from './MealDictation.jsx';
 
-export default function LocalMealAssistant({catalog=foods,onAdd,onDirty,onDraft,fixedMeal}){
+export default function LocalMealAssistant({catalog:baseCatalog=foods,onAdd,onDirty,onDraft,fixedMeal,onImportFood}){
   const runtime=useMealRuntime();
+  const [imported,setImported]=useState([]);
+  const catalog=useMemo(()=>[...new Map([...baseCatalog,...imported].map(f=>[f.id,f])).values()],[baseCatalog,imported]);
   const [text,setText]=useState(''),[rows,setRows]=useState(null),[meal,setMeal]=useState('Almoço');
   const [working,setWorking]=useState(false),[listening,setListening]=useState(false),[error,setError]=useState('');
   const session=useRef(0),ownsGeneration=useRef(false);
@@ -22,20 +25,21 @@ export default function LocalMealAssistant({catalog=foods,onAdd,onDirty,onDraft,
   useEffect(()=>{onDraft?.(draft);},[draft,onDraft]);
   function editText(value){setText(value);setRows(null);setError('');}
   async function analyze(value=text){
-    const raw=typeof value==='string'?value:text,current=++session.current;setError('');
+    const raw=typeof value==='string'?value:text,current=++session.current;setError('');let fallback=null;
     try{
       const grounded=groundLocalMeal(raw,catalog,getLanguage());
       if(grounded.complete){setRows(grounded.rows);return;}
-      if(!['ready','loading'].includes(mealRuntime.getSnapshot().phase)){setError('Para este relato, carregue a IA local ou use o formulário manual.');return;}
-      setWorking(true);ownsGeneration.current=true;
+      fallback=grounded.rows;
+      if(!['ready','loading'].includes(mealRuntime.getSnapshot().phase)){setRows(fallback);return;}
+      setRows(null);setWorking(true);ownsGeneration.current=true;
       const output=await mealRuntime.generate(mealMessages(raw,catalog,getLanguage()));
       if(current!==session.current)return;
       setRows(parseLocalMeal(output,catalog,raw,getLanguage()));
-    }catch(e){if(current===session.current)setError(e.code?'A interpretação não terminou. Seu texto foi preservado.':e.message);}
+    }catch(e){if(current===session.current){if(fallback)setRows(fallback);setError(e.code?'A interpretação não terminou. Seu texto foi preservado.':e.message);}}
     finally{if(current===session.current){setWorking(false);ownsGeneration.current=false;}}
   }
   function cancel(){session.current++;ownsGeneration.current=false;mealRuntime.release();setWorking(false);}
-  function update(index,patch){setRows(previous=>previous.map((row,i)=>i===index?{...row,...patch,confirmed:false}:row));setError('');}
+  function update(index,patch){setRows(previous=>previous.map((row,i)=>i===index?{...row,...patch,...(patch.foodId!==undefined&&patch.foodId!==row.foodId?{assumption:'',question:''}:{}),confirmed:false}:row));setError('');}
   const ready=Boolean(rows?.length&&!draft.pending),total=draft.items.reduce((sum,item)=>sum+item.calories,0);
   return <section className="meal-assistant" aria-label={t('Assistente local de refeições')}>
     <div className="meal-assistant-heading"><div><p className="eyebrow">{t('TEXTO OU VOZ')}</p><h3>{t('O que teve na tua refeição?')}</h3></div><AIStatus/></div>
@@ -55,7 +59,7 @@ export default function LocalMealAssistant({catalog=foods,onAdd,onDirty,onDraft,
         const selector=<label>{t('Referência para este alimento')}<select value={row.foodId} onChange={e=>{const next=catalog.find(f=>f.id===e.target.value);update(index,{foodId:e.target.value,amount:portionFor(row,next),estimated:!['g','ml'].includes(row.unit)});}}><option value="">{t('Selecione um alimento')}</option>{catalog.map(f=><option key={f.id} value={f.id}>{foodName(f)}</option>)}</select></label>;
         return <article className={'meal-result-item'+(!food||calories===null?' needs-portion':'')} key={row.id}>
           <div className="meal-item-top"><div><strong>{food?foodName(food):row.description}</strong><span className="meal-item-meta">{!food?t('Escolha o alimento'):calories===null?t('Falta a quantidade'):row.estimated?t('Porção estimada'):t('Quantidade informada')}</span></div><button type="button" className="outline meal-remove" aria-label={t('Remover item {0}',[index+1])} onClick={()=>setRows(previous=>previous.filter((_,i)=>i!==index))}>×</button></div>
-          {!food&&selector}
+          {row.assumption&&<p className="meal-estimate-note">{t(row.assumption)}</p>}{!food&&<>{selector}<OnlineFoodSearch description={row.description} onImport={onImportFood} onUse={reference=>{setImported(previous=>[...previous.filter(f=>f.id!==reference.id),reference]);update(index,{foodId:reference.id,amount:portionFor(row,reference),estimated:!['g','ml'].includes(row.unit)});}}/></>}
           {row.question&&(!food||calories===null)&&<p className="voice-help">{row.question}</p>}
           <div className="meal-item-quantity"><label>{unit==='ml'?t('Volume (ml)'):t('Peso (g)')}<input type="number" min="0.1" max="10000" step="0.1" value={row.amount} onChange={e=>update(index,{amount:e.target.value})}/></label><strong>{calories===null?'—':calories.toLocaleString(getLocale())} kcal</strong></div>
           {food?.portion&&/geleia/i.test(food.name)&&<div className="meal-portion-shortcuts" aria-label={t('Referências de quantidade para geleia')}>{[.25,.5,1].map(fraction=><button type="button" className="outline" key={fraction} onClick={()=>update(index,{amount:food.portion.grams*fraction,estimated:true})}>{t('{0} colher de sopa · aprox. {1} g',[fraction===.25?'¼':fraction===.5?'½':'1',food.portion.grams*fraction])}</button>)}</div>}

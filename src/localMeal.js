@@ -63,6 +63,6 @@ export function localMealItems(rows,catalog){
     if(!row.confirmed)throw Error('Confirme o alimento, o preparo e a quantidade de cada item.');
     const amount=numeric(row.amount,.1,10000,'Quantidade');
     const unit=food.unit==='ml'?'ml':'g',calories=portionCalories(amount,food.kcal);
-    return {foodId:food.id,food:food.name,calories,quantity:`${amount} ${unit}`,...(unit==='ml'?{unit,milliliters:amount,kcalPer100Ml:food.kcal,grams:null,kcalPer100:null}:{grams:amount,kcalPer100:food.kcal}),source:food.sourceUrl||food.referenceId||food.id,referenceNote:food.note||'',estimated:Boolean(row.estimated),entryMethod:'reviewed-local-ai'};
+    return {foodId:food.id,food:food.name,calories,quantity:`${amount} ${unit}`,...(unit==='ml'?{unit,milliliters:amount,kcalPer100Ml:food.kcal,grams:null,kcalPer100:null}:{grams:amount,kcalPer100:food.kcal}),source:food.sourceUrl||food.referenceId||food.id,referenceNote:[row.assumption,food.note].filter(Boolean).join(' '),estimated:Boolean(row.estimated),entryMethod:'reviewed-local-ai'};
   });
 }
