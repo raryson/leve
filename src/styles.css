@@ -2049,7 +2049,8 @@ header h2 { overflow-wrap:anywhere; }
 .local-ai-item-heading button{flex:none;min-width:42px}
 .local-ai-measure{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end}
 .local-ai-measure>strong{padding-bottom:12px;white-space:nowrap;font-size:1rem}
-.local-ai .local-ai-check{display:flex;align-items:flex-start;gap:10px;line-height:1.5;font-size:.82rem;font-weight:500}
-.local-ai-check input{flex:none;width:18px;height:18px;margin:2px 0;accent-color:#357148}
+.local-ai .local-ai-check{display:flex;flex-direction:row;align-items:flex-start;gap:10px;line-height:1.5;font-size:.82rem;font-weight:500}
+.local-ai-check input{flex:0 0 18px;width:18px;height:18px;min-height:18px;padding:0;margin:2px 0;accent-color:#357148}
+.local-ai-check span{min-width:0;flex:1}
 .local-ai-save{border-top:1px solid #d4dfd6;padding-top:18px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 @media(max-width:520px){.local-ai{padding:0 12px 16px;gap:16px}.local-ai-disclosure>summary{padding:16px 12px}.local-ai-device{display:none}.local-ai-setup,.local-ai-item{padding:12px}.local-ai-actions>button,.local-ai-save>button{flex:1 1 100%}.local-ai-measure{gap:10px}}

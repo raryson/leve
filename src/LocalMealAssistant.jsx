@@ -3,7 +3,7 @@ import {t,getLanguage,getLocale} from './i18n.js';
 import {foods} from './foods.js';
 import {foodName,foodNote} from './foodLabels.js';
 import {portionCalories} from './domain.js';
-import {mealMessages,parseLocalMeal,portionFor,localMealItems} from './localMeal.js';
+import {mealMessages,parseLocalMeal,portionFor,localMealItems,groundLocalMeal} from './localMeal.js';
 import {createLocalMealEngine} from './localMealEngine.js';
 
 export default function LocalMealAssistant({catalog=foods,onAdd,onDirty,fixedMeal}){
@@ -28,9 +28,12 @@ export default function LocalMealAssistant({catalog=foods,onAdd,onDirty,fixedMea
   async function analyze(){
     const current=++session.current;setError('');setMessage('');
     try{
+      const grounded=groundLocalMeal(text,catalog,getLanguage());
+      if(grounded.complete){setRows(grounded.rows);setMessage('Itens conhecidos reconhecidos pelo catálogo local. As porções são editáveis; confira as estimativas.');return;}
+      if(!loaded){setError('Para este relato, carregue a IA local ou use o formulário manual.');return;}
       const messages=mealMessages(text,catalog,getLanguage());setPhase('generating');
       const output=await client().generate(messages);if(current!==session.current)return;
-      setRows(parseLocalMeal(output,catalog));setPhase('ready');
+      setRows(parseLocalMeal(output,catalog,text,getLanguage()));setPhase('ready');
     }catch(e){if(current!==session.current)return;engine.current?.stop();setLoaded(false);setPhase('idle');setError(e.code?'A interpretação não terminou. Seu texto foi preservado. Carregue o modelo novamente ou use o relato por regras.':e.message);}
   }
   async function clear(){
@@ -61,7 +64,7 @@ export default function LocalMealAssistant({catalog=foods,onAdd,onDirty,fixedMea
     </div>
     <label>{t('Minha refeição em texto livre')}<textarea rows="5" maxLength={2500} disabled={busy} value={text} placeholder={t('Jantei 150 g de arroz branco, duas bananas prata e uma xícara de café com leite sem açúcar.')} onChange={e=>{setText(e.target.value);setRows(null);setMessage('');setError('');}}/></label>
     <p className="form-note">{t('Para corrigir, edite o relato e interprete novamente. Exemplo: “Os pastéis eram médios, feitos em casa”. Tamanhos sem peso precisam de uma estimativa sua ou de uma porção de referência.')}</p>
-    <div className="local-ai-actions"><button type="button" className="primary" disabled={!loaded||busy||!text.trim()} onClick={analyze}>{phase==='generating'?t('Organizando a refeição no PC…'):t('Interpretar com IA local')}</button>{(text||rows)&&<button type="button" className="outline" disabled={busy} onClick={()=>{setText('');setRows(null);setError('');setMessage('');}}>{t('Descartar relato da IA')}</button>}</div>
+    <div className="local-ai-actions"><button type="button" className="primary" disabled={busy||!text.trim()} onClick={analyze}>{phase==='generating'?t('Organizando a refeição no PC…'):t('Interpretar com IA local')}</button>{(text||rows)&&<button type="button" className="outline" disabled={busy} onClick={()=>{setText('');setRows(null);setError('');setMessage('');}}>{t('Descartar relato da IA')}</button>}</div>
     {error&&<p className="error-box" role="alert">{t(error)}</p>}{message&&<p className="voice-help" role="status">{t(message)}</p>}
     {rows&&<section className="local-ai-review" aria-label={t('Revisar interpretação da IA')}>
       <h4>{t('Confere antes de registrar')}</h4><p>{t('A IA pode confundir alimentos e números. Nenhum item foi salvo. Confirme o preparo e o peso de cada um; remova o que não comeu.')}</p>
@@ -69,11 +72,13 @@ export default function LocalMealAssistant({catalog=foods,onAdd,onDirty,fixedMea
       {rows.map((row,index)=>{
         const food=catalog.find(f=>f.id===row.foodId),unit=food?.unit==='ml'?'ml':'g';let calories=null;try{calories=food?portionCalories(row.amount,food.kcal):null;}catch{/* Quantity still pending. */}
         return <article className="local-ai-item" key={row.id}><div className="local-ai-item-heading"><strong>{row.description}</strong><button type="button" className="outline" onClick={()=>setRows(previous=>previous.filter((_,i)=>i!==index))} aria-label={t('Remover item {0}',[index+1])}>×</button></div>
+          {row.sourceText&&<small>{t('No relato: {0}',[row.sourceText])}</small>}
           {row.question&&<p className="voice-help">{row.question}</p>}
           {!food&&<p className="voice-help">{t('Sem referência no catálogo. Escolha um alimento equivalente apenas se o preparo corresponder. Você também pode remover este item e cadastrá-lo pelo rótulo no formulário manual.')}</p>}
           <label>{t('Referência para este alimento')}<select value={row.foodId} onChange={e=>{const next=catalog.find(f=>f.id===e.target.value);update(index,{foodId:e.target.value,amount:portionFor(row,next),estimated:!['g','ml'].includes(row.unit)});}}><option value="">{t('Selecione um alimento')}</option>{catalog.map(f=><option key={f.id} value={f.id}>{foodName(f)}</option>)}</select></label>
           <div className="local-ai-measure"><label>{unit==='ml'?t('Volume consumido (ml)'):t('Quantidade consumida (g)')}<input type="number" min="0.1" max="10000" step="0.1" value={row.amount} onChange={e=>update(index,{amount:e.target.value})}/></label><strong>{calories===null?'—':calories.toLocaleString(getLocale())} kcal</strong></div>
-          {food&&(food.portion||food.defaultAmount)&&<button type="button" className="outline" onClick={()=>update(index,{amount:food.portion?.grams||food.defaultAmount,estimated:true})}>{t('Usar referência: {0}',[food.portion?t(food.portion.label):`${food.defaultAmount} ${unit}`])}</button>}
+          {food&&(food.portion||food.defaultAmount||food.slice)&&<button type="button" className="outline" onClick={()=>update(index,{amount:portionFor(row,food)||food.portion?.grams||food.slice?.grams||food.defaultAmount,estimated:true})}>{t('Usar referência: {0}',[portionFor(row,food)?`${portionFor(row,food)} ${unit}`:food.portion?t(food.portion.label):`${food.slice?.grams||food.defaultAmount} ${unit}`])}</button>}
+          {food?.portion&&/geleia/i.test(food.name)&&<div className="local-ai-actions" aria-label={t('Referências de quantidade para geleia')}>{[.25,.5,1].map(fraction=><button type="button" className="outline" key={fraction} onClick={()=>update(index,{amount:food.portion.grams*fraction,estimated:true})}>{t('{0} colher de sopa · aprox. {1} g',[fraction===.25?'¼':fraction===.5?'½':'1',food.portion.grams*fraction])}</button>)}</div>}
           <label className="local-ai-check"><input type="checkbox" checked={row.estimated} onChange={e=>update(index,{estimated:e.target.checked})}/><span>{t('Quantidade estimada, não pesada')}</span></label>
           {food?.note&&<small>{foodNote(food)}</small>}
           <label className="local-ai-check"><input type="checkbox" disabled={!food||calories===null} checked={row.confirmed} onChange={e=>setRows(previous=>previous.map((r,i)=>i===index?{...r,confirmed:e.target.checked}:r))}/><span>{t('Conferi o alimento, o preparo e a quantidade deste item')}</span></label>

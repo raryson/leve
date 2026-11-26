@@ -1,13 +1,40 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {foods} from '../src/foods.js';
-import {mealMessages,parseLocalMeal,localMealItems} from '../src/localMeal.js';
+import {mealMessages,parseLocalMeal,localMealItems,groundLocalMeal} from '../src/localMeal.js';
 import {createLocalMealEngine} from '../src/localMealEngine.js';
 import {applyEntry} from '../src/entries.js';
 import {newDay,normalizeState} from '../src/domain.js';
 
 const item=(patch={})=>({description:'Arroz branco',foodId:'taco-3',quantity:150,unit:'g',question:'',...patch});
 const parse=items=>parseLocalMeal(JSON.stringify({items}),foods);
+const breakfast='cafe da manha, ta sendo duas fatias de pao integral, uma colher de pasta de amendoim, um pouquiinho de geleia de figo e dois pessegos';
+
+test('relato real mantém pão, colher, geleia e pêssegos com quantidades de cada trecho',()=>{
+  const result=groundLocalMeal(breakfast,foods);
+  assert.equal(result.complete,true);
+  assert.deepEqual(result.rows.map(r=>[r.foodId,r.quantity,r.amount]),[['taco-52',2,50],['sbd-power-one-integral',1,15],['jam-fig-casa-madeira',null,''],['taco-244',2,120]]);
+  assert.ok(result.rows.every(r=>r.estimated&&!r.confirmed));
+  assert.match(result.rows[1].question,/colher de sopa/);assert.match(result.rows[2].question,/pouquinho/);
+  const wrong=JSON.stringify({items:[item({description:'Peixes',quantity:null,unit:'unknown'})]});
+  const fixed=parseLocalMeal(wrong,foods,breakfast);
+  assert.equal(fixed.length,4);assert.deepEqual(fixed.map(r=>r.foodId),result.rows.map(r=>r.foodId));
+});
+test('origem preserva itens omitidos; gramas, geleias e correções não viram unidades de fruta',()=>{
+  const partial=groundLocalMeal('duas fatias de pao integral e 2 temakis pequenos',foods);assert.equal(partial.complete,false);
+  const rows=parseLocalMeal(JSON.stringify({items:[item({description:'Pão integral',quantity:null,unit:'unknown'})]}),foods,'duas fatias de pao integral e 2 temakis pequenos');
+  assert.equal(rows.length,2);assert.equal(rows[0].amount,50);assert.equal(rows[1].foodId,'');assert.match(rows[1].description,/temakis/);
+  const grams=groundLocalMeal('120 g de pessegos',foods);assert.equal(grams.rows[0].amount,120);
+  const coffee=groundLocalMeal('150 ml de cafe com leite sem acucar',foods);assert.equal(coffee.complete,true);assert.equal(coffee.rows[0].amount,150);assert.equal(coffee.rows[0].unit,'ml');
+  const jam=groundLocalMeal('uma colher de geleia de pessego',foods);assert.equal(jam.rows[0].foodId,'jam-peach-hiperfoods');assert.equal(jam.rows[0].amount,20);
+  assert.equal(groundLocalMeal('dois pessegos em calda',foods).complete,false);
+  assert.equal(groundLocalMeal('dois pessegos, na verdade um',foods).complete,false);
+  assert.equal(groundLocalMeal('nao comi pessegos',foods).rows.length,0);
+});
+test('medidas por extenso e plurais também mantêm o alimento em inglês',()=>{
+  const result=groundLocalMeal('two slices of whole wheat bread and two peaches',foods,'en');
+  assert.equal(result.complete,true);assert.deepEqual(result.rows.map(r=>r.amount),[50,120]);
+});
 test('IA usa catálogo para calorias, exige confirmação e conserva líquidos no diário',()=>{
   const rows=parse([item({foodId:'taco-371',calories:999999,kcalPer100:9999}),item({description:'Café com leite sem açúcar',foodId:'coffee-milk-half',quantity:150,unit:'ml'})]);
   assert.throws(()=>localMealItems(rows,foods),/Confirme/);

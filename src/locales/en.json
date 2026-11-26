@@ -1331,5 +1331,10 @@
   "Modelo removido do armazenamento deste navegador. Seus registros foram preservados.": "Model removed from this browser storage. Your records were preserved.",
   "Não foi possível remover todos os arquivos do modelo. Tente novamente.": "Could not remove all model files. Try again.",
   "Itens adicionados à revisão da refeição. Salve a refeição para guardar.": "Items added to the meal review. Save your meal to keep them.",
-  "Não foi possível abrir o assistente local. Reabra o app com internet para tentar novamente. O registro manual e o relato por regras continuam disponíveis.": "Could not open the local assistant. Reopen the app with internet access to try again. Manual entry and rule-based descriptions are still available."
+  "Não foi possível abrir o assistente local. Reabra o app com internet para tentar novamente. O registro manual e o relato por regras continuam disponíveis.": "Could not open the local assistant. Reopen the app with internet access to try again. Manual entry and rule-based descriptions are still available.",
+  "Itens conhecidos reconhecidos pelo catálogo local. As porções são editáveis; confira as estimativas.": "Known foods matched against the local catalog. Portions are editable; check the estimates.",
+  "Para este relato, carregue a IA local ou use o formulário manual.": "For this description, load local AI or use the manual form.",
+  "No relato: {0}": "In your description: {0}",
+  "Referências de quantidade para geleia": "Jam portion references",
+  "{0} colher de sopa · aprox. {1} g": "{0} tablespoon · approx. {1} g"
 }

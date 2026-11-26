@@ -1,5 +1,6 @@
 import {portionCalories,numeric} from './domain.js';
 import {searchFoods} from './foodLibrary.js';
+import {sourceMealClauses,sourceWords} from './localMealGrounding.js';
 
 export const LOCAL_MEAL_MODEL='Qwen2.5-1.5B-Instruct-q4f32_1-MLC';
 export const LOCAL_MEAL_SCHEMA={type:'object',properties:{items:{type:'array',items:{type:'object',properties:{description:{type:'string'},quantity:{type:['number','null']},unit:{type:'string',enum:['g','ml','unit','slice','tablespoon','unknown']},question:{type:'string'}},required:['description','quantity','unit','question'],additionalProperties:false}}},required:['items'],additionalProperties:false};
@@ -19,11 +20,18 @@ export function portionFor(row,food){
   if(row.unit==='unit'&&food.portion&&/^1 (pêssego|ameixa|banana)/.test(food.portion.label))return row.quantity*food.portion.grams;
   return '';
 }
-export function parseLocalMeal(content,catalog){
+export function groundLocalMeal(text,catalog,language='pt'){
+  if(typeof text!=='string'||!text.trim())throw Error('Descreva a refeição primeiro.');
+  if(text.length>2500)throw Error('Use até 2.500 caracteres por refeição.');
+  const clauses=sourceMealClauses(text,catalog,language);
+  const correction=/\bna verdade\b|\bcorrigindo\b|\bquis dizer\b|\bcorrecao\b|\bactually\b|\binstead\b|\bcorrection\b/.test(text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase());
+  return {skipGrounding:correction,complete:!correction&&clauses.length>0&&clauses.every(c=>c.grounded),clauses,rows:clauses.map(({row})=>{const amount=portionFor(row,catalog.find(f=>f.id===row.foodId));return {...row,amount:Number.isFinite(amount)&&amount>0&&amount<=10000?amount:''};})};
+}
+export function parseLocalMeal(content,catalog,sourceText='',language='pt'){
   if(typeof content!=='string'||content.length>24000)throw Error('A IA não retornou uma refeição válida. Tente descrever menos itens por vez.');
   let data;try{data=JSON.parse(content);}catch{throw Error('A IA não retornou uma refeição válida. Tente descrever menos itens por vez.');}
   if(!Array.isArray(data?.items)||!data.items.length||data.items.length>30)throw Error('A IA não retornou uma refeição válida. Tente descrever menos itens por vez.');
-  return data.items.map((item,index)=>{
+  const extracted=data.items.map((item,index)=>{
     if(!item||typeof item.description!=='string'||!item.description.trim()||item.description.length>300||!units.has(item.unit)||(item.quantity!==null&&(typeof item.quantity!=='number'||!Number.isFinite(item.quantity)||item.quantity<=0||item.quantity>10000)))throw Error('A IA não retornou uma refeição válida. Tente descrever menos itens por vez.');
     const candidates=searchFoods(item.description.trim(),'Todos',[],[],catalog);
     const food=candidates.length===1?candidates[0]:null;
@@ -31,6 +39,21 @@ export function parseLocalMeal(content,catalog){
     const amount=portionFor(row,food);
     return {...row,amount:amount!==''&&amount<=10000?amount:''};
   });
+  if(!sourceText)return extracted;
+  const source=groundLocalMeal(sourceText,catalog,language),used=new Set();
+  if(source.skipGrounding)return extracted;
+  // Known source clauses take precedence over neural paraphrases and quantities.
+  // Unmatched source clauses remain visible even if the model drops them.
+  return source.clauses.flatMap((clause,index)=>{
+    if(clause.grounded)return [source.rows[index]];
+    const words=sourceWords(clause.sourceText);
+    const matching=extracted.filter((row,i)=>{
+      if(used.has(i))return false;
+      if(![...sourceWords(row.description)].some(word=>words.has(word)))return false;
+      used.add(i);return true;
+    });
+    return matching.length?matching:[source.rows[index]];
+  }).map((row,index)=>({...row,id:index,confirmed:false}));
 }
 export function localMealItems(rows,catalog){
   if(!Array.isArray(rows)||!rows.length)throw Error('Revise pelo menos um alimento.');
