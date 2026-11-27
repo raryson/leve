@@ -6,13 +6,14 @@ const words = { zero: 0, um: 1, uma: 1, dois: 2, duas: 2, tres: 3, quatro: 4, ci
 const wordPattern = Object.keys(words).join('|');
 const englishWords={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90,hundred:100,thousand:1000,half:.5};
 export function numbers(text,language='pt') {
+  text=normalize(text).replace(/(\d+)\s*([½¼¾])/g,(_,n,f)=>String(Number(n)+({'½':.5,'¼':.25,'¾':.75}[f]))).replace(/\b(\d+)\s+(\d+)\/(\d+)\b/g,(all,n,a,b)=>Number(b)>0?String(Number(n)+Number(a)/Number(b)):all).replace(/(\d+)\s+(?:e meia|e meio|and a half)\b/g,(_,n)=>String(Number(n)+.5)).replace(/[½¼¾]/g,v=>({'½':'0.5','¼':'0.25','¾':'0.75'}[v])).replace(/\b(\d+)\/(\d+)\b/g,(all,a,b)=>Number(b)>0?String(Number(a)/Number(b)):all);
   if(language==='en'){
     const pattern=Object.keys(englishWords).join('|');
     return normalize(text).replace(/\b[1-9]\d{0,2}(?:,\d{3})+(?:\.\d+)?\b/g,value=>value.replaceAll(',','')).replace(/-/g,' ').replace(/\bhalf (?:a|an)\s+/g,'half ').replace(/\b(?:a|an)\s+(tablespoons?|teaspoons?|spoonfuls?)\b/g,'1 $1').replace(new RegExp(`\\b(?:${pattern})(?:\\s+(?:and\\s+)?(?:${pattern}))*\\b`,'g'),phrase=>{
       let total=0,current=0;for(const word of phrase.split(/\s+/).filter(w=>w!=='and')){if(word==='hundred')current=(current||1)*100;else if(word==='thousand'){total+=(current||1)*1000;current=0;}else current+=englishWords[word];}return String(total+current);
     });
   }
-  return normalize(text).replace(new RegExp(`\\b(?:${wordPattern})(?:\\s+(?:e\\s+)?(?:${wordPattern}))*\\b`, 'g'), phrase => {
+  return normalize(text).replace(/\b[1-9]\d{0,2}(?:\.\d{3})+(?:,\d+)?\b/g,value=>value.replaceAll('.','')).replace(new RegExp(`\\b(?:${wordPattern})(?:\\s+(?:e\\s+)?(?:${wordPattern}))*\\b`, 'g'), phrase => {
     let total = 0, current = 0;
     for (const word of phrase.split(/\s+/).filter(w => w !== 'e')) {
       if (word === 'mil') { total += (current || 1) * 1000; current = 0; }
@@ -99,12 +100,16 @@ export function resolveGrams(row, foodId = row.foodId) {
   if (row.measure === 'slice' && food?.slice) return row.amount * food.slice.grams;
   return '';
 }
+export function mealNameFromText(text){
+  const value=normalize(text);
+  return /cafe da manha|breakfast/.test(value)?'Café da manhã':/jantar|jantei|dinner|supper/.test(value)?'Jantar':/ceia|late snack/.test(value)?'Ceia':/lanche|snack/.test(value)?'Lanche':/almoco|almocei|lunch/.test(value)?'Almoço':null;
+}
 export function parseMealText(transcript,language='pt') {
   if (!transcript.trim()) throw new Error('Fale ou digite a refeição primeiro.');
   if (transcript.length > 5000) throw new Error('Divida relatos longos em refeições menores (até 5.000 caracteres).');
   const text = numbers(transcript,language);
-  const meal = /cafe da manha|breakfast/.test(text) ? 'Café da manhã' : /jantar|jantei|dinner|supper/.test(text) ? 'Jantar' : /ceia|late snack/.test(text) ? 'Ceia' : /lanche|snack/.test(text) ? 'Lanche' : 'Almoço';
-  const clauses = text.split(language==='en'?/\s+and\s+|[,;\n](?!\d)|\.(?!\d)/:/\s+e\s+|[,;\n](?!\d)|\.(?!\d)/).map(s => s.trim()).filter(s => s && !/^(?:hoje |no |na |eu )*(?:almoco|jantar|lanche|ceia|cafe da manha|comi|almocei|jantei|foi|tive)(?: eu| comi)?$/.test(s));
+  const meal = mealNameFromText(text)||'Almoço';
+  const clauses = text.split(language==='en'?/\s+and\s+|,(?!\d)|[;\n]|\.(?!\d)/:/\s+e\s+|,(?!\d)|[;\n]|\.(?!\d)/).map(s => s.trim()).filter(s => s && !/^(?:hoje |no |na |eu )*(?:almoco|jantar|lanche|ceia|cafe da manha|comi|almocei|jantei|foi|tive)(?: eu| comi)?$/.test(s));
   const rows = clauses.map((clause, index) => {
     const masses = [...clause.matchAll(/\b(\d+(?:[.,]\d+)?)\s*(kg|kilograms?|quilos?|quilogramas?|gramas?|grams?|g)\b/g)];
     if (masses.length > 1) return { id: index, text: clause, candidates: [], foodId: '', measure: 'unknown', amount: null, grams: '', needsSplit: true };

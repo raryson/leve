@@ -10,7 +10,8 @@
     "test": "node --test",
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
     "assets:brand": "node scripts/build-brand.mjs",
-    "assets:support": "node scripts/build-support-qr.mjs"
+    "assets:support": "node scripts/build-support-qr.mjs",
+    "test:meals": "node --test tests/mealInterpretation.test.js tests/localMeal.test.js tests/mealText.test.js"
   },
   "dependencies": {
     "@clerk/backend": "^3.23.2",

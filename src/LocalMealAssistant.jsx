@@ -1,3 +1,4 @@
+import {mealNameFromText} from './mealText.js';
 import OnlineFoodSearch from './OnlineFoodSearch.jsx';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {t,getLanguage,getLocale} from './i18n.js';
@@ -30,8 +31,9 @@ export default function LocalMealAssistant({catalog:baseCatalog=foods,onAdd,onDi
   async function analyze(value=text){
     const raw=typeof value==='string'?value:text,current=++session.current;setError('');let fallback=null;
     try{
+      if(!fixedMeal){const named=mealNameFromText(raw);if(named)setMeal(named);}
       const grounded=groundLocalMeal(raw,catalog,getLanguage());
-      if(grounded.complete){setRows(grounded.rows);return;}
+      if(grounded.complete||grounded.skipGrounding){setRows(grounded.rows);return;}
       fallback=grounded.rows;
       if(!['ready','loading'].includes(mealRuntime.getSnapshot().phase)){setRows(fallback);return;}
       setRows(null);setWorking(true);ownsGeneration.current=true;

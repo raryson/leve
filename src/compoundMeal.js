@@ -1,19 +1,20 @@
 import {numbers} from './mealText.js';
-import {normalizeMealLanguage} from './mealLanguage.js';
+import {normalizeMealLanguage,mealNarrative} from './mealLanguage.js';
 
 // Expand only the structure of a sandwich. Preserve unknown fillings so they
 // remain pending rather than disappearing behind a single recipe estimate.
 export function mealSourceText(text,language='pt'){
+  const salad=/\bsalad[ae]\s+(?:de|com)\s+(?:alface|tomate|picles)\b/.test(numbers(text));
+  text=mealNarrative(numbers(text,language),language);
   if(language!=='pt'){
     let value=numbers(text,language).replace(/\b(?:a|an) (mug|cup)\b/g,'1 $1');
-    const breadSpread=/\bbread\b/.test(value)&&/\b(?:peanut butter|fig jam)\b/.test(value)&&!/\bnot\b|\bwithout\b/.test(value);
+    const breadSpread=/\bbread\b/.test(value)&&/\b(?:peanut butter|fig jam)\b/.test(value)&&!/\bnot\b|\bwithout\b/.test(value.replace(/\bwithout (?:sugar|salt)\b/g,''));
     if(breadSpread)value=value.replace(/\bwith\s+(?=(?:peanut butter|fig jam)\b)/g,', ');
     return {text:value,sandwich:false,breadSpread};
   }
-  const salad=/\bsalad[ae]\s+(?:de|com)\s+(?:alface|tomate|picles)\b/.test(numbers(text));
   let value=normalizeMealLanguage(numbers(text),language).replace(/\bsanduiches\b/g,'sanduiche'),sandwich=/\bsanduiche\b/.test(value);
-  const breadSpread=/\bpao\b/.test(value)&&/\b(?:pasta de amendoim|geleia de)\b/.test(value)&&!/\bnao\b|\bsem\b/.test(value.replace(/\bsem acucar\b/g,''));
-  if(breadSpread)value=value.replace(/\bcom\s+(?=(?:(?:\d+(?:[.,]\d+)?\s+(?:colher(?:es)?(?: de sopa)?|g|gramas?)\s+(?:de\s+)?)|(?:um pouco de\s+))?(?:pasta de amendoim|geleia de)\b)/g,', ');
+  const breadSpread=/\bpao\b/.test(value)&&/\b(?:pasta de amendoim|geleia de)\b/.test(value)&&!/\bnao\b|\bsem\b/.test(value.replace(/\bsem (?:acucar|sal)\b/g,''));
+  if(breadSpread)value=value.replace(/\bcom\s+(?=(?:(?:\d+(?:[.,]\d+)?\s+(?:colher(?:es)?(?: de (?:sopa|cha|cafe))?|g|gramas?)\s+(?:de\s+)?)|(?:um pouco de\s+))?(?:pasta de amendoim|geleia de)\b)/g,', ');
   if(!sandwich||/\bnao\b|\bsem\b|\bna verdade\b|\bcorrigindo\b/.test(value.replace(/\bsem acucar\b/g,'')))return {text:value,sandwich:false,salad,breadSpread};
   const count=Number(value.match(/\b(\d+)\s+sanduiche\b/)?.[1]||1);
   if(count>5)return {text,sandwich:false};

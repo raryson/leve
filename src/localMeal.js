@@ -1,3 +1,5 @@
+import {ambiguousMealText} from './mealLanguage.js';
+import {numbers} from './mealText.js';
 import {portionCalories,numeric} from './domain.js';
 import {searchFoods} from './foodLibrary.js';
 import {sourceMealClauses,sourceWords,mentionsFood} from './localMealGrounding.js';
@@ -25,7 +27,8 @@ export function groundLocalMeal(text,catalog,language='pt'){
   if(typeof text!=='string'||!text.trim())throw Error('Descreva a refeição primeiro.');
   if(text.length>2500)throw Error('Use até 2.500 caracteres por refeição.');
   const clauses=sourceMealClauses(text,catalog,language);
-  const correction=/\bna verdade\b|\bcorrigindo\b|\bquis dizer\b|\bcorrecao\b|\bactually\b|\binstead\b|\bcorrection\b/.test(text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase());
+  if(clauses.length>30)throw Error('Divida o relato em até 30 alimentos por vez.');
+  const correction=ambiguousMealText(text,language)||ambiguousMealText(numbers(text,language),language);
   return {skipGrounding:correction,complete:!correction&&clauses.length>0&&clauses.every(c=>c.grounded),clauses,rows:clauses.map(({row})=>{const amount=portionFor(row,catalog.find(f=>f.id===row.foodId));return {...row,amount:Number.isFinite(amount)&&amount>0&&amount<=10000?amount:''};})};
 }
 export function parseLocalMeal(content,catalog,sourceText='',language='pt'){
@@ -43,7 +46,7 @@ export function parseLocalMeal(content,catalog,sourceText='',language='pt'){
   });
   if(!sourceText)return extracted;
   const source=groundLocalMeal(sourceText,catalog,language),used=new Set();
-  if(source.skipGrounding)return extracted;
+  if(source.skipGrounding)return source.rows;
   // Known source clauses take precedence over neural paraphrases and quantities.
   // Unmatched source clauses remain visible even if the model drops them.
   return source.clauses.flatMap((clause,index)=>{
@@ -55,7 +58,10 @@ export function parseLocalMeal(content,catalog,sourceText='',language='pt'){
       if(![...sourceWords(row.description)].some(word=>words.has(word)))return false;
       used.add(i);return true;
     });
-    return matching.length?matching:[source.rows[index]];
+    // Neural extraction may suggest a split, but an unresolved source must not
+    // acquire a food reference, preparation or quantity invented by the model.
+    if(matching.length<2)return [source.rows[index]];
+    return matching.map(row=>({...row,foodId:'',quantity:null,unit:'unknown',amount:'',question:source.rows[index].question,sourceText:clause.sourceText}));
   }).map((row,index)=>({...row,id:index,confirmed:false}));
 }
 export function localMealItems(rows,catalog){

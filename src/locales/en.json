@@ -1446,5 +1446,8 @@
   "1 ovo médio cozido · aprox. 45 g sem casca": "1 medium boiled egg · about 45 g without shell",
   "Unidade média estimada: 45 g por ovo cozido, sem casca. Ajuste para o tamanho que consumiu.": "Estimated medium size: 45 g per boiled egg, without shell. Adjust for the size you ate.",
   "Cobertura sem quantidade informada: porção inicial de referência para as fatias, não por fatia. Ajuste se necessário.": "Spread amount not specified: an initial reference portion for all the slices, not per slice. Adjust as needed.",
-  "Caneca estimada em 300 ml, metade café e metade leite integral, sem açúcar. Ajuste se foi diferente.": "Mug estimated at 300 ml, half coffee and half whole milk, without sugar. Adjust if different."
+  "Caneca estimada em 300 ml, metade café e metade leite integral, sem açúcar. Ajuste se foi diferente.": "Mug estimated at 300 ml, half coffee and half whole milk, without sugar. Adjust if different.",
+  "Colher pequena estimada como um terço da colher de sopa de referência. Ajuste o peso para a sua colher.": "Small spoon estimated as one third of the reference tablespoon. Adjust the weight for your spoon.",
+  "Divida o relato em até 30 alimentos por vez.": "Split the description into at most 30 foods at a time.",
+  "Não foi possível abrir o assistente local. Reabra o app para tentar novamente ou use o registro manual.": "Could not open the local assistant. Reopen the app to try again or use manual entry."
 }
