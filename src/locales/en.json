@@ -1440,5 +1440,11 @@
   "Arroz branco": "White rice",
   "Arroz integral": "Brown rice",
   "Sem pele": "Skinless",
-  "Com pele": "With skin"
+  "Com pele": "With skin",
+  "Ovo de galinha inteiro, cozido": "Whole chicken egg, boiled",
+  "Calorias TACO por 100 g de ovo de galinha inteiro cozido, sem casca. Unidade média de referência SBD: 45 g comestíveis. O tamanho varia; ajuste o peso se necessário. Não equivale a ovo frito, de codorna, somente clara ou somente gema.": "TACO calories per 100 g of whole boiled chicken egg, without shell. SBD reference for a medium egg: 45 g edible weight. Sizes vary; adjust as needed. Not equivalent to fried eggs, quail eggs, egg whites or yolks alone.",
+  "1 ovo médio cozido · aprox. 45 g sem casca": "1 medium boiled egg · about 45 g without shell",
+  "Unidade média estimada: 45 g por ovo cozido, sem casca. Ajuste para o tamanho que consumiu.": "Estimated medium size: 45 g per boiled egg, without shell. Adjust for the size you ate.",
+  "Cobertura sem quantidade informada: porção inicial de referência para as fatias, não por fatia. Ajuste se necessário.": "Spread amount not specified: an initial reference portion for all the slices, not per slice. Adjust as needed.",
+  "Caneca estimada em 300 ml, metade café e metade leite integral, sem açúcar. Ajuste se foi diferente.": "Mug estimated at 300 ml, half coffee and half whole milk, without sugar. Adjust if different."
 }

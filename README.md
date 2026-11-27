@@ -250,3 +250,12 @@ Validação: 130 testes e build. Prévia com dados fictícios: busca online real
 - Referências adicionadas: peito assado sem pele USDA SR28 NDB 05064 (165 kcal/100 g); peito assado com pele TACO 406 (212), cozido sem pele 408 (163), grelhado sem pele 410 (159). Fonte TACO: https://nepa.unicamp.br/wp-content/uploads/sites/27/2023/10/taco_4_edicao_ampliada_e_revisada.pdf#page=55 ; USDA: https://www.ars.usda.gov/ARSUserFiles/80400525/Data/SR/SR28/reports/sr28fg05.pdf .
 - Salada explicitamente nomeada sem peso usa referência inicial editável de 15 g de tomate/alface/picles, também fora do sanduíche. Uma lista sem contexto de salada nem pesos permanece pendente.
 - 137 testes e build aprovados. Conferência real na prévia com visitante fictício: frase exata produziu quatro itens, preservou 200 g e 190 g, trocas de arroz/pele recalcularam kcal sem resetar quantidades, e registro completo foi salvo. Sem alterar o diário da conta real, a API ou o banco.
+
+
+### Ovos, coberturas no pão e caneca — 26/11/2026
+
+- Relato real com quatro ovos cozidos, duas fatias de pão integral com pasta de amendoim e geleia de figo e uma caneca de café com leite agora gera cinco itens separados, sem depender da inferência neural.
+- Ovo inteiro cozido: TACO 488, 146 kcal/100 g; referência comestível de 45 g por unidade média do manual SBD 2024 (p. 134 impressa). Não confundir com ovo frito, codorna ou apenas claras. Fontes e limites ficam na ficha do alimento.
+- Coberturas sem quantidade usam referências iniciais editáveis: pasta 15 g e geleia de figo 10 g no total das fatias, não por fatia. Quantidade explícita prevalece; “pouquinho” continua pedindo ajuste. Caneca usa convenção de 300 ml, com proporção de leite e ausência de açúcar declaradas; volume explícito prevalece.
+- Conferência com o texto original rejeita referências inventadas pela IA; nomes genéricos de preparo, como “cozido”, não bastam para trocar o ingrediente. Português e inglês cobertos.
+- 140 testes e build aprovados. Prévia validada com o relato exato e salvamento dos cinco itens no visitante fictício; nenhum registro real alterado. Usar o endereço principal para receber atualizações, pois URLs imutáveis de prévias antigas não atualizam.

@@ -109,3 +109,33 @@ test('worker só nasce no clique, não aceita concorrência e ignora resposta ca
   const retry=engine.load();const second=workers[1];first.onmessage({data:{id:first.sent.id,type:'result',result:'stale'}});
   second.onmessage({data:{id:second.sent.id,type:'result',result:true}});assert.equal(await retry,true);engine.stop();
 });
+
+
+test('ovos, pão com coberturas e caneca do relato real viram cinco itens editáveis',()=>{
+  const text='4 ovos cozidos, 2 fatias de pao integral com pasta de amendoim e geleia de figo e uma caneca de café com leite';
+  const expected=[['taco-488',180],['taco-52',50],['sbd-power-one-integral',15],['jam-fig-casa-madeira',10],['coffee-milk-half',300]];
+  const result=groundLocalMeal(text,foods);assert.equal(result.complete,true);
+  assert.deepEqual(result.rows.map(r=>[r.foodId,r.amount]),expected);
+  assert.ok(result.rows.every(r=>r.estimated&&!r.confirmed));
+  assert.match(result.rows[0].assumption,/45 g/);assert.match(result.rows[2].assumption,/não por fatia/);assert.match(result.rows[4].assumption,/300 ml/);
+  const hallucinated=JSON.stringify({items:[item({description:'Chia em sementes secas',quantity:null,unit:'unknown'}),item({description:'Pão integral com pasta de amendoim e geleia de figo',quantity:null,unit:'unknown'})]});
+  assert.deepEqual(parseLocalMeal(hallucinated,foods,text).map(r=>[r.foodId,r.amount]),expected);
+  const english=groundLocalMeal('4 boiled eggs, 2 slices of whole wheat bread with peanut butter and fig jam and a mug of coffee with milk',foods,'en');
+  assert.deepEqual(english.rows.map(r=>[r.foodId,r.amount]),expected);
+});
+
+test('porções explícitas prevalecem e ovos diferentes não viram ovo inteiro cozido',()=>{
+  assert.equal(groundLocalMeal('100 g de ovos cozidos',foods).rows[0].amount,100);
+  assert.equal(groundLocalMeal('200 g de arroz e 4 de ovos cozidos',foods).rows[1].amount,180);
+  for(const text of ['4 ovos fritos','4 ovos de codorna cozidos','4 claras de ovos cozidos'])assert.equal(groundLocalMeal(text,foods).complete,false,text);
+  assert.equal(groundLocalMeal('uma caneca de 150 ml de café com leite',foods).rows[0].amount,150);
+  const toppings=groundLocalMeal('2 fatias de pão integral com 2 colheres de pasta de amendoim e 20 g de geleia de figo',foods);
+  assert.deepEqual(toppings.rows.map(r=>r.amount),[50,30,20]);
+  assert.equal(groundLocalMeal(breakfast,foods).rows[2].amount,'');
+});
+
+test('nome de preparo isolado não permite que a IA invente outro alimento',()=>{
+  const invented=JSON.stringify({items:[item({description:'Chia cozida',quantity:15,unit:'g'})]});
+  const rows=parseLocalMeal(invented,foods,'inhame cozido');
+  assert.equal(rows.length,1);assert.equal(rows[0].foodId,'');assert.match(rows[0].description,/inhame/i);
+});

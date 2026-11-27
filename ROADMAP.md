@@ -519,3 +519,12 @@ Google Play — pacote gerado e verificado em 16/10/2026: PWABuilder produziu Le
 - Preservar unidades elípticas como “200 gramas de arroz, 190 de peito de frango asado”; correção restrita de “asado”, gramagem herdada com limites e referências locais de peito assado/cozido/grelhado com fontes USDA/TACO.
 - Padrões explícitos e editáveis para arroz branco cozido e peito assado sem pele; atalhos de integral/com pele preservam os pesos. Salada nomeada sem peso usa 15 g por ingrediente como referência ajustável.
 - 137 testes e build aprovados; prévia validada com o relato exato, troca de referências sem perder peso e salvamento dos quatro itens no visitante fictício.
+
+
+### Ovos, coberturas no pão e caneca — 26/11/2026
+
+- Relato real com quatro ovos cozidos, duas fatias de pão integral com pasta de amendoim e geleia de figo e uma caneca de café com leite agora gera cinco itens separados, sem depender da inferência neural.
+- Ovo inteiro cozido: TACO 488, 146 kcal/100 g; referência comestível de 45 g por unidade média do manual SBD 2024 (p. 134 impressa). Não confundir com ovo frito, codorna ou apenas claras. Fontes e limites ficam na ficha do alimento.
+- Coberturas sem quantidade usam referências iniciais editáveis: pasta 15 g e geleia de figo 10 g no total das fatias, não por fatia. Quantidade explícita prevalece; “pouquinho” continua pedindo ajuste. Caneca usa convenção de 300 ml, com proporção de leite e ausência de açúcar declaradas; volume explícito prevalece.
+- Conferência com o texto original rejeita referências inventadas pela IA; nomes genéricos de preparo, como “cozido”, não bastam para trocar o ingrediente. Português e inglês cobertos.
+- 140 testes e build aprovados. Prévia validada com o relato exato e salvamento dos cinco itens no visitante fictício; nenhum registro real alterado. Usar o endereço principal para receber atualizações, pois URLs imutáveis de prévias antigas não atualizam.

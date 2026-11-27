@@ -1,6 +1,6 @@
 import {portionCalories,numeric} from './domain.js';
 import {searchFoods} from './foodLibrary.js';
-import {sourceMealClauses,sourceWords} from './localMealGrounding.js';
+import {sourceMealClauses,sourceWords,mentionsFood} from './localMealGrounding.js';
 
 export const LOCAL_MEAL_MODEL='Qwen2.5-1.5B-Instruct-q4f32_1-MLC';
 export const LOCAL_MEAL_SCHEMA={type:'object',properties:{items:{type:'array',items:{type:'object',properties:{description:{type:'string'},quantity:{type:['number','null']},unit:{type:'string',enum:['g','ml','unit','slice','tablespoon','unknown']},question:{type:'string'}},required:['description','quantity','unit','question'],additionalProperties:false}}},required:['items'],additionalProperties:false};
@@ -17,6 +17,7 @@ export function portionFor(row,food){
   if(row.unit==='slice'&&food.slice)return row.quantity*food.slice.grams;
   if(row.unit==='tablespoon'&&food.portion&&/colher de sopa/.test(food.portion.label))return row.quantity*food.portion.grams;
   // Only whole-fruit units with an explicit sourced unit reference are converted.
+  if(row.unit==='unit'&&food.countedUnitGrams)return row.quantity*food.countedUnitGrams;
   if(row.unit==='unit'&&food.portion&&/^1 (pêssego|ameixa|banana)/.test(food.portion.label))return row.quantity*food.portion.grams;
   return '';
 }
@@ -50,6 +51,7 @@ export function parseLocalMeal(content,catalog,sourceText='',language='pt'){
     const words=sourceWords(clause.sourceText);
     const matching=extracted.filter((row,i)=>{
       if(used.has(i))return false;
+      if(row.foodId&&!mentionsFood(clause.sourceText,catalog.find(food=>food.id===row.foodId),language))return false;
       if(![...sourceWords(row.description)].some(word=>words.has(word)))return false;
       used.add(i);return true;
     });
