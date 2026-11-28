@@ -62,3 +62,15 @@ test('relatos reais de poke e pão: plurais, porções, marca e ambiguidades',()
   assert.equal(groundLocalMeal('12g de maionese hellmans light',foods).complete,false);
   assert.equal(groundLocalMeal('15g de presunto de peru',foods).complete,false);
 });
+
+
+test('maionese genérica usa Hellmann’s tradicional sem exigir marca, preservando quantidades',()=>{
+  for(const text of ['12 g de maionese','12 g de maionese heinz','12 g de maionese hemmer']){
+    const r=groundLocalMeal(text,foods);assert.equal(r.complete,true,text);assert.equal(r.rows[0].foodId,'sbd-hellmanns-mayo');assert.equal(r.rows[0].amount,12);assert.equal(r.rows[0].estimated,true);assert.match(r.rows[0].assumption,/aproximação/);
+  }
+  const sandwich=groundLocalMeal('2 fatias de pão integral com presunto e queijo e maionese',foods);
+  assert.deepEqual(sandwich.rows.map(row=>row.amount),[50,15,20,12]);
+  assert.equal(groundLocalMeal('1 colher de maionese',foods).rows[0].amount,12);
+  assert.equal(groundLocalMeal('12 g of mayonnaise',foods,'en').rows[0].amount,12);
+  for(const text of ['12 g maionese light','12 g maionese vegana','12 g maionese de batata'])assert.equal(groundLocalMeal(text,foods).complete,false,text);
+});

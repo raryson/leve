@@ -289,3 +289,9 @@ Validação: 130 testes e build. Prévia com dados fictícios: busca online real
 - QA real em prévia: 101 referências disponíveis para visitante, ambos os relatos, aviso da receita de poke, bloqueio do pão sem medida, escolha explícita das duas fatias e salvamento dos quatro alimentos no diário fictício. Não alterados registros da conta real. Sincronização autenticada em dois dispositivos não foi retestada.
 
 Fonte das novas referências: https://diabetes.org.br/wp-content/uploads/2025/03/Manual-contagem-carboidratos2024.pdf . Usar https://leve-fawn.vercel.app/ para receber novas versões; links imutáveis de prévias antigas não atualizam.
+
+
+### Maionese como referência padrão — 28/11/2026
+
+- Por preferência do usuário, “maionese”/“mayonnaise” usa Hellmann’s tradicional como aproximação editável. Aliases de marcas comuns sem referência própria usam o mesmo padrão; uma referência específica encontrada no catálogo continua disponível. Peso/colheres explícitos são preservados; recheio sem quantidade mantém referência inicial de 12 g. Light, vegana e preparos como maionese de batata não são convertidos para a tradicional.
+- 183 testes e build aprovados; regressão de relato sem marca, marcas alternativas, colher, inglês e versões distintas incluída na suíte de publicação.

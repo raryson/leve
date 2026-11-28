@@ -1463,5 +1463,7 @@
   "Atualizando catálogo completo…": "Updating the complete catalog…",
   "Não foi possível atualizar todo o catálogo. A lista salva continua disponível.": "Could not update the entire catalog. The saved list remains available.",
   "Tentar atualizar catálogo": "Retry catalog update",
-  "Quis dizer {0} fatias · aprox. {1} g": "I meant {0} slices · about {1} g"
+  "Quis dizer {0} fatias · aprox. {1} g": "I meant {0} slices · about {1} g",
+  "Marca não informada ou sem referência própria: usei Hellmann’s tradicional como aproximação. Ajuste se necessário.": "Brand not stated or no dedicated reference: traditional Hellmann’s used as an approximation. Adjust if needed.",
+  "Referência SBD para Hellmann’s tradicional: 37 kcal por 12 g. A formulação pode mudar; confira seu rótulo. Usada como aproximação editável para maionese tradicional sem referência própria; outras marcas podem diferir. Não equivale às versões light, vegana ou saborizadas.": "SBD reference for traditional Hellmann’s: 37 kcal per 12 g. Formulas may change; check your label. Used as an editable approximation for traditional mayonnaise without a dedicated reference; other brands may differ. Not equivalent to light, vegan or flavored versions."
 }

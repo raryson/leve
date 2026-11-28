@@ -28,7 +28,7 @@ export function sourceMealClauses(text,catalog,language='pt'){
       return {food,alias:hits[0],score:hits[0]?.split(' ').length||0};
     });
     const best=Math.max(...ranked.map(r=>r.score),0),top=ranked.filter(r=>r.score===best&&best>0);
-    const defaults=top.length>1&&top.every(r=>['taco-1','taco-3'].includes(r.food.id))?top.find(r=>r.food.id==='taco-3'):top.length>1&&top.every(r=>['usda-05064','taco-406'].includes(r.food.id))?top.find(r=>r.food.id==='usda-05064'):top.length>1&&top.every(r=>['taco-328','taco-371','sbd-beef-stew-average'].includes(r.food.id))?top.find(r=>r.food.id==='sbd-beef-stew-average'):top.length>1&&top.every(r=>['coffee-milk-half','dolce-gusto-latte-macchiato'].includes(r.food.id))?top.find(r=>r.food.id==='coffee-milk-half'):null;
+    const defaults=top.some(r=>r.food.id==='sbd-hellmanns-mayo')&&top.every(r=>/\b(?:maionese|mayonnaise|mayo)\b/.test(clean(r.food.name)))?top.find(r=>r.food.id==='sbd-hellmanns-mayo'):top.length>1&&top.every(r=>['taco-1','taco-3'].includes(r.food.id))?top.find(r=>r.food.id==='taco-3'):top.length>1&&top.every(r=>['usda-05064','taco-406'].includes(r.food.id))?top.find(r=>r.food.id==='usda-05064'):top.length>1&&top.every(r=>['taco-328','taco-371','sbd-beef-stew-average'].includes(r.food.id))?top.find(r=>r.food.id==='sbd-beef-stew-average'):top.length>1&&top.every(r=>['coffee-milk-half','dolce-gusto-latte-macchiato'].includes(r.food.id))?top.find(r=>r.food.id==='coffee-milk-half'):null;
     const selected=source.foodId?top.find(r=>r.food.id===source.foodId)||ranked.find(r=>r.food.id===source.foodId):top.length===1?top[0]:defaults;
     const food=selected?.food;
     let rest=haystack;
@@ -58,6 +58,7 @@ export function sourceMealClauses(text,catalog,language='pt'){
     if(context.breadSpread&&food&&quantity==null&&!isVague){const grams=food.id==='sbd-power-one-integral'?food.portion?.grams:food.id==='jam-fig-casa-madeira'?food.portion?.grams/2:null;if(grams){quantity=grams;unit='g';assumption='Cobertura sem quantidade informada: porção inicial de referência para as fatias, não por fatia. Ajuste se necessário.';}}
     if(context.breadFillings&&food&&quantity==null&&!isVague&&['sbd-ham-cooked','sbd-mozzarella','sbd-hellmanns-mayo'].includes(food.id)){quantity=food.defaultAmount;unit='g';assumption='Recheio sem quantidade informada: porção inicial de referência no total da refeição. Ajuste o peso e o tipo consumido.';}
     if(food?.id==='sbd-mozzarella'&&!/mucarela|mussarela|mozzarella/.test(clause))assumption=[assumption,'Tipo não informado: muçarela usada como referência. Troque se foi outro queijo.'].filter(Boolean).join(' ');
+    if(food?.id==='sbd-hellmanns-mayo'&&!/hellmann|hellmans/.test(clause))assumption=[assumption,'Marca não informada ou sem referência própria: usei Hellmann’s tradicional como aproximação. Ajuste se necessário.'].filter(Boolean).join(' ');
     const mug=source.text.match(/\b(\d+(?:[.,]\d+)?)\s*(?:canecas?|mugs?)\b/);
     if(mug&&!volume&&food?.id==='coffee-milk-half'){quantity=Number(mug[1].replace(',','.'))*300;unit='ml';assumption='Caneca estimada em 300 ml, metade café e metade leite integral, sem açúcar. Ajuste se foi diferente.';}
     const cup=source.text.match(/\b(\d+(?:[.,]\d+)?)\s*(?:xicaras?|cups?)\b/);
