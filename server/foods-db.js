@@ -7,12 +7,12 @@ export class FoodError extends Error {
 const dto = (row, privateFields=false) => ({id:row.id,food:row.food,status:row.status,version:row.version,updatedAt:row.updated_at,...(privateFields?{flags:row.flags,reason:row.reason}:{})});
 export function createFoodsRepository(pool) {
   return {
-    async list(userId,moderator,offset=0,moderationOffset=0) {
+    async list(userId,moderator,offset=0,moderationOffset=0,publicOnly=false) {
       const [pub,mine,queue,reports]=await Promise.all([
         pool.query("SELECT * FROM leve_community_foods WHERE status='published' ORDER BY updated_at DESC,id LIMIT 101 OFFSET $1",[offset]),
-        userId?pool.query('SELECT * FROM leve_community_foods WHERE owner_id=$1 ORDER BY updated_at DESC LIMIT 200',[userId]):{rows:[]},
-        moderator?pool.query("SELECT * FROM leve_community_foods WHERE status IN ('pending','published','rejected','hidden') ORDER BY (status='pending') DESC, updated_at DESC,id LIMIT 101 OFFSET $1",[moderationOffset]):{rows:[]},
-        moderator?pool.query('SELECT r.id,r.food_id,r.category,r.message,f.food FROM leve_food_reports r JOIN leve_community_foods f ON f.id=r.food_id WHERE NOT r.resolved ORDER BY r.created_at LIMIT 100'):{rows:[]},
+        userId&&!publicOnly?pool.query('SELECT * FROM leve_community_foods WHERE owner_id=$1 ORDER BY updated_at DESC LIMIT 200',[userId]):{rows:[]},
+        moderator&&!publicOnly?pool.query("SELECT * FROM leve_community_foods WHERE status IN ('pending','published','rejected','hidden') ORDER BY (status='pending') DESC, updated_at DESC,id LIMIT 101 OFFSET $1",[moderationOffset]):{rows:[]},
+        moderator&&!publicOnly?pool.query('SELECT r.id,r.food_id,r.category,r.message,f.food FROM leve_food_reports r JOIN leve_community_foods f ON f.id=r.food_id WHERE NOT r.resolved ORDER BY r.created_at LIMIT 100'):{rows:[]},
       ]);
       return {publicFoods:pub.rows.slice(0,100).map(r=>dto(r)),mine:mine.rows.map(r=>dto(r,true)),moderation:queue.rows.slice(0,100).map(r=>dto(r,true)),reports:reports.rows,moderator,nextOffset:pub.rows.length>100?offset+100:null,moderationNextOffset:queue.rows.length>100?moderationOffset+100:null};
     },

@@ -1449,5 +1449,19 @@
   "Caneca estimada em 300 ml, metade café e metade leite integral, sem açúcar. Ajuste se foi diferente.": "Mug estimated at 300 ml, half coffee and half whole milk, without sugar. Adjust if different.",
   "Colher pequena estimada como um terço da colher de sopa de referência. Ajuste o peso para a sua colher.": "Small spoon estimated as one third of the reference tablespoon. Adjust the weight for your spoon.",
   "Divida o relato em até 30 alimentos por vez.": "Split the description into at most 30 foods at a time.",
-  "Não foi possível abrir o assistente local. Reabra o app para tentar novamente ou use o registro manual.": "Could not open the local assistant. Reopen the app to try again or use manual entry."
+  "Não foi possível abrir o assistente local. Reabra o app para tentar novamente ou use o registro manual.": "Could not open the local assistant. Reopen the app to try again or use manual entry.",
+  "Presunto cozido (referência SBD)": "Cooked ham (SBD reference)",
+  "Referência SBD: 22 kcal por fatia média de 15 g de presunto cozido. Marca, espessura e composição variam; não equivale a presunto de peru. Ajuste pelo rótulo e peso consumido.": "SBD reference: 22 kcal per medium 15 g slice of cooked ham. Brands, thickness and composition vary; not a turkey ham reference. Adjust using the label and consumed weight.",
+  "Queijo muçarela (referência SBD)": "Mozzarella cheese (SBD reference)",
+  "Referência SBD: 65 kcal por fatia média de 20 g de muçarela. Não equivale a queijo prato, minas, light ou vegano. Troque a referência se o tipo for diferente.": "SBD reference: 65 kcal per medium 20 g slice of mozzarella. Not a reference for prato, minas, light or vegan cheese. Change the reference if the type differs.",
+  "Maionese Hellmann’s tradicional (referência SBD)": "Hellmann’s traditional mayonnaise (SBD reference)",
+  "Referência SBD para Hellmann’s tradicional: 37 kcal por 12 g. A formulação pode mudar; confira seu rótulo. Não equivale às versões light, vegana, saborizadas ou de outras marcas.": "SBD reference for traditional Hellmann’s: 37 kcal per 12 g. Formulas may change; check your label. Not equivalent to light, vegan, flavored versions or other brands.",
+  "Recheio sem quantidade informada: porção inicial de referência no total da refeição. Ajuste o peso e o tipo consumido.": "Filling amount not stated: initial reference portion for the whole meal. Adjust the weight and type consumed.",
+  "Tipo não informado: muçarela usada como referência. Troque se foi outro queijo.": "Type not stated: mozzarella used as a reference. Change it if you had a different cheese.",
+  "Bowl de referência estimado em 400 g, com arroz, salmão e cream cheese. Ajuste o peso e a receita.": "Reference bowl estimated at 400 g, with rice, salmon and cream cheese. Adjust weight and recipe.",
+  "{0} alimentos disponíveis neste dispositivo.": "{0} foods available on this device.",
+  "Atualizando catálogo completo…": "Updating the complete catalog…",
+  "Não foi possível atualizar todo o catálogo. A lista salva continua disponível.": "Could not update the entire catalog. The saved list remains available.",
+  "Tentar atualizar catálogo": "Retry catalog update",
+  "Quis dizer {0} fatias · aprox. {1} g": "I meant {0} slices · about {1} g"
 }

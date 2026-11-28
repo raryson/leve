@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {downloadCatalog} from './catalogDownload.js';
 import {createRefreshGate} from './refreshPolicy.js';
 import { asCatalogFood, validateCommunityFood } from './communityFood.js';
 
 const PUBLIC_KEY='leve-community-public-v1';
 const validRows=(rows,publicOnly=false)=>{
   if(!Array.isArray(rows))return [];
-  return rows.slice(0,1000).flatMap(row=>{try{
+  return rows.flatMap(row=>{try{
     if(typeof row.id!=='string'||!/^[-a-f0-9]{36}$/i.test(row.id)||!['private','pending','published','rejected','hidden'].includes(row.status)||!Number.isSafeInteger(row.version)||(publicOnly&&row.status!=='published'))return [];
     return [{...row,food:validateCommunityFood(row.food)}];
   }catch{return [];}});
@@ -32,10 +33,10 @@ export default function useCommunityFoods(account) {
     refreshing.current=generation.current;
     const gen=generation.current,seq=++sequence.current;setLoading(true);
     try {
-      const result=await request(`/api/foods?offset=${offset}&moderationOffset=${moderationOffset}`);
+      const result=await downloadCatalog(request,{moderationOffset,isCurrent:()=>gen===generation.current&&seq===sequence.current});
       if(gen!==generation.current||seq!==sequence.current)return;
       const pub=validRows(result.publicFoods,true),mine=validRows(result.mine);
-      const merged=offset?[...new Map([...dataRef.current.publicFoods,...pub].map(f=>[f.id,f])).values()]:pub;
+      const merged=pub;
       try{localStorage.setItem(PUBLIC_KEY,JSON.stringify(merged));if(privateKey)localStorage.setItem(privateKey,JSON.stringify(mine));}catch{/* Network results still work when cache storage is full. */}
       setData({...result,publicFoods:merged,mine,moderation:validRows(result.moderation),reports:Array.isArray(result.reports)?result.reports:[]});
       setError('');

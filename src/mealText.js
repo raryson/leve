@@ -62,10 +62,10 @@ const tokens = text => normalize(text).replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).
 export function mealFoodAliases(food,language='pt'){
   return [food.name,...((language==='en'?englishAliases:aliases)[food.id]||[]),...(food.searchAliases||[])];
 }
-function candidatesFor(text,language='pt') {
+function candidatesFor(text,language='pt',catalog=foods) {
   const haystack = ` ${tokens(text)} `;
   if (/\bnao\b/.test(normalize(text))||(language==='en'&&/\b(?:not|didn't|did not)\b/.test(text))) return { candidates: [], needsSplit: false };
-  const ranked = foods.filter(food=>food.unit!=='ml').map(food => {
+  const ranked = catalog.filter(food=>food.unit!=='ml').map(food => {
     const name = normalize(food.name);
     if(language==='en'){
       if(/skinless|without skin/.test(text)&&/com pele/.test(name))return {id:food.id,score:0};
@@ -77,7 +77,7 @@ function candidatesFor(text,language='pt') {
     if (/\bcom pele\b/.test(text) && /sem pele/.test(name)) return { id: food.id, score: 0 };
     if (/\bsem gordura\b/.test(text) && /com gordura/.test(name)) return { id: food.id, score: 0 };
     if (/\bcom gordura\b/.test(text) && /sem gordura/.test(name)) return { id: food.id, score: 0 };
-    const matches = [food.name, ...((language==='en'?englishAliases:aliases)[food.id] || [])].map(alias => {
+    const matches = mealFoodAliases(food,language).map(alias => {
       const needle = tokens(alias);
       const start = haystack.indexOf(` ${needle} `);
       return { score: start >= 0 ? needle.split(' ').length : 0, start, end: start + needle.length + 1 };
@@ -93,9 +93,9 @@ function candidatesFor(text,language='pt') {
   return { candidates: top.map(r => r.id), needsSplit };
 }
 
-export function resolveGrams(row, foodId = row.foodId) {
+export function resolveGrams(row, foodId = row.foodId, catalog=foods) {
   if (row.measure === 'grams') return row.amount;
-  const food = foods.find(f => f.id === foodId);
+  const food = catalog.find(f => f.id === foodId);
   if (row.measure === 'spoon' && food?.portion?.label.includes('colher de sopa')) return row.amount * food.portion.grams;
   if (row.measure === 'slice' && food?.slice) return row.amount * food.slice.grams;
   return '';
@@ -104,7 +104,7 @@ export function mealNameFromText(text){
   const value=normalize(text);
   return /cafe da manha|breakfast/.test(value)?'Café da manhã':/jantar|jantei|dinner|supper/.test(value)?'Jantar':/ceia|late snack/.test(value)?'Ceia':/lanche|snack/.test(value)?'Lanche':/almoco|almocei|lunch/.test(value)?'Almoço':null;
 }
-export function parseMealText(transcript,language='pt') {
+export function parseMealText(transcript,language='pt',catalog=foods) {
   if (!transcript.trim()) throw new Error('Fale ou digite a refeição primeiro.');
   if (transcript.length > 5000) throw new Error('Divida relatos longos em refeições menores (até 5.000 caracteres).');
   const text = numbers(transcript,language);
@@ -116,12 +116,12 @@ export function parseMealText(transcript,language='pt') {
     const mass = clause.match(/\b(\d+(?:[.,]\d+)?)\s*(kg|kilograms?|quilos?|quilogramas?|gramas?|grams?|g)\b/);
     const spoon = clause.match(language==='en'?/\b(\d+(?:[.,]\d+)?)\s*(tablespoons?|tbsp|teaspoons?|tsp|spoonfuls?)\b/:/\b(\d+(?:[.,]\d+)?)\s*colher(?:es)?(?:\s+(?:de\s+)?(sopa|cha|cafe))?/);
     const slice=clause.match(/\b(\d+(?:[.,]\d+)?)\s*(?:fatias?|slices?)\b/);
-    const { candidates, needsSplit } = candidatesFor(clause,language);
+    const { candidates, needsSplit } = candidatesFor(clause,language,catalog);
     const foodId = !needsSplit && candidates.length === 1 ? candidates[0] : '';
     const measure = mass ? 'grams' : slice?'slice':spoon && !['cha', 'cafe'].includes(spoon[2])&&!/^teaspoon|^tsp/.test(spoon[2]) ? 'spoon' : 'unknown';
     const amount = mass ? Number(mass[1].replace(',', '.')) * (/^(kg|quilo|kilogram)/.test(mass[2]) ? 1000 : 1) : slice?Number(slice[1].replace(',','.')):spoon ? Number(spoon[1].replace(',', '.')) : null;
     const row = { id: index, text: clause, candidates, foodId, measure, amount, needsSplit };
-    return { ...row, grams: resolveGrams(row) };
+    return { ...row, grams: resolveGrams(row,row.foodId,catalog) };
   });
   if (!rows.length) throw new Error('Conte os alimentos e as quantidades da refeição.');
   return { meal, rows };

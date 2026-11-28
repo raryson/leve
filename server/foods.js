@@ -23,7 +23,7 @@ export function createFoodsHandler({authenticate,repository,isModerator}) {
         const url=new URL(request.url);
         const offset=Number(url.searchParams.get('offset')||0),modOffset=Number(url.searchParams.get('moderationOffset')||0);
         if(![offset,modOffset].every(n=>Number.isSafeInteger(n)&&n>=0&&n<=100000)) throw new FoodError('Página inválida.');
-        return json(await repository.list(userId,moderator,offset,modOffset));
+        return json(await repository.list(userId,moderator,offset,modOffset,url.searchParams.get('publicOnly')==='1'));
       }
       if(!userId) return json({error:'Entre na conta para cadastrar ou compartilhar alimentos.'},401);
       const body=await readBody(request);

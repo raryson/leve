@@ -3,7 +3,7 @@ import {mealSourceText} from './compoundMeal.js';
 import {numbers,parseMealText,mealFoodAliases} from './mealText.js';
 import {translate} from './i18n.js';
 
-const singular={pessegos:'pessego',peaches:'peach',fatias:'fatia',slices:'slice',colheres:'colher',tablespoons:'tablespoon',unidades:'unidade',units:'unit',bananas:'banana',ameixas:'ameixa',plums:'plum'};
+const singular={pokes:'poke',paes:'pao',integrais:'integral',presuntos:'presunto',queijos:'queijo',pessegos:'pessego',peaches:'peach',fatias:'fatia',slices:'slice',colheres:'colher',tablespoons:'tablespoon',unidades:'unidade',units:'unit',bananas:'banana',ameixas:'ameixa',plums:'plum'};
 const clean=text=>text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9., ]/g,' ').split(/\s+/).filter(Boolean).map(word=>singular[word]||word).join(' ');
 const vague=/\bpouq\w*\b|\bpouco\b|\bpouca\b|\bsome\b|\blittle\b|\ba bit\b/;
 const filler=new Set('de do da dos das comi comeu como foi ta to esta estou sendo no na o a os as e um uma aproximadamente bem cerca mais menos aproximadamente aprox pequeno pequena medio media grande fatia slice colher tablespoon teaspoon teaspoons tsp tbsp sopa cha unidade unit g gram grams grama gramas kg ml l litro litros liter liters mililitro mililitros milliliter milliliters of for had ate i my some a an the'.split(' '));
@@ -18,7 +18,7 @@ function aliasesFor(food,language){
 export function sourceMealClauses(text,catalog,language='pt'){
   if(ambiguousMealText(text,language)||ambiguousMealText(numbers(text,language),language))return [{sourceText:text,grounded:false,row:{id:0,description:text,foodId:'',quantity:null,unit:'unknown',question:language==='en'?'There is a range, correction or invalid quantity. Enter the final foods and quantities.':'Há uma faixa, correção ou quantidade inválida. Informe os alimentos e quantidades finais.',estimated:true,confirmed:false,amount:''}}];
   const context=mealSourceText(text,language);
-  const parsed=parseMealText(context.text,language);
+  const parsed=parseMealText(context.text,language,catalog);
   let previousUnit=null;
   return parsed.rows.flatMap((source,index)=>{
     if(/\bnao\s+(?:comi|tomei|bebi|consumi|como)\b|\b(?:did not|didn't)\s+(?:eat|drink|have)\b|^\s*(?:sem|without)\b/.test(source.text)){previousUnit=null;return [];}
@@ -53,8 +53,11 @@ export function sourceMealClauses(text,catalog,language='pt'){
     let assumption=inherited?'A unidade em gramas foi mantida do item anterior. Confira a quantidade.':'';
     if(grounded&&food?.id==='taco-3'&&!/\bbranco\b|\bwhite\b/.test(clause))assumption=[assumption,'Tipo não informado: usei arroz branco cozido como referência. Troque se foi integral ou outro preparo.'].filter(Boolean).join(' ');
     if(grounded&&food?.id==='usda-05064'&&!/sem pele|skinless/.test(clause))assumption=[assumption,'Pele não informada: usei peito assado sem pele. Troque para com pele se também consumiu a pele.'].filter(Boolean).join(' ');
-    if(food?.countedUnitGrams&&unit==='unit')assumption='Unidade média estimada: 45 g por ovo cozido, sem casca. Ajuste para o tamanho que consumiu.';
+    if(food?.id==='ready-poke-salmon'&&unit==='unit')assumption=language==='en'?'Reference bowl estimated at 400 g, with rice, salmon and cream cheese. Adjust weight and recipe.':'Bowl de referência estimado em 400 g, com arroz, salmão e cream cheese. Ajuste o peso e a receita.';
+    if(food?.id==='taco-488'&&unit==='unit')assumption='Unidade média estimada: 45 g por ovo cozido, sem casca. Ajuste para o tamanho que consumiu.';
     if(context.breadSpread&&food&&quantity==null&&!isVague){const grams=food.id==='sbd-power-one-integral'?food.portion?.grams:food.id==='jam-fig-casa-madeira'?food.portion?.grams/2:null;if(grams){quantity=grams;unit='g';assumption='Cobertura sem quantidade informada: porção inicial de referência para as fatias, não por fatia. Ajuste se necessário.';}}
+    if(context.breadFillings&&food&&quantity==null&&!isVague&&['sbd-ham-cooked','sbd-mozzarella','sbd-hellmanns-mayo'].includes(food.id)){quantity=food.defaultAmount;unit='g';assumption='Recheio sem quantidade informada: porção inicial de referência no total da refeição. Ajuste o peso e o tipo consumido.';}
+    if(food?.id==='sbd-mozzarella'&&!/mucarela|mussarela|mozzarella/.test(clause))assumption=[assumption,'Tipo não informado: muçarela usada como referência. Troque se foi outro queijo.'].filter(Boolean).join(' ');
     const mug=source.text.match(/\b(\d+(?:[.,]\d+)?)\s*(?:canecas?|mugs?)\b/);
     if(mug&&!volume&&food?.id==='coffee-milk-half'){quantity=Number(mug[1].replace(',','.'))*300;unit='ml';assumption='Caneca estimada em 300 ml, metade café e metade leite integral, sem açúcar. Ajuste se foi diferente.';}
     const cup=source.text.match(/\b(\d+(?:[.,]\d+)?)\s*(?:xicaras?|cups?)\b/);
@@ -68,7 +71,8 @@ export function sourceMealClauses(text,catalog,language='pt'){
       assumption='Colher pequena estimada como um terço da colher de sopa de referência. Ajuste o peso para a sua colher.';
     }
     let question='';
-    if(isVague&&unit==='unknown')question=language==='en'?'How much did you have? Choose a reference portion or enter grams.':'Quanto foi esse pouquinho? Escolha uma porção de referência ou informe os gramas.';
+    if(food?.slice&&unit==='unit'&&/pao/.test(clean(food.name)))question=language==='en'?'Do you mean slices or whole loaves? Enter the weight, or use the slice reference if appropriate.':'São fatias ou pães inteiros? Informe o peso, ou use a referência de fatia se corresponder.';
+    else if(isVague&&unit==='unknown')question=language==='en'?'How much did you have? Choose a reference portion or enter grams.':'Quanto foi esse pouquinho? Escolha uma porção de referência ou informe os gramas.';
     else if(unit==='tablespoon'&&!/\bsopa\b|\btablespoon/.test(clause))question=language==='en'?'Spoon size was not specified. The initial estimate uses the catalog tablespoon; adjust for your spoon.':'O tamanho da colher não foi informado. A estimativa inicial usa a colher de sopa do catálogo; ajuste para a sua colher.';
     const container=source.text.match(/\b(\d+(?:[.,]\d+)?)\s*(?:canecas?|mugs?|xicaras?|cups?)\b/);
     const conflictingMeasures=volumes.length>1||Boolean(volume&&source.measure==='grams')||Boolean(volume&&container&&Number(container[1].replace(',','.'))>1&&!/\b(?:total|ao todo)\b/.test(source.text));
